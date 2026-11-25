@@ -73,6 +73,7 @@ cd rust_port && cargo test    # expected: 16 passed; 0 failed
 node visualizer/legal_gap_report.mjs   # expected: RESULT: PASS
 ```
    - **Python 3.10+ requirement:** `j24c/scripts/*.py` require Python 3.10 or newer (for example, `python3 -I j24c/scripts/j24c_gt_analyzer.py selftest` → `CHECK GT ALL PASS total_episodes=210`).
+   - **Re-grade the QNX 8.0.6 policy-enforced boot log on the host (no QNX needed):** `bash scripts/g23_qnx_check.sh evidence/qnx_806/logs/g23s_qnx_secpol.serial.clean.log secpol secure` → `PASS CHK-DENY secure: 6 loads; attempts as started 6 (refused EPERM 6, allowed 0), after the uid drop 4218 (refused EPERM 4218)` and `CHECK secpol ALL PASS`.
 3. **Target QNX 8.0.6 Verification (requires QNX SDP 8.0.6 + license, QEMU `aarch64le`):**
    - See [`docs/QNX_EVIDENCE_TABLE.md`](docs/QNX_EVIDENCE_TABLE.md) for the exact QNX 8.0.6 capability-to-log matrix (`G23S`, `AS1`, `J24B`, `J24C`, `SC806`) and `qnx_run_all.sh` / `scripts/j24c_qnx_all.sh`. The full hash-chained boot ledger is retained locally and available on request.
 
