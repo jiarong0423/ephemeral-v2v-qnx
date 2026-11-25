@@ -89,3 +89,9 @@ node visualizer/legal_gap_report.mjs   # expected: RESULT: PASS
 - **Target SDK identity note:** Raw unmodified serial logs from target QEMU images preserve the kernel's `uname` string verbatim; QNX SDP 8.0.6 is confirmed by our SDK `procnto` hash prefix (`44f563a0`), the `LDQNX` boot-line marker in our image build file, and the `2026/10/30` build date.
 
 See [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) and [`docs/QNX_EVIDENCE_TABLE.md`](docs/QNX_EVIDENCE_TABLE.md) for the full technical record.
+
+---
+
+## Related Standard
+
+- **Coordination standards and enforcement:** SAE J3186 (first edition `2023-03`, [SAE Mobilus](https://saemobilus.sae.org/content/J3186_202303)) specifies an application protocol and message sets for connected vehicles to share and coordinate maneuvers over V2X. Our program addresses a complementary question: once a give-way outcome is agreed, a QNX 8.0.6 gate enforces it, and the planner cannot overrule it.
