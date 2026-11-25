@@ -11,6 +11,7 @@
   - `make -C qnx_target test` → `ALL PASS (0 failed)` & `SECMEM ALL PASS (0 failed)`
   - `cd rust_port && cargo test` → `16 passed; 0 failed`
   - `node visualizer/legal_gap_report.mjs` → `RESULT: PASS` (verifies ≥ `50 cm` moving-vehicle clearance)
+  - Note: `j24c/scripts/*.py` checks require **Python 3.10+** (`python3 -I j24c/scripts/j24c_gt_analyzer.py selftest` → `CHECK GT ALL PASS total_episodes=210`).
 
 ---
 
