@@ -1,0 +1,45 @@
+# j23b_sysconn.txt - J23B: reviewed system-service connections of the J23B types ("channel_connect:<types>" ability, the form the QNX 8.0.6
+# policy generator writes), appended by scripts/g17_secpol_tool.py merge as part 3 of the combined policy after the learned system types
+# (devb_t, random_t, pipe_t from the develop boot evidence/g17/qnx_learn.serial.clean.log). No J23B type needs the pipe manager any more
+# (no FIFO); only the harness keeps pipe_t (shell pipes). DRAFT: a "failed to use ability channel_connect" line in the secpol boot, or a learn
+# round (J23B_ROUNDS="nopol learn secpol"), decides whether more is needed. Without "nonroot" a grant holds only while the process is root.
+
+# every role: its log file, key file and binary on the file system, as non-root after "on -u"
+allow j23b_gate_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_act_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+# the planner: RAND_bytes of the --bypass forgery reads /dev/urandom
+allow j23b_planner_t self:ability {
+    nonroot
+    channel_connect:devb_t,random_t
+};
+allow j23b_comm_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_radio_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_perc_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_load_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+# test harness (root): run directories and logs, keys from /dev/urandom, shell pipes
+allow j23b_test_t self:ability {
+    channel_connect:pipe_t,devb_t,random_t
+};
+# J23C: the harness's key writer child runs as the role's uid (non-root) and creates the role's key file: file system only
+allow j23b_test_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};

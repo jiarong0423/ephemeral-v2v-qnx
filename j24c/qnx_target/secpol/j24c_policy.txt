@@ -1,0 +1,118 @@
+# j24c_policy.txt - J24C (QNX upgrade batch 3; B4M2 + J24 + J24B lineage):
+# Extends j24_policy.txt with v2v_resmgr_t for /dev/v2v_ttl (v2v-g10-resmgr-b4, --car-uid 1310 --drop-uid 1310).
+# Only j23b_gate_t (and j23b_test_t harness devctl check) may connect to v2v_resmgr_t; planner/act/comm/radio/load/perc cannot.
+# No B4M5 code or types. DRAFT: compiled by secpolcompile in scripts/j24c_qnx_all.sh.
+# merge-policy system-grants: j24c_sysconn.txt
+# merge-policy keep-learned: j23b_test_t
+
+type j23b_gate_t;
+type j23b_act_t;
+type j23b_planner_t;
+type j23b_comm_t;
+type j23b_radio_t;
+type j23b_perc_t;
+type j23b_load_t;
+type j23b_test_t;
+type v2v_resmgr_t;
+
+allow j23b_planner_t j23b_gate_t:channel connect;
+allow j23b_act_t j23b_gate_t:channel connect;
+allow j23b_comm_t j23b_gate_t:channel connect;
+allow j23b_perc_t j23b_gate_t:channel connect;
+allow j23b_test_t j23b_gate_t:channel connect;
+allow j23b_radio_t j23b_comm_t:channel connect;
+allow j23b_gate_t v2v_resmgr_t:channel connect;
+allow j23b_test_t v2v_resmgr_t:channel connect;
+
+allow_attach j23b_gate_t /dev/name/local/j23b_gate;
+allow_attach j23b_comm_t /dev/name/local/j23b_comm;
+allow_attach v2v_resmgr_t /dev/v2v_ttl;
+
+allow j23b_gate_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-70
+    public_channel
+    pgrp
+    connection
+    channel_connect:v2v_resmgr_t
+};
+allow j23b_act_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-70
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_planner_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_comm_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    public_channel
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_radio_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    connection
+    channel_connect:j23b_comm_t
+};
+allow j23b_perc_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_load_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+# v2v_resmgr_t: starts root at priority 68 to attach /dev/v2v_ttl then --drop-uid 1310 (same uid as gate, no signal ability)
+allow v2v_resmgr_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+};
+allow v2v_resmgr_t self:ability {
+    pathspace
+    public_channel
+    priority:1-70
+    setuid:1310
+    setgid:1310
+};
+allow j23b_test_t self:ability {
+    spawn_setuid:1310-1316
+    spawn_setgid:1310-1316
+};
+allow j23b_test_t self:ability {
+    fork
+    spawn
+    prot_exec
+    map_fixed
+    wait
+    signal:1-64
+    connection
+    priority:1-63
+    settypeid:j23b_gate_t,j23b_act_t,j23b_planner_t,j23b_comm_t,j23b_radio_t,j23b_perc_t,j23b_load_t,v2v_resmgr_t,j23b_test_t
+    setuid:1310-1316
+    setgid:1310-1316
+    channel_connect:j23b_gate_t,v2v_resmgr_t
+};

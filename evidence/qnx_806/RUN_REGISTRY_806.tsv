@@ -1,0 +1,17 @@
+# set	copy tree (relative to scratch)	frozen tree (relative to scratch)	expect	qnx_target/src hash12	qnx_target/tests hash12	qnx_target/include hash12	qnx_target/secpol hash12	recipe script (in copy)	SDK procnto prefix
+# expect: SAME = copy's four qnx_target parts equal the frozen tree's (hashes recorded here, taken with qnxrun tree-hash on 2026-11-25); PATCHED = the hashes here are those of the named patched tree (EV3H line: fix v1+v2 + observation patches), not the frozen J24
+J24B	qnx_x_b806_20261125	qnx_api_j24b	SAME	1f279b73104c	2cb5475903ec	5fc992ef4627	16dd2cef072d	scripts/j24b_qnx_all.sh	44f563a0
+J24C	qnx_x_bc806_20261125	qnx_api_j24c	SAME	bf986137e729	39933b6b8a76	e4351e27c391	2b0386a0a491	scripts/j24c_qnx_all.sh	44f563a0
+J23D	qnx_x_d806_20261125	qnx_api_j23d	SAME	178f71ed0c86	6984c664cbd0	b00ebfb4bf97	ec7581bbfc41	scripts/j23d_qnx_all.sh	44f563a0
+J24A	qnx_x_a806_20261125	qnx_api_j24	PATCHED	40dbbb13fdb9	9ea162be096d	5fc992ef4627	16dd2cef072d	scripts/j24_qnx_all.sh	44f563a0
+MAINF	qnx_x_f806_20261125	qnx-ephemeral-v2v	SAME	1213521f6460	3b969d773d30	77ae4931d5ba	-	qnx_run_all.sh	44f563a0
+J24E	qnx_x_e806_20261125	qnx_api_j24	PATCHED	7f6179318e6f	f4f844d810f8	5fc992ef4627	16dd2cef072d	scripts/j24_qnx_all.sh	44f563a0
+G23	qnx_x_g23_806_20261125	qnx_api_g23	SAME	07332ca97877	5b5d6e7eb736	f080493d7281	b85381f49473	scripts/g23_qnx_all.sh	44f563a0
+J24MON	qnx_x_mon806_20261125	qnx_api_j24	PATCHED	7f6179318e6f	f4f844d810f8	5fc992ef4627	16dd2cef072d	scripts/j24_qnx_all.sh	44f563a0
+J24MON2	qnx_x_mon2_806_20261125	qnx_api_j24	PATCHED	7f6179318e6f	f4f844d810f8	5fc992ef4627	680c94218bb9	scripts/j24_qnx_all.sh	44f563a0
+J24SC	qnx_x_sc806_20261125	qnx_api_j24	PATCHED	40dbbb13fdb9	9ea162be096d	5fc992ef4627	16dd2cef072d	scripts/j24_qnx_all.sh	44f563a0
+J24A50	qnx_x_a50_806_20261125	qnx_api_j24	PATCHED	40dbbb13fdb9	9ea162be096d	5fc992ef4627	16dd2cef072d	scripts/j24_qnx_all.sh	44f563a0
+G17L	qnx_x_g17l_806_20261125	qnx_api_g17f	PATCHED	b31dd86b0eac	d5a265c83685	952ae852c59c	9536dd4b81f7	scripts/g17_qnx_all.sh	44f563a0
+# G17L 2026-11-25: PATCHED only in file modes (the frozen tree is read-only; the copy was made writable with chmod -R u+w); diff -rq of qnx_target src/tests/include/secpol against qnx_api_g17f: no content difference
+G23S	qnx_x_g23s_806_20261125	qnx_api_g23	PATCHED	07332ca97877	5b5d6e7eb736	f080493d7281	6c59d901dbf2	scripts/g23_qnx_all.sh	44f563a0
+# G23S 2026-11-26 00:27:33: PATCHED in two documented places only (PREREG_G23S806_20261125.md step 3): qnx_target/secpol/g23_base_g17f_combined.txt = the 8.0.6 combined policy from G17L (sha256 748dc894aa7d89fc, ledger 51; old base fe79f993bf9c9c40 moved to isolation_g23_806_20261125/g23s_prep_20261126_002720) and scripts/g23_secpol_tool.py BASE_SHA (outside the four hashed parts). src/tests/include equal the G23 row.

@@ -1,0 +1,355 @@
+# J24 QNX runs 2026-11-25 09:28:04 rounds 'learn secpol' policy qnx_target/secpol/j24_policy.txt SDK <WORKDIR>/qnx806_side/sdp:ro mkimg r1b-mkqnx:local maxsec 3600 lockwait 21600 dryrun 0
+== preflight: lint of qnx_target/secpol/j24_policy.txt (host)
+<WORKDIR>/qnx_x_a806_20261125/qnx_target/secpol/j24_policy.txt:132:1: warning: ability 'spawn_setuid' not in the known vocabulary
+<WORKDIR>/qnx_x_a806_20261125/qnx_target/secpol/j24_policy.txt:132:1: warning: ability 'spawn_setgid' not in the known vocabulary
+LINT PASS <WORKDIR>/qnx_x_a806_20261125/qnx_target/secpol/j24_policy.txt (25 statements, 8 types, 0 errors, 2 warnings)
+CHECK POLICY-CONNECT PASS connections between J23B types ['j23b_act_t->j23b_gate_t', 'j23b_comm_t->j23b_gate_t', 'j23b_perc_t->j23b_gate_t', 'j23b_planner_t->j23b_gate_t', 'j23b_radio_t->j23b_comm_t', 'j23b_test_t->j23b_gate_t']
+CHECK POLICY-SIGNAL PASS role types with signal / type / uid abilities: none (the planner cannot signal the gate, also as root)
+CHECK POLICY-LAUNCH PASS harness j23b_test_t can start the roles as "on -T <type> -u <uid>:<gid>" and write their key files as their uid: missing none; role types with spawn_setuid/_setgid: none (system grants j23b_sysconn.txt read)
+CHECK POLICY-NOPIPE PASS role types connecting to the pipe manager: none
+CHECK POLICY-NAME PASS names in the path space: j23b_gate_t may register the gate name /dev/name/local/j23b_gate (owners: ['j23b_gate_t']); other J23B types attach: none; missing: none; wildcard: none; channel-type change: none
+CHECK POLICY-SESSION PASS the gate type j23b_gate_t has pgrp in a nonroot ability block: yes (setsid() needs PROCMGR_AID_PGRP; without its own session any process of the harness's session, the planner too, may SIGCONT the gate whatever the uids)
+CHECK POLICY-PRIO PASS gate max 70, act max 70, other J23B types max planner 63, comm 63, radio 63, perc 63, load 63, test 63; no violation
+CHECK policy ALL PASS
+# source revision j24-3fa4da7a822c3e3a
+== secpolcompile of qnx_target/secpol/j24_policy.txt alone (container)
+-rw-r--r-- 1 root root 1488 Nov 25 01:28 /tmp/j24_check.bin
+3b570492ea470e9685058eb69ce81654d9ce74bb7ccd2fd2b199bea7982db5af  /tmp/j24_check.bin
+== compile learn (clean)
+# J24 compile round learn 2026-11-25 09:28:05 SDK <WORKDIR>/qnx806_side/sdp:ro rehearsal=0
+[+] round learn compiled into qnx_target/build_j24/learn (11 programs; binaries.sha256 1fa4d35f593e83d4)
+== image learn: OPT_SECPOL=develop OPT_POLICY=none
+# image learn: OPT_USB='no', post_startup.sh without io_usb_t (J24 candidate F)
+== boot learn
+[lock] taken after 0 s
+qemu-system-aarch64: warning: Machine type 'virt-7.2' is deprecated: machines more than 3 years old are subject to deletion after 6 years
+qemu-system-aarch64: terminating on signal 15 from pid 87979 (<unknown process>)
+boot_seconds=1651
+[+] saw V2V MINI END (PASS BOOT-CONTINUITY end marker at line 2216, no reset before it (one V2V MINI START, no early "Startup complete"))
+WARN merge-policy: learned for the test harness type but not in its reviewed seed in the policy (dropped; add it to the seed with a reason if the test drivers need it): j23b_test_t (root block): iofunc/chown
+INFO merge-policy: 0 console / non-policy lines dropped (-), 0 statements that do not parse dropped
+PASS merge-policy: 106 learned statements, 87 kept (26 system type declarations), 19 dropped (subject one of j23b_act_t,j23b_comm_t,j23b_gate_t,j23b_load_t,j23b_perc_t,j23b_planner_t,j23b_radio_t,j23b_test_t), 0 console lines dropped, 0 unparsable dropped; 9 reviewed grants, 1 test-type rules; combined policy syntax check PASS (122 statements, 34 types)
+INFO POLICY-PRIO system types of the learned base policy above 63 (outside the J23B claim): devb_t:66 devb_t__run:66 random_t:66 random_t__run:66
+CHECK policy ALL PASS
+== compile secpol (clean)
+# J24 compile round secpol 2026-11-25 09:56:05 SDK <WORKDIR>/qnx806_side/sdp:ro rehearsal=0
+[+] round secpol compiled into qnx_target/build_j24/secpol (11 programs; binaries.sha256 1fa4d35f593e83d4)
+== image secpol: OPT_SECPOL=secure OPT_POLICY=evidence/j24/qnx/qnx_secpol.policy_combined.txt
+# image secpol: OPT_USB='no', post_startup.sh without io_usb_t (J24 candidate F)
+# image policy c667117b3b8ee2a2 (container check: c667117b3b8ee2a2)
+== boot secpol
+[lock] taken after 0 s
+qemu-system-aarch64: warning: Machine type 'virt-7.2' is deprecated: machines more than 3 years old are subject to deletion after 6 years
+qemu-system-aarch64: terminating on signal 15 from pid 89864 (<unknown process>)
+boot_seconds=1661
+[+] saw V2V MINI END (PASS BOOT-CONTINUITY end marker at line 1691, no reset before it (one V2V MINI START, no early "Startup complete"))
+# qemu_image/local/options restored from evidence/j24/qnx/qnx_local_options.backup
+PASS learn: end marker present
+PASS learn: mode secpol=develop (expected develop)
+PASS learn: 6 J23B programs in the image ([J23B] programs: 6)
+FAIL learn: J23B-SECPOL-FILE absent
+PASS learn: test_j23b rc=0 ['[summary] test_j23b: ALL PASS (J23B_NEG 0x0)']
+PASS learn: negative control test_j23b_neg_occ rc=1 fails ['J23B-OCC', 'J23B-PERC-STALE'] (must contain J23B-OCC)
+PASS learn: j23b_sim rc=0, matrix rows PASS 10/10
+FAIL learn: J23B-ISO CHECK J23B-ISO FAIL channel isolation (secpol mode): 25 probe lines; each channel connection, request kind and the actuation FIFO path as expected planner:connect_comm=ALLOWED(want R) load:connect_comm=ALLOWED(want R) act:connect_gate=REFUSED(want A) act:send_poll=REFUSED(want A) act:connect_comm=ALLOWED(want R) perc:connect_gate=REFUSED(want A) perc:connect_comm=ALLOWED(want R)
+FAIL learn: J23B-SIGNAL CHECK J23B-SIGNAL FAIL the planner cannot signal the gate (signal 0, SIGCONT, SIGTERM); root under the planner type refused (policy); gate alive after the probes planner:sig0_gate=ALLOWED(want R) planner:sigcont_gate=ALLOWED(want R) planner:sigterm_gate=ALLOWED(want R) load:sigterm_gate=ALLOWED(want R) rootplanner:sig0_gate=ALLOWED(want R) rootplanner:sigcont_gate=ALLOWED(want R) gate not alive af
+PASS learn: J23B-PI CHECK J23B-PI PASS high-priority (40) requests served at 40, low-priority (5) requests never below 5: base_planner_p5 n=100 at_own_prio=72 (72%) min_served=5 p99=1322us; base_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=950us; load_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=120us; base p99 950 us, load p99 120 us (delay: J23B-PI-COMPARE against the fixed-priority control)
+PASS learn: PROC-ENTRY CHECK PROC-ENTRY PASS entries without a valid permit (actuation view + independent check against the gate log): 0
+PASS learn: PROC-DEADLINE CHECK PROC-DEADLINE PASS detect->safe max 308 ms, onset->brake max 509 ms, onset->safe max 806 ms (defined-onset faults), deadline 850 ms; trials already falling back at the onset (no onset value): 0
+PASS learn: PROC-SAFE CHECK PROC-SAFE PASS every defined-onset fault: the actuation process fell back or the vehicle stayed before the line
+PASS learn: J23B-ISO-BYPASS CHECK J23B-ISO-BYPASS PASS planner bypass: no forged permit reached the actuation process (no FIFO, poll / test-hook requests of the planner refused by the gate)
+PASS learn: PROC-BADPERMIT CHECK PROC-BADPERMIT PASS bad / replayed / forged permits accepted: 0; bad_permits refused as vehicle, late and MAC in every trial 1
+PASS learn: PROC-GATE-SURVIVES CHECK PROC-GATE-SURVIVES PASS planner SIGKILL: gate still running and issuing again to the restarted planner
+PASS learn: PROC-MAP CHECK PROC-MAP PASS no reachable borrow cell (map_no_borrow, planner_bypass, bad_permits): no permit, no entry
+PASS learn: PROC-PEERREPLAY CHECK PROC-PEERREPLAY PASS replayed peer messages refused as duplicates and peer messages accepted <= sent
+PASS learn: PROC-ROGUE CHECK PROC-ROGUE PASS a vehicle outside the fleet (wrong key) refused by the gate (MAC) in every trial
+PASS learn: PROC-OCC CHECK PROC-OCC PASS F8: no permit issued or renewed and no entry while a non-equipped vehicle occupied the segment; inside -> revoked if a permit was held when it appeared (gate log)
+PASS learn: PROC-COMPOUND CHECK PROC-COMPOUND PASS F9: every fault under CPU + memory load met the same criteria as without load (a fallback already in progress at the onset counts as the safe reaction)
+PASS learn: PROC-SINGLE CHECK PROC-SINGLE PASS single car, no radio, no handshake: one entry and exit with the map rule only
+INFO learn: (replaced by the J24 count below) FAIL learn: test_j23b_proc rc=1, 135 trial lines (want 50)
+INFO learn: (replaced by the J24 count below) FAIL learn: timing lines 24 (want 3 conditions x 6 metrics; emulator time, relative only)
+INFO learn: J23B-PROBE planner connect_gate ALLOWED errno=0
+INFO learn: J23B-PROBE planner send_req ALLOWED errno=0
+INFO learn: J23B-PROBE planner send_poll REFUSED errno=1
+INFO learn: J23B-PROBE planner send_fwd REFUSED errno=1
+INFO learn: J23B-PROBE planner connect_comm ALLOWED errno=0
+INFO learn: J23B-PROBE planner open_act_fifo REFUSED errno=2
+INFO learn: J23B-PROBE planner sig0_gate ALLOWED errno=0
+INFO learn: J23B-PROBE planner sigcont_gate ALLOWED errno=0
+INFO learn: J23B-PROBE planner sigterm_gate ALLOWED errno=0
+INFO learn: J23B-PROBE planner read_permit_key REFUSED errno=13
+INFO learn: J23B-PROBE load connect_gate REFUSED errno=2
+INFO learn: J23B-PROBE load send_req REFUSED errno=257
+INFO learn: J23B-PROBE load connect_comm ALLOWED errno=0
+INFO learn: J23B-PROBE load open_act_fifo REFUSED errno=2
+INFO learn: J23B-PROBE load sigterm_gate ALLOWED errno=0
+INFO learn: J23B-PROBE load read_permit_key REFUSED errno=13
+INFO learn: J23B-PROBE act connect_gate REFUSED errno=2
+INFO learn: J23B-PROBE act send_poll REFUSED errno=257
+INFO learn: J23B-PROBE act connect_comm ALLOWED errno=0
+INFO learn: J23B-PROBE radio connect_comm ALLOWED errno=0
+INFO learn: J23B-PROBE radio connect_gate REFUSED errno=2
+INFO learn: J23B-PROBE perc connect_gate REFUSED errno=2
+INFO learn: J23B-PROBE perc connect_comm ALLOWED errno=0
+INFO learn: J23B-PROBE rootplanner sig0_gate ALLOWED errno=0
+INFO learn: J23B-PROBE rootplanner sigcont_gate ALLOWED errno=0
+INFO learn: J23B-PROBE gate alive after the probes: 0
+INFO learn: J23B-PROBE gate STATS issued=0 renewed=0 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=0 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=48 refused_load=0 refused_radio=0 refused_unknown=0 refu
+INFO learn: J23B-PI base_planner_p5 n=100 fail=0 client_prio=5 served_prio=5..40 served_eq=72 p50_ns=528000 p99_ns=1322000 max_ns=2958000
+INFO learn: J23B-PI base_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=454992 p99_ns=950992 max_ns=2181008
+INFO learn: J23B-PI load_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=78992 p99_ns=120992 max_ns=34831008
+INFO learn: J23B-PI load_planner_flood n=1858 fail=0 client_prio=5 served_prio=5..40 served_eq=1850 p50_ns=64000 p99_ns=41776000 max_ns=752322000
+INFO learn: J23B-PI gate CHANNEL name=/dev/name/local/j23b_gate chid=1 flags=0x8 fixed_priority=0 base_prio=10
+INFO learn: J23B-PI model pi=1 base n=500 p99_us=60 max_us=60 served_eq_pct=100 | load n=500 p99_us=60 max_us=60 served_eq_pct=100
+PASS learn: PI negative control (gate channel _NTO_CHF_FIXED_PRIORITY) fails J23B-PI: rc=1 CHECK J23B-PI FAIL high-priority (40) requests served at 40, low-priority (5) requests never below 5: base_planner_p5 n=100 at_own_prio=0 (0%) min_served=10 p99=1244us; base_act_p40 n=300 at_own_prio=0 (0%) min_served=10 p99=850us; load_act_p40 n=300 at_own_prio=0 (0%) min_served=10 p99=936155us; ba
+PASS learn: J23B-PI-COMPARE priority inheritance vs the fixed-priority control: actuation p40 served at its priority: with PI base 100% (300/300) load 100% (300/300), without PI (fixed priority) base 0% load 0%; planner p5 with PI at exactly 5 72% (72/100), never below 5: yes; actuation round trip p99 under load: with PI 120 us, without PI 936155 us (ratio 7801, criterion >= 10); base p99 with PI 950 us, without 850 us
+PASS learn: file matrix_sim.csv in the log (25 lines)
+PASS learn: file results.csv in the log (578 lines)
+PASS learn: file trials.csv in the log (136 lines)
+PASS learn: file matrix_proc.csv in the log (28 lines)
+PASS learn: file j23b_qnx_develop_stats.csv in the log (25 lines)
+PASS learn: file j23b_qnx_develop_runs.csv in the log (5 lines)
+PASS learn: file j23b_qnx_develop_events.csv in the log (186 lines)
+PASS learn: file j23b_qnx_develop_denials.csv in the log (10 lines)
+INFO learn: 10 files written to <WORKDIR>/qnx_x_a806_20261125/evidence/j24/qnx/qnx_learn_csv
+PASS learn: BOOT-CONTINUITY end marker at line 2216, no reset before it (one V2V MINI START, no early "Startup complete")
+PASS learn: J23D-SIGTARGET CHECK J23D-SIGTARGET PASS signal probes sent to the gate's own pid 802836 (its START line; own session sid 802836; launcher 802836); harness kill() calls refused for a pid <= 0: 0
+PASS learn: J23D-NAME no "ERROR name_attach" line (0; first: none)
+FAIL learn: J23D-POSITIVE planner connect_gate ALLOWED, send_req ALLOWED (want ALLOWED, ALLOWED: the policy must let the planner reach the gate); gate alive after the probes 0 (want 1)
+PASS learn: B4M2-GATE test_b4gate rc 0, S171-S179 PASS 9/9, summary ALL PASS True
+PASS learn: B4M2-NEG test_b4gate_neg_noresv rc 1 (want 1), [FAIL] S175 lines 1 (want >= 1)
+INFO learn: B4M2-DEV not run in the develop boot (SKIPPED line present; known limitation: no policy type for the G10 resource manager)
+FAIL learn: test_j23b_proc rc=1, 135 trial lines (want 27 rows x 5 trials)
+PASS learn: J24-TRIALS trials per row 5 (want >= 5), [ROW] lines 27 (want 27), rows below 5: none
+PASS learn: timing lines 24 (want 4 conditions x 6 metrics: base, low, same = A off, j24same = A on; emulator time, relative only)
+PASS learn: J24-PRIO CHECK J24-PRIO PASS A on: every trial's gate / actuation / gate timer pulse report priority 66 / 65 / 66 (QNX: SCHED_FIFO read back; host: declared); trials off: 0
+PASS learn: J24-POS CHECK J24-POS PASS independent position oracle (speeds integrated over the logged step times, no step cap): 111 oracle entries, mismatches with the actuation's ENTRY lines + entries without a gate permit at the oracle's commit point: 0
+PASS learn: J24-LOOP CHECK J24-LOOP PASS largest actuation control-loop interval 47 ms (limit 50 ms) in every trial; trials over: 0
+PASS learn: J24-DEATH CHECK J24-DEATH PASS B gate_kill: 5 trials, gate death seen in <= 100 ms (max 8 ms; esrch 1, coiddeath 4), fallback reason gate_dead, onset->brake max 9 ms, onset->safe max 308 ms; expiry path (B off) gate_kill_expiry: 5 trials, reason permit_expired, onset->brake max 486 ms, onset->safe max 580 ms; failing trials B 0 / expiry 0
+PASS learn: PROC-DEADLINE CHECK PROC-DEADLINE PASS detect->safe max 308 ms, onset->brake max 509 ms, onset->safe max 806 ms (defined-onset faults), deadline 850 ms; trials already falling back at the onset (no onset value): 0
+PASS learn: J24-AOFF F9 rows with A off: rc=0 (reported), 25 trial lines (want 25), J24-PRIO in off mode PASS
+PASS learn: J24-NEGB death watch off (J24_NEG 0x01) must fail J24-DEATH: rc=1 CHECK J24-DEATH FAIL B gate_kill: 2 trials, gate death seen in <= 100 ms (max -1 ms; esrch 0, coiddeath 0), fallback reason gate_dead, onset->brake max 433 ms, onset->safe max 522 ms; expiry path (B o
+PASS learn: J24-POLICY-COVER "Undefined type" lines 0; [J24] image OPT_USB=no (from /proc/boot/build/options; candidate F: no USB in the image, n
+INFO learn: J24-PI-HEADLINE served at requester priority 300/300 with priority inheritance vs 0/300 with a fixed-priority channel (under load); round trip p99 ratio >= 10x: yes
+INFO learn: J24-A-COMPARE same F9 load (3 x SCHED_RR 40): decision_to_actuation p99 31417 us (A off) vs 12029 us (A on), max 46768 vs 46837 us; send_to_actuation p99 32044 us (A off) vs 12650 us (A on), max 46882 vs 47090 us; act_poll_rtt p99 8723 us (A off) vs 182 us (A on), max 18169 vs 3876 us; load_none blocked 0/5 (A on) vs 0/5 (A off), loop max 24 vs 58 ms; load_planner_kill blocked 0/0 (A on) vs 0/0 (A off), loop max 24 vs 53 ms; load_intruder_inside blocked 0/0 (A on) vs 0/0 (A off), loop max 26 vs 51 ms; load_skew_2000 blocked 5/5 (A on) vs 5/5 (A off), loop max 25 vs 49 ms; load_bad_permits blocked 0/0 (A on) vs 0/0 (A off), loop max 30 vs 48 ms
+INFO learn: J24-B-COMPARE CHECK J24-DEATH PASS B gate_kill: 5 trials, gate death seen in <= 100 ms (max 8 ms; esrch 1, coiddeath 4), fallback reason gate_dead, onset->brake max 9 ms, onset->safe max 308 ms; expiry path (B off) gate_kill_expiry: 5 trials, reason permit_expired, onset->brake max 486 ms, onset->safe max 580 ms; failing trials B 0 / expiry 0
+INFO learn: [ROW] bad_permits           F7/permit  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 28 A 1 verdict PASS
+INFO learn: [ROW] comm_kill             F2/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 806 loop_max_ms 28 A 1 verdict PASS
+INFO learn: [ROW] delay_100             F3/100ms   trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 28 A 1 verdict PASS
+INFO learn: [ROW] delay_2000            F3/2000ms  trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 772 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] delay_500             F3/500ms   trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 787 loop_max_ms 29 A 1 verdict PASS
+INFO learn: [ROW] gate_kill             X/-       trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 308 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] gate_kill_expiry      X/expiry  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 580 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] health_fault          X/-       trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 306 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] intruder_before       F8/before  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 0 onset_to_safe_max_ms 268 loop_max_ms 27 A 1 verdict PASS
+INFO learn: [ROW] intruder_inside       F8/inside  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 5 onset_to_safe_max_ms 387 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] load_bad_permits      F9/F7+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] load_intruder_inside  F9/F8+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 5 onset_to_safe_max_ms 410 loop_max_ms 26 A 1 verdict PASS
+INFO learn: [ROW] load_none             F9/F0+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 24 A 1 verdict PASS
+INFO learn: [ROW] load_planner_kill     F9/F1+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 2 onset_to_safe_max_ms 582 loop_max_ms 24 A 1 verdict PASS
+INFO learn: [ROW] load_skew_2000        F9/F5+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 793 loop_max_ms 25 A 1 verdict PASS
+INFO learn: [ROW] map_no_borrow         X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 16 A 1 verdict PASS
+INFO learn: [ROW] none                  F0/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] peer_replay           F4/peer    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] peer_silent           F6/-       trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 756 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] permit_replay         F4/permit  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 588 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] planner_bypass        X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 22 A 1 verdict PASS
+INFO learn: [ROW] planner_kill          F1/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 2 onset_to_safe_max_ms 580 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] rogue_peer            F7/peer    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 31 A 1 verdict PASS
+INFO learn: [ROW] single_car            X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 47 A 1 verdict PASS
+INFO learn: [ROW] skew_10000            F5/10s     trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 798 loop_max_ms 45 A 1 verdict PASS
+INFO learn: [ROW] skew_2000             F5/2s      trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 796 loop_max_ms 30 A 1 verdict PASS
+INFO learn: [ROW] skew_500              F5/0.5s    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 800 loop_max_ms 30 A 1 verdict PASS
+CHECK learn FAIL
+INFO learn [lock] taken after 0 s boot_seconds=1651 guard=end 
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=53755 CHANNEL name=/dev/name/local/j23b_gate chid=1 flags=0x8 fixed_priority=0 base_prio=10
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=53756 J24-TICK pulse_prio=10 (explicit 0) base_prio=10
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=53756 START pid=802836 sid=802836 epoch=53755 veh=1 map=0 need_comm=1 need_perc=0 timing=0 ident=uid test_hook=0 pi_only=0 CPS 62500000
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=54242 REFUSE mt=2 role=planner uid=1312 type=j23b_planner_t(29)
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=54243 REFUSE mt=6 role=planner uid=1312 type=j23b_planner_t(29)
+INFO learn diag: J23B-PROBE-DIAG gate.log: [gate] t=54245 STATS issued=0 renewed=0 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=0 occ_blocks=0 occ_revoke
+INFO learn diag: [DIAG] gate_kill 0 [gate] t=1626971 START pid=18231316 sid=18231316 epoch=1626971 veh=1 map=0 need_comm=1 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO learn diag: [DIAG] gate_kill 0 [gate] t=1627414 ISSUE seq=1 ttl=500
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1627059 START pid=18239509 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629231 GATE_LOST errno=9
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629331 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629440 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629549 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629661 FALLBACK at=1629660 detect=1629660 reason=permit_expired inside=0 x=-37.1 v=89.0
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1629752 STOPPED at=1629749 x=-33.6 mode=hold target=0
+INFO learn diag: [DIAG] gate_kill 0 [act] t=1635674 STATS entries=0 entries_wo_permit=0 committed_then_revoked=0 fallbacks=1 refuges=0 accepted=18 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=215 poll_fail=1 x=-33.6
+INFO learn diag: [DIAG] gate_kill 0 [perc] t=1627059 START pid=18239510 occ_ms=3000 occ_x=700 occ_at=0
+INFO learn diag: [DIAG] gate_kill 0 [perc] t=1629417 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [perc] t=1629519 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [perc] t=1629623 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 0 [perc] t=1635561 STATS reports=22
+INFO learn diag: [DIAG] gate_kill 1 [gate] t=1635772 START pid=18321428 sid=18321428 epoch=1635771 veh=1 map=0 need_comm=1 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO learn diag: [DIAG] gate_kill 1 [gate] t=1636214 ISSUE seq=1 ttl=500
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1635858 START pid=18329621 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1638510 ENTRY commit_valid=1 valid=1 wo_permit=0 committed_then_revoked=0 commit_at=1638360 x=0.8 v=300.0
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1639723 GATE_LOST errno=3
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1639831 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1639931 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1640031 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1640151 FALLBACK at=1640150 detect=1640150 reason=permit_expired inside=1 x=463.2 v=60.0
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1640213 STOPPED at=1640210 x=464.7 mode=retreat target=600
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1641041 REFUGE at=1641039 x=600.0
+INFO learn diag: [DIAG] gate_kill 1 [act] t=1644486 STATS entries=1 entries_wo_permit=0 committed_then_revoked=0 fallbacks=1 refuges=1 accepted=34 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=384 poll_fail=1 x=600.0
+INFO learn diag: [DIAG] gate_kill 1 [perc] t=1635857 START pid=18329622 occ_ms=3000 occ_x=700 occ_at=0
+INFO learn diag: [DIAG] gate_kill 1 [perc] t=1639861 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [perc] t=1639964 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [perc] t=1640066 GATE_OPEN failed errno=2
+INFO learn diag: [DIAG] gate_kill 1 [perc] t=1644366 STATS reports=38
+PASS secpol: end marker present
+PASS secpol: mode secpol=secure (expected secure)
+PASS secpol: 6 J23B programs in the image ([J23B] programs: 6)
+PASS secpol: J23B-SECPOL-FILE present
+PASS secpol: test_j23b rc=0 ['[summary] test_j23b: ALL PASS (J23B_NEG 0x0)']
+PASS secpol: negative control test_j23b_neg_occ rc=1 fails ['J23B-OCC', 'J23B-PERC-STALE'] (must contain J23B-OCC)
+PASS secpol: j23b_sim rc=0, matrix rows PASS 10/10
+PASS secpol: J23B-ISO CHECK J23B-ISO PASS channel isolation (secpol mode): 25 probe lines; each channel connection, request kind and the actuation FIFO path as expected
+PASS secpol: J23B-SIGNAL CHECK J23B-SIGNAL PASS the planner cannot signal the gate (signal 0, SIGCONT, SIGTERM); root under the planner type refused (policy); gate alive after the probes
+PASS secpol: J23B-PI CHECK J23B-PI PASS high-priority (40) requests served at 40, low-priority (5) requests never below 5: base_planner_p5 n=100 at_own_prio=73 (73%) min_served=5 p99=1511us; base_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=900us; load_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=183us; base p99 900 us, load p99 183 us (delay: J23B-PI-COMPARE against the fixed-priority control)
+PASS secpol: PROC-ENTRY CHECK PROC-ENTRY PASS entries without a valid permit (actuation view + independent check against the gate log): 0
+PASS secpol: PROC-DEADLINE CHECK PROC-DEADLINE PASS detect->safe max 308 ms, onset->brake max 510 ms, onset->safe max 807 ms (defined-onset faults), deadline 850 ms; trials already falling back at the onset (no onset value): 0
+PASS secpol: PROC-SAFE CHECK PROC-SAFE PASS every defined-onset fault: the actuation process fell back or the vehicle stayed before the line
+PASS secpol: J23B-ISO-BYPASS CHECK J23B-ISO-BYPASS PASS planner bypass: no forged permit reached the actuation process (no FIFO, poll / test-hook requests of the planner refused by the gate)
+PASS secpol: PROC-BADPERMIT CHECK PROC-BADPERMIT PASS bad / replayed / forged permits accepted: 0; bad_permits refused as vehicle, late and MAC in every trial 1
+PASS secpol: PROC-GATE-SURVIVES CHECK PROC-GATE-SURVIVES PASS planner SIGKILL: gate still running and issuing again to the restarted planner
+PASS secpol: PROC-MAP CHECK PROC-MAP PASS no reachable borrow cell (map_no_borrow, planner_bypass, bad_permits): no permit, no entry
+PASS secpol: PROC-PEERREPLAY CHECK PROC-PEERREPLAY PASS replayed peer messages refused as duplicates and peer messages accepted <= sent
+PASS secpol: PROC-ROGUE CHECK PROC-ROGUE PASS a vehicle outside the fleet (wrong key) refused by the gate (MAC) in every trial
+PASS secpol: PROC-OCC CHECK PROC-OCC PASS F8: no permit issued or renewed and no entry while a non-equipped vehicle occupied the segment; inside -> revoked if a permit was held when it appeared (gate log)
+PASS secpol: PROC-COMPOUND CHECK PROC-COMPOUND PASS F9: every fault under CPU + memory load met the same criteria as without load (a fallback already in progress at the onset counts as the safe reaction)
+PASS secpol: PROC-SINGLE CHECK PROC-SINGLE PASS single car, no radio, no handshake: one entry and exit with the map rule only
+INFO secpol: (replaced by the J24 count below) FAIL secpol: test_j23b_proc rc=0, 135 trial lines (want 50)
+INFO secpol: (replaced by the J24 count below) FAIL secpol: timing lines 24 (want 3 conditions x 6 metrics; emulator time, relative only)
+INFO secpol: J23B-PROBE planner connect_gate ALLOWED errno=0
+INFO secpol: J23B-PROBE planner send_req ALLOWED errno=0
+INFO secpol: J23B-PROBE planner send_poll REFUSED errno=1
+INFO secpol: J23B-PROBE planner send_fwd REFUSED errno=1
+INFO secpol: J23B-PROBE planner connect_comm REFUSED errno=1
+INFO secpol: J23B-PROBE planner open_act_fifo REFUSED errno=2
+INFO secpol: J23B-PROBE planner sig0_gate REFUSED errno=1
+INFO secpol: J23B-PROBE planner sigcont_gate REFUSED errno=1
+INFO secpol: J23B-PROBE planner sigterm_gate REFUSED errno=1
+INFO secpol: J23B-PROBE planner read_permit_key REFUSED errno=13
+INFO secpol: J23B-PROBE load connect_gate REFUSED errno=1
+INFO secpol: J23B-PROBE load send_req REFUSED errno=257
+INFO secpol: J23B-PROBE load connect_comm REFUSED errno=1
+INFO secpol: J23B-PROBE load open_act_fifo REFUSED errno=2
+INFO secpol: J23B-PROBE load sigterm_gate REFUSED errno=1
+INFO secpol: J23B-PROBE load read_permit_key REFUSED errno=13
+INFO secpol: J23B-PROBE act connect_gate ALLOWED errno=0
+INFO secpol: J23B-PROBE act send_poll ALLOWED errno=0
+INFO secpol: J23B-PROBE act connect_comm REFUSED errno=1
+INFO secpol: J23B-PROBE radio connect_comm ALLOWED errno=0
+INFO secpol: J23B-PROBE radio connect_gate REFUSED errno=1
+INFO secpol: J23B-PROBE perc connect_gate ALLOWED errno=0
+INFO secpol: J23B-PROBE perc connect_comm REFUSED errno=1
+INFO secpol: J23B-PROBE rootplanner sig0_gate REFUSED errno=1
+INFO secpol: J23B-PROBE rootplanner sigcont_gate REFUSED errno=1
+INFO secpol: J23B-PROBE gate alive after the probes: 1
+INFO secpol: J23B-PROBE gate STATS issued=1 renewed=2 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=0 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=65 refused_load=0 refused_radio=0 refused_unknown=0 refu
+INFO secpol: J23B-PI base_planner_p5 n=100 fail=0 client_prio=5 served_prio=5..40 served_eq=73 p50_ns=522000 p99_ns=1511008 max_ns=4206000
+INFO secpol: J23B-PI base_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=522992 p99_ns=900000 max_ns=3750992
+INFO secpol: J23B-PI load_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=80000 p99_ns=183008 max_ns=200703008
+INFO secpol: J23B-PI load_planner_flood n=843 fail=0 client_prio=5 served_prio=5..40 served_eq=833 p50_ns=64000 p99_ns=156978000 max_ns=815200992
+INFO secpol: J23B-PI gate CHANNEL name=/dev/name/local/j23b_gate chid=1 flags=0x8 fixed_priority=0 base_prio=10
+INFO secpol: J23B-PI model pi=1 base n=500 p99_us=60 max_us=60 served_eq_pct=100 | load n=500 p99_us=60 max_us=60 served_eq_pct=100
+PASS secpol: PI negative control (gate channel _NTO_CHF_FIXED_PRIORITY) fails J23B-PI: rc=1 CHECK J23B-PI FAIL high-priority (40) requests served at 40, low-priority (5) requests never below 5: base_planner_p5 n=100 at_own_prio=0 (0%) min_served=10 p99=1227us; base_act_p40 n=300 at_own_prio=0 (0%) min_served=10 p99=924us; load_act_p40 n=300 at_own_prio=0 (0%) min_served=10 p99=880998us; ba
+PASS secpol: J23B-PI-COMPARE priority inheritance vs the fixed-priority control: actuation p40 served at its priority: with PI base 100% (300/300) load 100% (300/300), without PI (fixed priority) base 0% load 0%; planner p5 with PI at exactly 5 73% (73/100), never below 5: yes; actuation round trip p99 under load: with PI 183 us, without PI 880998 us (ratio 4814, criterion >= 10); base p99 with PI 900 us, without 924 us
+PASS secpol: file matrix_sim.csv in the log (25 lines)
+PASS secpol: file results.csv in the log (578 lines)
+PASS secpol: file trials.csv in the log (136 lines)
+PASS secpol: file matrix_proc.csv in the log (28 lines)
+PASS secpol: file j23b_qnx_secure_stats.csv in the log (25 lines)
+PASS secpol: file j23b_qnx_secure_runs.csv in the log (5 lines)
+PASS secpol: file j23b_qnx_secure_events.csv in the log (186 lines)
+PASS secpol: file j23b_qnx_secure_denials.csv in the log (10 lines)
+INFO secpol: 10 files written to <WORKDIR>/qnx_x_a806_20261125/evidence/j24/qnx/qnx_secpol_csv
+PASS secpol: BOOT-CONTINUITY end marker at line 1691, no reset before it (one V2V MINI START, no early "Startup complete")
+PASS secpol: J23D-SIGTARGET CHECK J23D-SIGTARGET PASS signal probes sent to the gate's own pid 725011 (its START line; own session sid 725011; launcher 725011); harness kill() calls refused for a pid <= 0: 0
+PASS secpol: J23D-NAME no "ERROR name_attach" line (0; first: none)
+PASS secpol: J23D-POSITIVE planner connect_gate ALLOWED, send_req ALLOWED (want ALLOWED, ALLOWED: the policy must let the planner reach the gate); gate alive after the probes 1 (want 1)
+PASS secpol: J23D-PROBESET secure probes: load / radio connect_gate REFUSED, perc connect_gate ALLOWED, radio connect_comm ALLOWED, planner and root-as-planner signals REFUSED; wrong: none; NOTARGET lines: 0
+PASS secpol: B4M2-GATE test_b4gate rc 0, S171-S179 PASS 9/9, summary ALL PASS True
+PASS secpol: B4M2-NEG test_b4gate_neg_noresv rc 1 (want 1), [FAIL] S175 lines 1 (want >= 1)
+INFO secpol: B4M2-DEV not run in the secure boot (SKIPPED line present; known limitation: no policy type for the G10 resource manager)
+PASS secpol: test_j23b_proc rc=0, 135 trial lines (want 27 rows x 5 trials)
+PASS secpol: J24-TRIALS trials per row 5 (want >= 5), [ROW] lines 27 (want 27), rows below 5: none
+PASS secpol: timing lines 24 (want 4 conditions x 6 metrics: base, low, same = A off, j24same = A on; emulator time, relative only)
+PASS secpol: J24-PRIO CHECK J24-PRIO PASS A on: every trial's gate / actuation / gate timer pulse report priority 66 / 65 / 66 (QNX: SCHED_FIFO read back; host: declared); trials off: 0
+PASS secpol: J24-POS CHECK J24-POS PASS independent position oracle (speeds integrated over the logged step times, no step cap): 111 oracle entries, mismatches with the actuation's ENTRY lines + entries without a gate permit at the oracle's commit point: 0
+PASS secpol: J24-LOOP CHECK J24-LOOP PASS largest actuation control-loop interval 48 ms (limit 50 ms) in every trial; trials over: 0
+PASS secpol: J24-DEATH CHECK J24-DEATH PASS B gate_kill: 5 trials, gate death seen in <= 100 ms (max 10 ms; esrch 0, coiddeath 5), fallback reason gate_dead, onset->brake max 10 ms, onset->safe max 305 ms; expiry path (B off) gate_kill_expiry: 5 trials, reason permit_expired, onset->brake max 477 ms, onset->safe max 581 ms; failing trials B 0 / expiry 0
+PASS secpol: PROC-DEADLINE CHECK PROC-DEADLINE PASS detect->safe max 308 ms, onset->brake max 510 ms, onset->safe max 807 ms (defined-onset faults), deadline 850 ms; trials already falling back at the onset (no onset value): 0
+PASS secpol: J24-AOFF F9 rows with A off: rc=0 (reported), 25 trial lines (want 25), J24-PRIO in off mode PASS
+PASS secpol: J24-NEGB death watch off (J24_NEG 0x01) must fail J24-DEATH: rc=1 CHECK J24-DEATH FAIL B gate_kill: 2 trials, gate death seen in <= 100 ms (max -1 ms; esrch 0, coiddeath 0), fallback reason gate_dead, onset->brake max 457 ms, onset->safe max 569 ms; expiry path (B o
+PASS secpol: J24-POLICY-COVER "Undefined type" lines 0; [J24] image OPT_USB=no (from /proc/boot/build/options; candidate F: no USB in the image, n
+INFO secpol: J24-PI-HEADLINE served at requester priority 300/300 with priority inheritance vs 0/300 with a fixed-priority channel (under load); round trip p99 ratio >= 10x: yes
+INFO secpol: J24-A-COMPARE same F9 load (3 x SCHED_RR 40): decision_to_actuation p99 30630 us (A off) vs 11920 us (A on), max 38137 vs 18704 us; send_to_actuation p99 31428 us (A off) vs 12438 us (A on), max 59655 vs 26794 us; act_poll_rtt p99 8553 us (A off) vs 180 us (A on), max 15016 vs 7672 us; load_none blocked 0/5 (A on) vs 0/5 (A off), loop max 24 vs 47 ms; load_planner_kill blocked 0/0 (A on) vs 0/0 (A off), loop max 31 vs 54 ms; load_intruder_inside blocked 0/0 (A on) vs 0/0 (A off), loop max 25 vs 52 ms; load_skew_2000 blocked 5/5 (A on) vs 5/5 (A off), loop max 26 vs 50 ms; load_bad_permits blocked 0/0 (A on) vs 0/0 (A off), loop max 25 vs 53 ms
+INFO secpol: J24-B-COMPARE CHECK J24-DEATH PASS B gate_kill: 5 trials, gate death seen in <= 100 ms (max 10 ms; esrch 0, coiddeath 5), fallback reason gate_dead, onset->brake max 10 ms, onset->safe max 305 ms; expiry path (B off) gate_kill_expiry: 5 trials, reason permit_expired, onset->brake max 477 ms, onset->safe max 581 ms; failing trials B 0 / expiry 0
+INFO secpol: [ROW] bad_permits           F7/permit  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] comm_kill             F2/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 800 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] delay_100             F3/100ms   trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 34 A 1 verdict PASS
+INFO secpol: [ROW] delay_2000            F3/2000ms  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 801 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] delay_500             F3/500ms   trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 778 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] gate_kill             X/-       trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 305 loop_max_ms 32 A 1 verdict PASS
+INFO secpol: [ROW] gate_kill_expiry      X/expiry  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 581 loop_max_ms 32 A 1 verdict PASS
+INFO secpol: [ROW] health_fault          X/-       trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 312 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] intruder_before       F8/before  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 0 onset_to_safe_max_ms 249 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] intruder_inside       F8/inside  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 5 onset_to_safe_max_ms 391 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] load_bad_permits      F9/F7+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 25 A 1 verdict PASS
+INFO secpol: [ROW] load_intruder_inside  F9/F8+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 5 onset_to_safe_max_ms 395 loop_max_ms 25 A 1 verdict PASS
+INFO secpol: [ROW] load_none             F9/F0+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 24 A 1 verdict PASS
+INFO secpol: [ROW] load_planner_kill     F9/F1+load trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 2 onset_to_safe_max_ms 594 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] load_skew_2000        F9/F5+load trials 5 committed_then_revoked 1 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 807 loop_max_ms 26 A 1 verdict PASS
+INFO secpol: [ROW] map_no_borrow         X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 15 A 1 verdict PASS
+INFO secpol: [ROW] none                  F0/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] peer_replay           F4/peer    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] peer_silent           F6/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 807 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] permit_replay         F4/permit  trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 4 onset_to_safe_max_ms 593 loop_max_ms 30 A 1 verdict PASS
+INFO secpol: [ROW] planner_bypass        X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 20 A 1 verdict PASS
+INFO secpol: [ROW] planner_kill          F1/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/0 fallbacks 5 refuges 2 onset_to_safe_max_ms 593 loop_max_ms 32 A 1 verdict PASS
+INFO secpol: [ROW] rogue_peer            F7/peer    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] single_car            X/-       trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 0/5 fallbacks 0 refuges 0 onset_to_safe_max_ms -1 loop_max_ms 48 A 1 verdict PASS
+INFO secpol: [ROW] skew_10000            F5/10s     trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 800 loop_max_ms 34 A 1 verdict PASS
+INFO secpol: [ROW] skew_2000             F5/2s      trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 793 loop_max_ms 31 A 1 verdict PASS
+INFO secpol: [ROW] skew_500              F5/0.5s    trials 5 committed_then_revoked 0 entries_without_permit 0 blocked 5/5 fallbacks 5 refuges 5 onset_to_safe_max_ms 796 loop_max_ms 30 A 1 verdict PASS
+CHECK secpol ALL PASS
+INFO secpol [lock] taken after 0 s boot_seconds=1661 guard=end 
+INFO secpol diag: [DIAG] gate_kill 0 [gate] t=1636322 START pid=18063379 sid=18063379 epoch=1636323 veh=1 map=0 need_comm=1 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO secpol diag: [DIAG] gate_kill 0 [gate] t=1636766 ISSUE seq=1 ttl=500
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1636406 START pid=18071572 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1638580 GATE_LOST errno=9
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1638681 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1638789 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1638889 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1639021 FALLBACK at=1639018 detect=1639018 reason=permit_expired inside=0 x=-35.3 v=81.0
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1639101 STOPPED at=1639100 x=-32.4 mode=hold target=0
+INFO secpol diag: [DIAG] gate_kill 0 [act] t=1644943 STATS entries=0 entries_wo_permit=0 committed_then_revoked=0 fallbacks=1 refuges=0 accepted=18 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=214 poll_fail=1 x=-32.4
+INFO secpol diag: [DIAG] gate_kill 0 [perc] t=1636406 START pid=18071573 occ_ms=3000 occ_x=700 occ_at=0
+INFO secpol diag: [DIAG] gate_kill 0 [perc] t=1638759 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [perc] t=1638864 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [perc] t=1638968 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 0 [perc] t=1644823 STATS reports=22
+INFO secpol diag: [DIAG] gate_kill 1 [gate] t=1645053 START pid=18153491 sid=18153491 epoch=1645053 veh=1 map=0 need_comm=1 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO secpol diag: [DIAG] gate_kill 1 [gate] t=1645495 ISSUE seq=1 ttl=500
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1645133 START pid=18161684 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1647789 ENTRY commit_valid=1 valid=1 wo_permit=0 committed_then_revoked=0 commit_at=1647636 x=2.0 v=300.0
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649009 GATE_LOST errno=9
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649120 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649219 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649328 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649458 FALLBACK at=1649456 detect=1649456 reason=permit_expired inside=1 x=484.0 v=111.0
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1649569 STOPPED at=1649568 x=489.6 mode=retreat target=600
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1650319 REFUGE at=1650316 x=600.0
+INFO secpol diag: [DIAG] gate_kill 1 [act] t=1653655 STATS entries=1 entries_wo_permit=0 committed_then_revoked=0 fallbacks=1 refuges=1 accepted=34 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=385 poll_fail=1 x=600.0
+INFO secpol diag: [DIAG] gate_kill 1 [perc] t=1645134 START pid=18161685 occ_ms=3000 occ_x=700 occ_at=0
+INFO secpol diag: [DIAG] gate_kill 1 [perc] t=1649136 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [perc] t=1649239 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [perc] t=1649340 GATE_OPEN failed errno=2
+INFO secpol diag: [DIAG] gate_kill 1 [perc] t=1653535 STATS reports=38
+PASS rounds learn and secpol ran the same binaries (1fa4d35f593e83d4)
+# J24 QNX done 2026-11-25 10:24:16 boots rc=0 criteria rc=5: FAILURES

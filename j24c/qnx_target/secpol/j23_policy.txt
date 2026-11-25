@@ -1,0 +1,78 @@
+# j23_policy.txt - J23 (on-board execution gate): QNX 8.0.6 security policy (secpol type policy) for the gate, actuation, planner,
+# communication, radio and load processes of src/v2v_j23.c. DRAFT in the form of qnx_target/secpol/g17_policy.txt (same statement forms,
+# same lint: python3 -I scripts/g17_secpol_tool.py lint qnx_target/secpol/j23_policy.txt). It has NOT been compiled or enforced by this job
+# (secpolcompile is a Linux x86_64 program, no QEMU here); scripts/j23_qnx_all.sh compiles it in the container and the secpol boot decides
+# what QNX enforces. Design on a certifiable platform; nothing here is certified.
+#
+# Types (one process each; uids are set by "on -u" in tests/test_j23_proc.c, the type by "on -T"):
+#   j23_gate_t     v2v-j23 gate (uid 1300): owns the permits; reads p2g c2g a2g h2g, writes g2a
+#   j23_act_t      v2v-j23 act (uid 1301): actuation path; reads g2a p2a, writes a2g
+#   j23_planner_t  v2v-j23 planner (uid 1302): writes p2g p2a only; holds no permit key; NO signal ability (cannot stop or kill the gate,
+#                  not even when it runs as root: probe kill_gate must be REFUSED in the secpol boot and ALLOWED as root in the nopol boot)
+#   j23_comm_t     v2v-j23 comm (uid 1303): reads r2c, writes c2g
+#   j23_radio_t    v2v-j23 peer (uid 1304): simulated radio with the other two cars, writes r2c
+#   j23_load_t     v2v-j23 load (uid 1305): vision-like load
+#   j23_test_t     tests/test_j23_proc.c and the "on" it runs (root): test harness outside the isolation claims (as g17_test_t): fork, spawn,
+#                  the type and uid switch of the roles, signals to them (fault injection), FIFOs, files
+# The FIFOs all belong to the pipe manager (one channel type for every FIFO), so the policy cannot tell p2g from g2a: the channel split is
+# DAC (owner = writer uid, group = reader gid, mode 0260) plus the permit MAC; the policy adds the root case (abilities) and the signal rule.
+# merge-policy system-grants: j23_sysconn.txt
+# merge-policy keep-learned: j23_test_t
+
+type j23_gate_t;
+type j23_act_t;
+type j23_planner_t;
+type j23_comm_t;
+type j23_radio_t;
+type j23_load_t;
+type j23_test_t;
+
+# ---- abilities: start-up (dynamic linking: prot_exec, map_fixed) and the FIFO priority used by the timing runs (FIFO 40, load RR 20/40)
+allow j23_gate_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+allow j23_act_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+allow j23_planner_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+allow j23_comm_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+};
+allow j23_radio_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+};
+allow j23_load_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+# ---- test harness: fork + spawn of "on" and of the roles; "on -T <type> -u <uid>:<gid>" needs settypeid for the J23 types (never another
+# type) and setuid / setgid for the role uids 1300-1305; SIGKILL / SIGTERM / SIGUSR1 / SIGCONT to the roles (fault injection, stop); wait.
+# Root only (no "nonroot"): the harness runs as root and never drops.
+allow j23_test_t self:ability {
+    fork
+    spawn
+    prot_exec
+    map_fixed
+    wait
+    signal:1-64
+    settypeid:j23_gate_t,j23_act_t,j23_planner_t,j23_comm_t,j23_radio_t,j23_load_t
+    setuid:1300-1305
+    setgid:1300-1305
+};

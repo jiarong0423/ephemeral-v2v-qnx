@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="700" fill="#f8fafc"/>
+  <rect x="24" y="20" width="1152" height="76" rx="10" fill="#0f172a"/>
+  <text x="48" y="52" fill="#ffffff" font-size="22" font-weight="700">QNX-Ephemeral-V2V: three layers and a commitment boundary</text>
+  <text x="48" y="78" fill="#cbd5e1" font-size="13.5">Crawl-speed simulation prototype (&lt;= 0.3 m/s, up to 3 vehicles) - QNX 8.0.6 on QEMU aarch64le - not certified</text>
+
+  <!-- Layer 1 -->
+  <rect x="24" y="114" width="352" height="234" rx="10" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="24" y="114" width="352" height="36" rx="10" fill="#e2e8f0"/>
+  <text x="40" y="137" fill="#0f172a" font-size="15" font-weight="700">Layer 1 · Shared map of the narrow segment</text>
+  <text x="40" y="172" fill="#334155" font-size="13" font-weight="600">Three alleys modelled on real streets</text>
+  <text x="40" y="196" fill="#475569" font-size="12.5">• M1: 380 cm MEASURED</text>
+  <text x="40" y="218" fill="#475569" font-size="12.5">• M2: 305 cm PHOTO_ESTIMATE</text>
+  <text x="40" y="240" fill="#475569" font-size="12.5">• M3: 17.1% slope, 450 cm MEASURED_UNCONFIRMED</text>
+  <text x="40" y="272" fill="#0f172a" font-size="12.5" font-weight="600">Rule inputs:</text>
+  <text x="40" y="294" fill="#475569" font-size="12.5">• Segment, passable width, passing bays</text>
+  <text x="40" y="316" fill="#475569" font-size="12.5">• Downhill yields to uphill</text>
+
+  <!-- Layer 2 -->
+  <rect x="424" y="114" width="352" height="234" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <rect x="424" y="114" width="352" height="36" rx="10" fill="#dbeafe"/>
+  <text x="440" y="137" fill="#1e3a8a" font-size="15" font-weight="700">Layer 2 · Hand-shake via /dev/v2v_ttl</text>
+  <text x="440" y="172" fill="#1e40af" font-size="13" font-weight="600">Our QNX resource manager /dev/v2v_ttl</text>
+  <text x="440" y="200" fill="#334155" font-size="12.5">• One direction per segment (devctl)</text>
+  <text x="440" y="226" fill="#334155" font-size="12.5">• Bounded leases</text>
+  <text x="440" y="252" fill="#334155" font-size="12.5">• Pulse wake (no polling)</text>
+  <text x="440" y="296" fill="#1e3a8a" font-size="12.5" font-weight="600">Unauthorised opens refused by security policy</text>
+  <text x="440" y="318" fill="#475569" font-size="12">6/6 as root + 4,218/4,218 after privilege drop (EPERM)</text>
+
+  <!-- Layer 3 -->
+  <rect x="824" y="114" width="352" height="234" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.8"/>
+  <rect x="824" y="114" width="352" height="36" rx="10" fill="#ccfbf1"/>
+  <text x="840" y="137" fill="#134e4a" font-size="15" font-weight="700">Layer 3 · QNX gate &amp; fault containment</text>
+  <text x="840" y="172" fill="#115e59" font-size="13" font-weight="600">Real-Time Priority &amp; Security Policy</text>
+  <text x="840" y="196" fill="#334155" font-size="12">• gate: SCHED_FIFO 66, actuation: SCHED_FIFO 65</text>
+  <text x="840" y="218" fill="#334155" font-size="12">• _PULSE_CODE_COIDDEATH: gate death &lt;= 10 ms</text>
+  <text x="840" y="240" fill="#334155" font-size="12">• slm restarts a killed planner and traffic resumes</text>
+  <text x="840" y="264" fill="#b91c1c" font-size="12" font-weight="600">• Security policy: unauthorised opens refused (EPERM);</text>
+  <text x="850" y="284" fill="#b91c1c" font-size="12" font-weight="600">planner cannot signal the gate even as root</text>
+  <text x="840" y="320" fill="#115e59" font-size="12" font-weight="600">Commit-point invariant: 0 entries without a permit</text>
+
+  <line x1="376" y1="226" x2="420" y2="226" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="776" y1="226" x2="820" y2="226" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Bottom Runtime Flow Panel -->
+  <rect x="24" y="366" width="1152" height="276" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="392" fill="#0f172a" font-size="16" font-weight="700">QNX 8.0.6 Isolated Process Topology &amp; Commitment Boundary</text>
+
+  <rect x="44" y="434" width="210" height="84" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="149" y="460" text-anchor="middle" fill="#0f172a" font-size="14" font-weight="700">planner</text>
+  <text x="149" y="480" text-anchor="middle" fill="#475569" font-size="12">Non-privileged role</text>
+  <text x="149" y="500" text-anchor="middle" fill="#b91c1c" font-size="11.5" font-weight="600">Cannot signal gate even as root</text>
+
+  <rect x="304" y="434" width="170" height="84" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="389" y="460" text-anchor="middle" fill="#0f172a" font-size="14" font-weight="700">comm / perception</text>
+  <text x="389" y="480" text-anchor="middle" fill="#475569" font-size="12">Commit request</text>
+  <text x="389" y="500" text-anchor="middle" fill="#475569" font-size="11.5">Plan hash + target segment</text>
+
+  <rect x="524" y="428" width="240" height="96" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="644" y="454" text-anchor="middle" fill="#1e3a8a" font-size="14.5" font-weight="700">gate</text>
+  <text x="644" y="474" text-anchor="middle" fill="#1e40af" font-size="12.5">SCHED_FIFO 66 (+ timer pulse 66)</text>
+  <text x="644" y="494" text-anchor="middle" fill="#334155" font-size="11.5">Verifies permit &amp; reservation state</text>
+  <text x="644" y="512" text-anchor="middle" fill="#115e59" font-size="11.5" font-weight="600">Mode switch p99: 12 ms (420 eps)</text>
+
+  <rect x="44" y="554" width="250" height="68" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.3"/>
+  <text x="169" y="582" text-anchor="middle" fill="#991b1b" font-size="13.5" font-weight="700">competing load programs</text>
+  <text x="169" y="602" text-anchor="middle" fill="#7f1d1d" font-size="11.5">Attempt unauthorised open()</text>
+
+  <rect x="524" y="554" width="240" height="68" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="644" y="580" text-anchor="middle" fill="#92400e" font-size="13.5" font-weight="700">/dev/v2v_ttl</text>
+  <text x="644" y="600" text-anchor="middle" fill="#78350f" font-size="12">devctl · bounded leases · pulse wake</text>
+
+  <rect x="816" y="428" width="336" height="96" rx="8" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+  <text x="984" y="454" text-anchor="middle" fill="#134e4a" font-size="14.5" font-weight="700">actuation &amp; Commitment Line</text>
+  <text x="984" y="474" text-anchor="middle" fill="#115e59" font-size="12.5">SCHED_FIFO 65 · Private COIDDEATH channel</text>
+  <text x="984" y="494" text-anchor="middle" fill="#334155" font-size="11.5">Gate death seen &lt;= 10 ms -&gt; fallback brake</text>
+  <text x="984" y="512" text-anchor="middle" fill="#b91c1c" font-size="11.5" font-weight="700">No valid permit -&gt; REVOKE -&gt; safe state</text>
+
+  <rect x="816" y="554" width="336" height="68" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="984" y="580" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="700">Boot Order &amp; slm Watchdog</text>
+  <text x="984" y="600" text-anchor="middle" fill="#475569" font-size="12">slm restarts a killed planner -&gt; new permit -&gt; resume</text>
+
+  <line x1="254" y1="474" x2="300" y2="474" stroke="#334155" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="474" y1="474" x2="520" y2="474" stroke="#334155" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="644" y1="524" x2="644" y2="550" stroke="#1d4ed8" stroke-width="1.8" marker-end="url(#arrowBlue)"/>
+  <line x1="764" y1="476" x2="812" y2="476" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <path d="M 149 434 L 149 412 L 644 412 L 644 424" fill="none" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrowRed)"/>
+  <text x="396" y="405" text-anchor="middle" fill="#b91c1c" font-size="11.5" font-weight="600">signal refused by policy (even as root)</text>
+
+  <path d="M 294 588 L 520 588" fill="none" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrowRed)"/>
+  <text x="407" y="579" text-anchor="middle" fill="#b91c1c" font-size="11.5" font-weight="600">open refused (EPERM)</text>
+
+  <text x="24" y="672" fill="#0f172a" font-size="13.5" font-weight="600">Deterministic decision logic - no AI model in the give-way decision</text>
+</svg>

@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1060" width="1000" height="1060" role="img" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title>QNX-Ephemeral-V2V architecture</title>
+<desc>Three cars send certificates, signed frames, route-number votes and step-done messages over the V2V radio. An edge gateway checks size, type, CRC, ID, each frame's hash-chain value and rate and forwards to the QNX resource manager /dev/v2v_ttl, which verifies certificates and signatures, keeps frames for 300 ms, fuses them with the shared road map, computes the fewest-steps plan with a route number and relays the votes. Every car runs the same locked-session rules: exchange views, compute the route, rule on the route number, then signal and go in order.</desc>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5F5E5A"/>
+  </marker>
+  <style>
+    .bg{fill:#FFFFFF}
+    .h{font-size:16px;font-weight:600;fill:#2C2C2A}
+    .s{font-size:13px;fill:#4A4944}
+    .sec{font-size:17px;font-weight:600}
+    .foot{font-size:13px;fill:#5F5E5A}
+    .ln{stroke:#5F5E5A;stroke-width:1.6;fill:none}
+    .car{fill:#F1EFE8;stroke:#7A786F;stroke-width:1.2}
+    .radio{fill:#E8F1FB;stroke:#4A7DB5;stroke-width:1.2}
+    .gw{fill:#FDF0E1;stroke:#C57A1E;stroke-width:1.4}
+    .qnx{fill:#EFEDFC;stroke:#6A5ACD;stroke-width:1.4}
+    .in{fill:#FFFFFF;stroke:#6A5ACD;stroke-width:1.1}
+    .ses{fill:#E6F4EE;stroke:#2F8F6A;stroke-width:1.4}
+    .st{fill:#FFFFFF;stroke:#2F8F6A;stroke-width:1.1}
+    .fb{fill:#FFF6DD;stroke:#B8901E;stroke-width:1.2}
+    .side{fill:#F1EFE8;stroke:#7A786F;stroke-width:1.1}
+  </style>
+</defs>
+<rect class="bg" x="0" y="0" width="1000" height="1060" rx="14"/>
+
+<!-- cars -->
+<g>
+  <rect class="car" x="70" y="20" width="240" height="64" rx="10"/>
+  <text class="h" x="190" y="47" text-anchor="middle">Car A</text>
+  <text class="s" x="190" y="68" text-anchor="middle">own sensors, own planner</text>
+  <rect class="car" x="380" y="20" width="240" height="64" rx="10"/>
+  <text class="h" x="500" y="47" text-anchor="middle">Car B</text>
+  <text class="s" x="500" y="68" text-anchor="middle">own sensors, own planner</text>
+  <rect class="car" x="690" y="20" width="240" height="64" rx="10"/>
+  <text class="h" x="810" y="47" text-anchor="middle">Car C</text>
+  <text class="s" x="810" y="68" text-anchor="middle">own sensors, own planner</text>
+</g>
+<path class="ln" d="M190 84 V116" marker-end="url(#ah)"/>
+<path class="ln" d="M500 84 V116" marker-end="url(#ah)"/>
+<path class="ln" d="M810 84 V116" marker-end="url(#ah)"/>
+
+<!-- radio -->
+<rect class="radio" x="70" y="120" width="860" height="52" rx="10"/>
+<text class="h" x="500" y="143" text-anchor="middle" fill="#1F4E85">V2V radio (simulated)</text>
+<text class="s" x="500" y="162" text-anchor="middle">join 283 B (certificate + first frame) · signed frame 138 B · vote 106 B (signed) · step done and CLEAR / PAUSE: unsigned, simulation</text>
+<path class="ln" d="M500 172 V200" marker-end="url(#ah)"/>
+
+<!-- gateway -->
+<rect class="gw" x="170" y="204" width="660" height="58" rx="10"/>
+<text class="h" x="500" y="228" text-anchor="middle">Edge gateway: a separate process (own uid) standing in for a small radio-side board</text>
+<text class="s" x="500" y="249" text-anchor="middle">sizes, types, CRC, ID · frames: next hash-chain value · 200/s members, 200 rest, 50 per car</text>
+<path class="ln" d="M500 262 V292" marker-end="url(#ah)"/>
+
+<!-- QNX resource manager -->
+<rect class="qnx" x="40" y="296" width="920" height="270" rx="14"/>
+<text class="sec" x="64" y="324" fill="#3D2F9E">QNX 8.0.6 resource manager /dev/v2v_ttl</text>
+<text class="s" x="936" y="324" text-anchor="end">one per car (demo: one VM) · thread pool 2–4 · uid 1000 · abilities locked</text>
+
+<rect class="in" x="70" y="344" width="200" height="74" rx="9"/>
+<text class="h" x="170" y="373" text-anchor="middle">Certificates</text>
+<text class="s" x="170" y="396" text-anchor="middle">pending until proven</text>
+<rect class="in" x="290" y="344" width="200" height="74" rx="9"/>
+<text class="h" x="390" y="373" text-anchor="middle">Frame cache</text>
+<text class="s" x="390" y="396" text-anchor="middle">TTL 300 ms · 20 ms pulse</text>
+<rect class="in" x="510" y="344" width="200" height="74" rx="9"/>
+<text class="h" x="610" y="373" text-anchor="middle">Fuse with map</text>
+<text class="s" x="610" y="396" text-anchor="middle">lines + footprints</text>
+<rect class="in" x="730" y="344" width="200" height="74" rx="9"/>
+<text class="h" x="830" y="373" text-anchor="middle">Plan + route number</text>
+<text class="s" x="830" y="396" text-anchor="middle">fewest steps · SHA-256</text>
+<path class="ln" d="M270 381 H286" marker-end="url(#ah)"/>
+<path class="ln" d="M490 381 H506" marker-end="url(#ah)"/>
+<path class="ln" d="M710 381 H726" marker-end="url(#ah)"/>
+
+<rect class="in" x="70" y="452" width="420" height="74" rx="9"/>
+<text class="h" x="280" y="481" text-anchor="middle">read · devctl · ionotify</text>
+<text class="s" x="280" y="504" text-anchor="middle">the decision, counters, an event on new input</text>
+<rect class="in" x="510" y="452" width="200" height="74" rx="9"/>
+<text class="h" x="610" y="481" text-anchor="middle">Shared road map</text>
+<text class="s" x="610" y="504" text-anchor="middle">lane · kerbs · bays</text>
+<rect class="in" x="730" y="452" width="200" height="74" rx="9"/>
+<text class="h" x="830" y="481" text-anchor="middle">Vote relay</text>
+<text class="s" x="830" y="504" text-anchor="middle">one slot per car taking part</text>
+<path class="ln" d="M610 452 V422" marker-end="url(#ah)"/>
+<text class="s" x="500" y="550" text-anchor="middle">signatures are verified here as well (defence in depth) · real on QNX in QEMU</text>
+<path class="ln" d="M500 566 V598" marker-end="url(#ah)"/>
+
+<!-- locked session -->
+<rect class="ses" x="40" y="602" width="920" height="176" rx="14"/>
+<text class="sec" x="64" y="630" fill="#1E6B4E">Locked session (simulation): the same rules on every car, members fixed</text>
+<rect class="st" x="70" y="650" width="200" height="100" rx="9"/>
+<text class="h" x="170" y="682" text-anchor="middle">1 Exchange views</text>
+<text class="s" x="170" y="705" text-anchor="middle">signed frames,</text>
+<text class="s" x="170" y="724" text-anchor="middle">re-sent and kept</text>
+<rect class="st" x="290" y="650" width="200" height="100" rx="9"/>
+<text class="h" x="390" y="682" text-anchor="middle">2 Route + number</text>
+<text class="s" x="390" y="705" text-anchor="middle">each car computes the</text>
+<text class="s" x="390" y="724" text-anchor="middle">fewest steps for all</text>
+<rect class="st" x="510" y="650" width="200" height="100" rx="9"/>
+<text class="h" x="610" y="682" text-anchor="middle">3 Ruling</text>
+<text class="s" x="610" y="705" text-anchor="middle">all numbers match:</text>
+<text class="s" x="610" y="724" text-anchor="middle">bundle relayed to all</text>
+<rect class="st" x="730" y="650" width="200" height="100" rx="9"/>
+<text class="h" x="830" y="682" text-anchor="middle">4 Go in order</text>
+<text class="s" x="830" y="705" text-anchor="middle">mover signals · step done</text>
+<text class="s" x="830" y="724" text-anchor="middle">CLEAR / PAUSE every 300 ms</text>
+<text class="s" x="500" y="768" text-anchor="middle" fill="#1E6B4E">emergency vehicle: one exchange, everyone pulls over where there is room, it passes, the plan resumes</text>
+<path class="ln" d="M270 700 H286" marker-end="url(#ah)"/>
+<path class="ln" d="M490 700 H506" marker-end="url(#ah)"/>
+<path class="ln" d="M710 700 H726" marker-end="url(#ah)"/>
+
+<!-- fallback -->
+<rect class="fb" x="40" y="796" width="920" height="66" rx="10"/>
+<text class="h" x="500" y="822" text-anchor="middle">No ruling in 1.5 s: never a silent stall (all ask for help)</text>
+<text class="s" x="500" y="845" text-anchor="middle">a car backs away ≤ 50 cm only if its rear is clear by 70 cm and nothing but the kerb or the end of the map is within 2 m behind it</text>
+
+<!-- side parts -->
+<rect class="side" x="40" y="880" width="293" height="100" rx="10"/>
+<text class="h" x="186" y="906" text-anchor="middle">Watchdog board + 4G</text>
+<text class="s" x="186" y="928" text-anchor="middle">heartbeat · cuts V2V on a fault</text>
+<text class="s" x="186" y="947" text-anchor="middle">relocalise · remote restart</text>
+<rect class="side" x="353" y="880" width="294" height="100" rx="10"/>
+<text class="h" x="500" y="906" text-anchor="middle">Link lost: reconnect</text>
+<text class="s" x="500" y="928" text-anchor="middle">hold with hazards · request over 4G</text>
+<text class="s" x="500" y="947" text-anchor="middle">refused or no answer: retry 1, 2, 4, 8 s</text>
+<text class="s" x="500" y="966" text-anchor="middle">control centre answers: session goes on</text>
+<rect class="side" x="667" y="880" width="293" height="100" rx="10"/>
+<text class="h" x="813" y="906" text-anchor="middle">Offline scene analysis</text>
+<text class="s" x="813" y="928" text-anchor="middle">host, not on QNX: clip frame,</text>
+<text class="s" x="813" y="947" text-anchor="middle">segmentation masks, scale, scene table</text>
+
+<text class="foot" x="500" y="1008" text-anchor="middle">Real on QNX (in QEMU): the resource manager, the gateway process, signatures, timer pulse, devctl, ionotify, thread pool.</text>
+<text class="foot" x="500" y="1030" text-anchor="middle">Simulated: sensing, radio, motion, the gateway and watchdog boards, the certificate authority, the locked session.</text>
+</svg>

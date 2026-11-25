@@ -1,0 +1,40 @@
+# j24c_sysconn.txt - J24C: system-service grants appended by g17_secpol_tool.py merge
+allow j23b_gate_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_act_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_planner_t self:ability {
+    nonroot
+    channel_connect:devb_t,random_t
+};
+allow j23b_comm_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_radio_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_perc_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow j23b_load_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+allow v2v_resmgr_t self:ability {
+    nonroot
+    channel_connect:devb_t,random_t
+};
+allow j23b_test_t self:ability {
+    channel_connect:pipe_t,devb_t,random_t
+};
+allow j23b_test_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};

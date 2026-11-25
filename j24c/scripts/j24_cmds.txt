@@ -1,0 +1,82 @@
+# j24_cmds.txt - J24 (QNX upgrade batch 1: A priority guarantee, B fallback on gate death, F policy coverage) boot commands = scripts/b4m2_cmds.txt
+# (accepted B4M2 boot, text below unchanged except: J23B_TRIALS default 5 (red team R1: >= 5 trials per fault row), and the J24 section at the
+# end). The programs are the J24 build (-DV2V_J24, scripts/j24_compile.sh): test_j23b_proc runs 27 rows (25 J23D rows + load_none + gate_kill_expiry)
+# with A on (gate SCHED_FIFO 66 + timer pulse 66, actuation 65) and B on (row gate_kill_expiry: B off = the permit-expiry path), timing
+# conditions base / low / same (A off, J23D) / j24same (A on, same load). J24 section: the F9 rows again with A OFF (J24_A=0: gate /
+# actuation at the old 40) for the false-block comparison, the image's OPT_USB (candidate F: image built without USB, so no
+# "on -T io_usb_t" line), the J24 programs count. Judged by scripts/j24_qnx_check.py. Emulator times: relative only. Simulation values
+# only; design on a certifiable platform; nothing certified, no guarantee.
+# b4m2_cmds.txt - B4M2: the J23B / J23D boot commands (scripts/j23b_cmds.txt, unchanged lines) + the B4M2 section at the end. J23B text:
+# j23b_cmds.txt - J23B (gate over QNX native message passing) QNX boot commands for build_qnx_image.sh (V2V_BOOT_CMDS=scripts/j23b_cmds.txt;
+# appended after the run() helper, between "=== V2V MINI START ===" and "=== V2V MINI END ==="). The SAME file runs in both boots of
+# scripts/j23b_qnx_all.sh:
+#   no       mkqnximage --secpol=no: the harness runs as root; every role keeps connection / priority / public_channel (procmgr_ability, nonroot,
+#            inherited) and drops to its own uid (gate 1310, act 1311, planner 1312, comm 1313, radio 1314, load 1315, perc 1316). Control
+#            round: shows what uid separation + the gate's own sender check protect, and what they do not (load / radio may connect to the gate;
+#            root may signal it)
+#   secure   mkqnximage --secpol=secure + the combined J23B policy: the harness runs under j23b_test_t and starts every role as
+#            "on -T <type> -u <uid>:<gid>" (J23B_ON=1); probes as ROOT under j23b_planner_t must be refused (the policy, not the uid)
+#   develop  learning boot (optional round): as no, then the generated policy is printed between "=== G17-POLICY-DUMP START/END ==="
+# Host rehearsal (scripts/j23b_host_check.sh step 7): J23B_BIN=<host build dir>, J23B_DIR=<work dir>, J23B_TIMING smaller, mode "host".
+# Times are emulator times (QEMU TCG): relative only. Judged by scripts/j23b_qnx_check.py. Simulation values only; nothing certified.
+J=${J23B_DIR:-/tmp/j23b}
+B=${J23B_BIN:-/system/bin}
+JT=${J23B_TRIALS:-5}
+JN=${J23B_TIMING:-2000}
+rm -rf $J; mkdir -p $J
+J23B_SECPOL=unknown; J23B_OPTSRC=none
+for f in /proc/boot/build/options /ifs/build/options; do
+  if [ -f "$f" ]; then v=$(sed -n -E "s/^OPT_SECPOL=['\"]?([a-z]+)['\"]?$/\1/p" "$f" | head -1); if [ -n "$v" ]; then J23B_SECPOL=$v; J23B_OPTSRC=$f; break; fi; fi
+done
+if [ "$J23B_SECPOL" = unknown ]; then
+  if [ -e /dev/secpolgenerate ]; then J23B_SECPOL=develop; elif [ -e /proc/boot/secpol.bin ]; then J23B_SECPOL=secure; else J23B_SECPOL=no; fi
+  J23B_OPTSRC=probe
+fi
+[ -n "${J23B_FORCE_MODE:-}" ] && J23B_SECPOL=$J23B_FORCE_MODE
+echo "[J23B] mode secpol=$J23B_SECPOL (from $J23B_OPTSRC) bin=$B trials=$JT timing=$JN"
+echo "[J23B] programs: $(ls $B 2>/dev/null | grep -c -E '^(v2v-j23b|v2v-j23b-nopi|test_j23b|test_j23b_neg_occ|j23b_sim|test_j23b_proc)$')"
+if [ -e /proc/boot/secpol.bin ]; then echo "J23B-SECPOL-FILE present"; else echo "J23B-SECPOL-FILE absent"; fi
+# ont TYPE CMD...: under the type when a policy is in use or being learned, plain otherwise
+ont() { t=$1; shift; if [ "$J23B_SECPOL" = no ] || [ "$J23B_SECPOL" = host ]; then "$@"; else on -T "$t" "$@"; fi; }
+run test_j23b $B/test_j23b
+run test_j23b_neg_occ $B/test_j23b_neg_occ
+mkdir -p $J/sim
+run j23b_sim $B/j23b_sim ${J23B_SIM_N:-200} $J/sim
+for f in matrix_sim.csv results.csv; do echo "=== J23B-FILE BEGIN $f ==="; cat $J/sim/$f; echo "=== J23B-FILE END ==="; done
+case "$J23B_SECPOL" in no) export J23B_MODE=nopol; unset J23B_ON ;; host) export J23B_MODE=host; unset J23B_ON ;; *) export J23B_MODE=secpol; export J23B_ON=1 ;; esac
+run test_j23b_proc ont j23b_test_t $B/test_j23b_proc $B $J/proc --tag ${J23B_TAG:-qnx_$J23B_SECPOL} --csv $J/csv --trials $JT --timing $JN --probe --pi
+# priority inheritance negative control: the gate built with J23B_NEG_NO_PI (_NTO_CHF_FIXED_PRIORITY) must FAIL the PI probe
+run test_j23b_proc_nopi ont j23b_test_t env J23B_PROG=v2v-j23b-nopi $B/test_j23b_proc $B $J/nopi --tag nopi --no-faults --pi
+for f in $J/csv/*.csv $J/proc/trials.csv $J/proc/matrix_proc.csv; do
+  [ -f "$f" ] || continue
+  echo "=== J23B-FILE BEGIN $(basename $f) ==="; cat "$f"; echo "=== J23B-FILE END ==="
+done
+if [ "$J23B_SECPOL" = develop ]; then echo "=== G17-POLICY-DUMP START ==="; cat /dev/secpolgenerate/policy; echo "=== G17-POLICY-DUMP END ==="; fi
+# ---- B4M2 (gate wired to the reservation on the single map, include/v2v_map.h): the device code in process, the negative control, and the
+# real /dev/v2v_ttl (G10 resource manager built with -DV2V_B4MAP) through devctl. The devctl part runs in the no-policy boot only: the J23B
+# policy has no type for the G10 resource manager (known limitation, KNOWN_LIMITATIONS.md B4M2-QNX-DEV); the secure boot prints SKIPPED.
+echo "[B4M2] programs: $(ls $B 2>/dev/null | grep -c -E '^(v2v-g10-resmgr-b4|test_b4gate|test_b4gate_neg_noresv)$')"
+run b4gate $B/test_b4gate
+run b4gate_neg_noresv $B/test_b4gate_neg_noresv
+if [ "$J23B_SECPOL" = no ] || [ "$J23B_SECPOL" = host ]; then
+  $B/v2v-g10-resmgr-b4 --server --drop-uid 1000 --path /dev/v2v_ttl --allow-unsigned --quiet --car-uid 1000 --resv-time-div 50 &
+  B4RP=$!; i=0; while [ ! -e /dev/v2v_ttl ] && [ $i -lt 20 ]; do sleep 1; i=$((i+1)); done
+  echo "[B4M2] /dev/v2v_ttl $( [ -e /dev/v2v_ttl ] && echo present || echo ABSENT ) after $i s (server pid $B4RP)"
+  run b4gate_dev $B/test_b4gate --devctl /dev/v2v_ttl --div 50
+  kill $B4RP 2>/dev/null
+else
+  echo "B4GATE-DEV SKIPPED secpol=$J23B_SECPOL (no policy type for the G10 resource manager in the J23B policy; known limitation)"
+fi
+# ---- J24 (QNX upgrade batch 1) ----
+J24_USB=unknown
+[ "$J23B_OPTSRC" != probe ] && [ -f "$J23B_OPTSRC" ] && J24_USB=$(sed -n -E "s/^OPT_USB=['\"]?([a-z]+)['\"]?$/\1/p" "$J23B_OPTSRC" | head -1)
+echo "[J24] image OPT_USB=${J24_USB:-unknown} (from $J23B_OPTSRC; candidate F: no USB in the image, no on -T io_usb_t)"
+echo "[J24] programs: $(ls $B 2>/dev/null | grep -c -E '^(v2v-j23b|v2v-j23b-negb|test_j23b_proc)$')"
+# A off (negative mode): the F9 rows (load SCHED_RR 40 + the J23D faults, plus load_none) with gate / actuation at the old 40, same load
+run test_j23b_proc_aoff ont j23b_test_t env J24_A=0 $B/test_j23b_proc $B $J/aoff --tag aoff --trials $JT --only F9
+for f in $J/aoff/trials.csv $J/aoff/matrix_proc.csv; do
+  [ -f "$f" ] || continue
+  echo "=== J23B-FILE BEGIN aoff_$(basename $f) ==="; cat "$f"; echo "=== J23B-FILE END ==="
+done
+# B negative control on the target: the roles built with J24_NEG 0x01 (v2v-j23b-negb: death watch off) must FAIL J24-DEATH on the gate_kill row
+run test_j23b_proc_negb ont j23b_test_t env J23B_PROG=v2v-j23b-negb $B/test_j23b_proc $B $J/negb --tag negb --trials 2 --only gate_kill

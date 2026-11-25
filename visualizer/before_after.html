@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before and After</title>
+<style>
+  :root { --bg:#ffffff; --fg:#2C2C2A; --muted:#5F5E5A; --line:#D3D1C7; --panel:#F7F6F2; --bad:#A32D2D; --good:#0F6E56; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14181f; --fg:#E8E6DF; --muted:#B4B2A9; --line:#3a4050; --panel:#1b212b; --bad:#F09595; --good:#5DCAA5; } }
+  :root[data-theme="dark"] { --bg:#14181f; --fg:#E8E6DF; --muted:#B4B2A9; --line:#3a4050; --panel:#1b212b; --bad:#F09595; --good:#5DCAA5; }
+  html, body { overflow-x:hidden; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .note { color:var(--muted); font-size:12px; margin:0 0 12px; }
+  .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+  @media (max-width: 900px) { .row { grid-template-columns:minmax(0,1fr); } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; min-width:0; }
+  .panel h2 { font-size:15px; margin:0 0 6px; }
+  .frame { position:relative; width:100%; aspect-ratio:640/360; }
+  iframe { position:absolute; inset:0; width:100%; height:100%; border:0; border-radius:6px; }
+  .state { font-weight:600; margin:8px 0 2px; min-height:2.9em; }
+  .bad { color:var(--bad); } .good { color:var(--good); }
+  .timer { font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; }
+  .controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; }
+  .controls input[type=range] { flex:1; min-width:160px; }
+  button { font:inherit; padding:4px 12px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; }
+</style>
+</head>
+<body>
+<h1>Same street, same three cars: without and with the protocol</h1>
+<p class="note">Both panels start from the same reconstructed standoff. Left: no way to talk to each other; the movements are a sketch of what replies to the clip describe (car A edged aside and reversed, the human-driven car behind it reversed and honked), not measured. The clip ends unresolved about 30 s in; replies say car C eventually backed up. Right: the protocol; decision and votes take tens of milliseconds on QNX (shown slowed to 0.6 s), the driving is scripted, at walking pace through the tight spot.</p>
+<div class="row">
+  <section class="panel"><h2>Without coordination (as in the clip)</h2>
+    <div class="frame"><iframe id="left" src="handshake_demo.html?embed=1&amp;mode=clip" title="Standoff without coordination"></iframe></div>
+    <div class="state" id="lstate"></div><div class="timer bad" id="ltimer"></div></section>
+  <section class="panel"><h2>With the hand-shake protocol</h2>
+    <div class="frame"><iframe id="right" src="handshake_demo.html?embed=1&amp;mode=fast" title="Standoff resolved by the protocol"></iframe></div>
+    <div class="state" id="rstate"></div><div class="timer good" id="rtimer"></div></section>
+</div>
+<div class="controls">
+  <button id="play" type="button">Pause</button>
+  <button id="replay" type="button">Replay</button>
+  <input id="seek" type="range" min="0" max="40000" step="10" value="0" aria-label="time">
+  <span id="clock">0.0 s</span>
+</div>
+<script>
+const T_TOTAL = 40.2, T_FORM = 4, T_DONE = 36.6;   /* right panel: B's pass ends at 50.9 s after T_FORM on the motion clock, shown 8 s earlier in fast mode */
+const L = document.getElementById('left'), R = document.getElementById('right');
+const seek = document.getElementById('seek'), clock = document.getElementById('clock'), playBtn = document.getElementById('play');
+let t = 0, playing = true, last = null;
+function leftText(t) {
+  if (t < T_FORM) return 'The jam forms: C stops for A, B pulls around C and meets A nose to nose.';
+  if (t < 10) return 'Each car waits: it yields when unsure, and nobody knows who should go.';
+  if (t < 14) return 'Car A edges toward the kerb a little and reverses, but the human-driven car is close behind it (about 1.9 m).';
+  if (t < 18) return 'The human driver reverses and honks; car A backs a little more. B still cannot pass.';
+  if (t < 29.5) return 'Still blocked. Nobody knows what the others will do.';
+  return 'The clip ends here, still blocked. Replies: car C later backed up.';
+}
+function rightText(t) {
+  if (t < T_FORM) return 'The jam forms the same way.';
+  if (t < T_FORM + 0.6) return 'Hand-shake, one signed frame each, every car computes the plan and votes its hash.';
+  if (t < 13.5) return 'Votes 3/3 match (route R-4F39). Step 1: car C backs off 7 m (9.3 m are free behind it).';
+  if (t < 18.6) return 'Step 2: car B backs off 4.5 m along its own heading, with reverse lamps.';
+  if (t < 29.4) return 'Step 3: car A passes straight (every gap between moving cars at least 50 cm).';
+  if (t < 36.0) return 'Step 4: car B passes.';
+  if (t < T_DONE) return 'Step 5: car C waits clear.';
+  return 'Both through; after the session car C drives on west.';
+}
+function show(t) {
+  for (const f of [L, R]) { try { f.contentWindow.postMessage({ t: t }, '*'); } catch (e) {} }
+  document.getElementById('lstate').textContent = leftText(t);
+  document.getElementById('rstate').textContent = rightText(t);
+  const stuck = Math.max(0, t - T_FORM);
+  document.getElementById('ltimer').textContent = t < T_FORM ? '' : 'blocked for ' + stuck.toFixed(1) + ' s';
+  document.getElementById('rtimer').textContent = t < T_FORM ? '' : t < T_DONE ? 'resolving: ' + stuck.toFixed(1) + ' s' : 'resolved after ' + (T_DONE - T_FORM).toFixed(1) + ' s';
+  clock.textContent = t.toFixed(1) + ' s'; seek.value = String(Math.round(t * 1000));
+}
+function frame(ms) {
+  if (last === null) last = ms;
+  if (playing) { t += (ms - last) / 1000; if (t >= T_TOTAL) { t = T_TOTAL; playing = false; playBtn.textContent = 'Play'; } }
+  last = ms; show(t); requestAnimationFrame(frame);
+}
+playBtn.addEventListener('click', function () { if (t >= T_TOTAL) t = 0; playing = !playing; playBtn.textContent = playing ? 'Pause' : 'Play'; });
+document.getElementById('replay').addEventListener('click', function () { t = 0; playing = true; playBtn.textContent = 'Pause'; });
+seek.addEventListener('input', function () { t = parseFloat(seek.value) / 1000; playing = false; playBtn.textContent = 'Play'; });
+const qt = new URLSearchParams(location.search).get('t');
+if (qt !== null) { t = Math.max(0, Math.min(T_TOTAL, parseFloat(qt) || 0)); playing = false; }
+let loaded = 0;
+for (const f of [L, R]) f.addEventListener('load', function () { if (++loaded === 2) requestAnimationFrame(frame); });
+</script>
+</body>
+</html>

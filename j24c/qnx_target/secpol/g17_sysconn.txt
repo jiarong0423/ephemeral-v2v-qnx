@@ -1,0 +1,44 @@
+# g17_sysconn.txt - G17d: reviewed system-service connections of the G17 types (QNX 8.0.6 "channel_connect:<types>" ability, the form the
+# policy generator itself writes). Appended by scripts/g17_qnx_check.sh --merge-policy as part 3 of the combined policy, AFTER the learned
+# system types are declared (this file names types that qnx_target/secpol/g17_policy.txt does not declare, so it is not part of that file).
+# Only "allow <G17 type> self:ability { [nonroot] channel_connect:<system types> };" belongs here; a G17 type as a target is refused by the
+# merge (connections between G17 types are decided in g17_policy.txt). Evidence: the develop boot evidence/g17/qnx_learn.serial.clean.log
+# (2026-11-14) and the console lines "failed to use ability channel_connect:<t> as non-root" of the default-type test drivers.
+# Without "nonroot" a grant holds only while the process is root.
+
+# v2v-supervisor (root, never drops): slog2_register of libslog2 (dlopen) -> slogger2. Learned in supervisor_t's root block.
+allow supervisor_t self:ability {
+    channel_connect:slogger_t
+};
+# v2v-edge (under edge_unit_t by default_spawn_type): opens the five FIFOs while still root (src/v2v_edge.c: iru_chan_open before
+# drop_privileges) -> pipe manager; after the drop to 1200 RAND_bytes (libcrypto) reads /dev/urandom -> random_t as non-root. Learned in
+# supervisor_t's root block (pipe_t) and nonroot block (random_t): in the develop boot v2v-edge ran as supervisor_t.
+allow edge_unit_t self:ability {
+    channel_connect:pipe_t
+};
+allow edge_unit_t self:ability {
+    nonroot
+    channel_connect:random_t
+};
+# v2v-ttl-resmgr (root until --drop-uid 1000) logs to slogger2 while root; v2v-vehicle-g17 runs at uid 1000 from the start: its FIFOs (pipe
+# manager) and libcrypto's /dev/urandom as non-root. Learned: host_srv_t root block slogger_t, nonroot block random_t, pipe_t. NOT granted:
+# the learned channel_connect:edge_unit_t (probe P2 opening /dev/v2v_radio, which the policy must refuse).
+allow host_srv_t self:ability {
+    channel_connect:slogger_t
+};
+allow host_srv_t self:ability {
+    nonroot
+    channel_connect:pipe_t,random_t
+};
+# g17-radio-sim at uid 1300: key generation reads /dev/urandom. Its FIFO is opened by the shell (fd 3), so no pipe_t. Learned: nonroot random_t.
+allow radio_feed_t self:ability {
+    nonroot
+    channel_connect:random_t
+};
+# test harness (uid 1200): pipe() of timeout and of the drivers -> pipe_t; log files and exec of /system/bin programs -> devb_t; the
+# v2v-iru-cloud they start provisions keys from /dev/urandom -> random_t. These are exactly the "failed to use ability channel_connect:<t> as
+# non-root" lines of the develop boot (timeout pipe_t; test_iru_proc, test_edge_proc, v2v-iru-cloud devb_t; v2v-iru-cloud random_t).
+allow g17_test_t self:ability {
+    nonroot
+    channel_connect:devb_t,pipe_t,random_t
+};

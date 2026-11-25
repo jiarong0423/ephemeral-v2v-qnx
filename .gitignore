@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# QNX SDP, installers and licence state are NOT redistributable: never commit them
+qnx800/
+.qnx/
+qsc_extracted/
+*.run
+
+# build artifacts & target images
+qnx_target/build/
+j24c/qnx_target/build*/
+rust_port/target/
+qemu_image/
+*.vmdk
+*.ifs
+ifs.bin
+*.o
+*.a
+*.dSYM/
+
+# local frame extracts
+internal_frames/
+
+# Python bytecode embeds local absolute paths: never commit
+__pycache__/
+*.pyc

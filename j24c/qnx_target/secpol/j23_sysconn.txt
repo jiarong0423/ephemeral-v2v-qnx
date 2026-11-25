@@ -1,0 +1,37 @@
+# j23_sysconn.txt - J23: reviewed system-service connections of the J23 types (QNX 8.0.6 "channel_connect:<types>" ability, the form the policy
+# generator writes), appended by scripts/g17_secpol_tool.py merge as part 3 of the combined policy AFTER the learned system types are declared
+# (pipe_t, random_t, devb_t come from the develop boot evidence/g17/qnx_learn.serial.clean.log; this file names types that
+# qnx_target/secpol/j23_policy.txt does not declare, so it is not part of that file). DRAFT: whether the J23 processes need more is decided by
+# the secpol boot (a "failed to use ability channel_connect" line names it) or by a learn round (J23_ROUNDS="nopol learn secpol").
+# Without "nonroot" a grant holds only while the process is root.
+
+# every role: its FIFOs (pipe manager) and its log file / key file / binary on the file system, as non-root after "on -u"
+allow j23_gate_t self:ability {
+    nonroot
+    channel_connect:pipe_t,devb_t
+};
+allow j23_act_t self:ability {
+    nonroot
+    channel_connect:pipe_t,devb_t
+};
+# the planner: its FIFOs and log; RAND_bytes of the --bypass forgery reads /dev/urandom
+allow j23_planner_t self:ability {
+    nonroot
+    channel_connect:pipe_t,devb_t,random_t
+};
+allow j23_comm_t self:ability {
+    nonroot
+    channel_connect:pipe_t,devb_t
+};
+allow j23_radio_t self:ability {
+    nonroot
+    channel_connect:pipe_t,devb_t
+};
+allow j23_load_t self:ability {
+    nonroot
+    channel_connect:devb_t
+};
+# test harness (root): FIFOs, run directories and logs, keys from /dev/urandom (RAND_bytes)
+allow j23_test_t self:ability {
+    channel_connect:pipe_t,devb_t,random_t
+};

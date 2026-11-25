@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hand-shake demo: cars and protocol side by side</title>
+<style>
+  :root { --bg:#ffffff; --fg:#2C2C2A; --muted:#5F5E5A; --card:#F7F6F2; --line:#D3D1C7; --hi:#E1F5EE; --hi-line:#0F6E56; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0b0f17; --fg:#F1EFE8; --muted:#B4B2A9; --card:#131a26; --line:#2d3748; --hi:#0d3b33; --hi-line:#5DCAA5; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:14px/1.5 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  h1 { font-size:20px; margin:0 0 4px; font-weight:600; }
+  .note { margin:0 0 12px; color:var(--muted); font-size:12px; max-width:1300px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; max-width:1320px; }
+  .panel { flex:1 1 440px; min-width:300px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; }
+  .panel h2 { font-size:13px; margin:0 0 6px; color:var(--muted); font-weight:600; }
+  canvas { display:block; width:100%; height:auto; border-radius:6px; }
+  #caption { max-width:1320px; margin:10px 0 0; min-height:42px; padding:8px 10px; border-left:3px solid var(--hi-line); background:var(--card); border-radius:4px; }
+  .controls { max-width:1320px; margin:10px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; color:var(--muted); font-size:12px; }
+  .controls input[type=range] { flex:1 1 300px; }
+  button, select { font:inherit; padding:4px 10px; border:1px solid var(--muted); border-radius:6px; background:transparent; color:var(--fg); cursor:pointer; }
+  table { border-collapse:collapse; width:100%; max-width:1320px; margin-top:6px; font-size:13px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; font-size:12px; }
+  tr.on td { background:var(--hi); box-shadow: inset 3px 0 0 var(--hi-line); }
+  .tag { display:inline-block; font-size:11px; padding:0 6px; border-radius:8px; border:1px solid var(--line); color:var(--muted); }
+  .real { border-color:var(--hi-line); color:var(--hi-line); }
+  .views { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 6px; }
+  .views button { font:inherit; font-size:12px; padding:3px 9px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; }
+  .views button.on { border-color:var(--hi-line); background:var(--hi); font-weight:600; }
+  body.gif .controls, body.gif .views, body.gif #sensors, body.gif table, body.gif h3, body.gif .note, body.gif .tablenote { display:none; }
+  body.gif { padding:8px; }
+  body.gif #operator { display:none; }
+  body.embed { padding:0; margin:0; background:transparent; }
+  body.embed > *:not(.row), body.embed .row > section:not(:first-child), body.embed .views, body.embed h2 { display:none !important; }
+  body.embed .row { display:block; margin:0; }
+  body.embed .row > section { border:0; padding:0; margin:0; background:transparent; }
+  #optable td, #optable th { font-size:12px; }
+  #optable tr.hold td { color:#E24B4A; font-weight:600; }
+  #optable tr.moving td { color:#1D9E75; font-weight:600; }
+  #operator { overflow-x:auto; }
+  .losslbl { display:block; margin:4px 0 8px; font-size:13px; }
+</style>
+</head>
+<body>
+<h1>Who gives way? Cars and protocol, side by side</h1>
+<p class="note">Illustrative animation: the car motion is scripted. The scene table, the plan (C backs off 7 m, B backs off 4.5 m along its own heading, A passes straight, B passes, C waits clear) and its deterministic hash 0x4F390A9A come from the planner in <code>qnx_target/src/v2v_ttl_resmgr.c</code> (host build and QNX 8.0.6 target verification). Every gap between two moving vehicles in the plan is at least 50 cm, the half metre that art. 100 (5) of the Taiwan road traffic safety rules asks of meeting vehicles (<code>node visualizer/legal_gap_report.mjs</code>). Without car A's frame, car C computes 0xE88DD551 and every car holds. Positions were measured on frames of the reference clip (<code>evidence/scene_measurement/</code>). Sensing is simulated; there is no radio link.</p>
+
+<div class="row">
+  <section class="panel"><h2>Street: what the cars do</h2><div class="views" id="views" role="group" aria-label="Camera view"></div><div class="views" id="sensors" role="group" aria-label="Sensor overlay"></div><canvas id="street" width="640" height="360" aria-label="Top-down street with three cars, a human-driven car, a dumpster and a free strip by the kerb"></canvas></section>
+  <section class="panel"><h2>Pipeline: what the protocol does</h2><canvas id="pipe" width="640" height="360" aria-label="Protocol pipeline from three cars to one agreed order"></canvas></section>
+</div>
+<div id="caption" aria-live="polite"></div>
+<section class="panel" id="operator"><h2>Operator view: what a fleet or remote-assistance screen would show</h2>
+<label class="losslbl"><input type="checkbox" id="loss"> Car C missed Car A's frame (the second agreement round in the QNX log)</label>
+<table id="optable"><thead><tr><th>Car</th><th>Certificate</th><th>Last frame</th><th>Own plan hash</th><th>Votes received</th><th>Doing now</th><th>Speed (animation script, not a protocol measurement)</th></tr></thead><tbody></tbody></table>
+<p class="tablenote">Follows the animation clock. Hashes and the hold come from the QNX run; certificate and frame ages are the protocol's limits (60 s, 300 ms), not live data. There is no real fleet backend.</p></section>
+
+<div class="controls">
+  <button id="play" type="button">Pause</button>
+  <button id="replay" type="button">Replay</button>
+  <input id="seek" type="range" min="0" max="18000" step="10" value="0" aria-label="time">
+  <span id="clock">0.0 s</span>
+  <label>speed <select id="speed"><option value="0.1">0.1x</option><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option><option value="1.5" selected>1.5x</option><option value="2">2x</option><option value="3">3x</option></select></label>
+</div>
+
+<h3 style="margin:14px 0 4px;font-size:14px;">What QNX 8.0.6 does at each step</h3>
+<table id="qnx">
+  <thead><tr><th>Step</th><th>QNX feature</th><th>What it does here</th><th>Real or simulated</th><th>Where to see it in the QNX log</th></tr></thead>
+  <tbody>
+    <tr data-st="1"><td>1. Frames in</td><td>Resource manager (<code>resmgr_attach</code>, <code>io_write</code>) and message passing</td><td>The program appears as the file <code>/dev/v2v_ttl</code>; each frame written is a QNX message to it</td><td><span class="tag real">real</span> (round 2: one process per car)</td><td><code>ls -l /dev/v2v_ttl</code> shows <code>crw-rw----</code>; <code>pidin</code> shows the server in <code>RECEIVE</code></td></tr>
+    <tr data-st="1 2"><td>1-2. Who may write</td><td>OpenSSL 3 <code>libcrypto</code> from QNX SDP 8.0.6, <code>random</code> service</td><td>Short-lived certificates at hand-shake, ECDSA-signed frames, certificates released by the sweep pulse</td><td><span class="tag real">real</span> (fleet CA simulated)</td><td>21 <code>REFUSED as expected</code> lines and <code>released certificate</code></td></tr>
+    <tr data-st="2"><td>2. Keep 300 ms</td><td>Timer pulse (<code>timer_create</code>, <code>SIGEV_PULSE</code>, <code>pulse_attach</code>)</td><td>Every 20 ms a kernel pulse wakes the server to drop frames older than 300 ms</td><td><span class="tag real">real</span></td><td><code>timer armed: SIGEV_PULSE every 20 ms</code> and the <code>Evicted expired node</code> lines</td></tr>
+    <tr data-st="3 4"><td>3-4. Fuse and decide</td><td>Plain C, not QNX-specific</td><td>Geometry, the shared map and the three-way plan (search for the fewest moves); they run inside the server process</td><td><span class="tag">same code runs on any OS</span></td><td>the fused picture and the <code>[decision]</code> lines</td></tr>
+    <tr data-st="5"><td>5. Same answer to all</td><td>Message reply (<code>io_read</code>)</td><td>The decision comes back in one piece as the reply to a read</td><td><span class="tag real">real</span></td><td><code>[client] MEASURED round trip</code> and the <code>[consensus]</code> line</td></tr>
+    <tr data-st="8"><td>6. Agree, then move</td><td><code>fork</code> (one process per car), <code>io_write</code> / <code>io_read</code> as the relay</td><td>Each car process computes the plan itself and writes a signed 106-byte vote (plan hash + frame digest); it moves only if all three votes match its own. The device only relays the votes; every car checks the signatures itself</td><td><span class="tag real">real</span> (radio loss simulated in-process)</td><td><code>ALL MATCH -&gt; MOVES</code>, <code>MISMATCH -&gt; HOLDS</code> and the <code>[agree-sim]</code> line</td></tr>
+    <tr data-st="0 1 2 3 4 5"><td>All steps: safety</td><td>Process abilities (<code>procmgr_ability</code>) and uid drop</td><td>After setup the server drops to a normal user and may not spawn, fork or touch I/O or physical memory</td><td><span class="tag real">real</span></td><td><code>procmgr_ability(...) rc=0 (applied), uid=1000</code></td></tr>
+    <tr data-st="0 1 2 3 4 5"><td>All steps: platform</td><td>QNX 8.0.6, <code>qcc</code>, <code>mkqnximage</code>, boot customisation, QEMU virt (aarch64)</td><td>Cross-built, packed into an image, started automatically at boot</td><td><span class="tag real">real</span> (software emulation, not car hardware)</td><td><code>boot image built with QNX SDP 8.0.6 (procnto 44f563a0)</code></td></tr>
+  </tbody>
+</table>
+<p class="tablenote" style="color:var(--muted);font-size:12px;max-width:1320px;">Honest note: only about a tenth of the program uses QNX-specific calls. The decision logic itself is ordinary C. What QNX adds here is the isolated server process, message passing, the periodic kernel pulse and privilege dropping.</p>
+
+<script>
+"use strict";
+const QS0 = new URLSearchParams(location.search);
+const SCEN = ['pause'].includes(QS0.get('scenario')) ? QS0.get('scenario') : 'normal';   /* the emergency-vehicle scenario was withdrawn: with the 50 cm gap the bay manoeuvre does not fit (KNOWN_LIMITATIONS.md) */
+/* pause: a person walks across ahead of car A during A's step; emergency: an emergency vehicle arrives when cars C and A are through, just before car B's step */
+const P0 = 27.6, P1 = 34.0;   /* the hold, seconds */
+/* the motion clock slows to a stop over EASE_T at P0 and picks up again over EASE_T at P1 (half-cosine rate), so no
+ * car stops or starts in an instant; lostAt is the time the clock has fallen behind the wall clock */
+const EASE_T = 0.6;
+function lostAt(t) {
+  if (SCEN === 'normal' || t <= P0) return 0;
+  const E = EASE_T, x = t - P0, y = t - P1;
+  if (x <= E) return x / 2 - E / (2 * Math.PI) * Math.sin(Math.PI * x / E);
+  if (y <= 0) return E / 2 + (x - E);
+  if (y <= E) return P1 - P0 - E / 2 + y / 2 + E / (2 * Math.PI) * Math.sin(Math.PI * y / E);
+  return P1 - P0;
+}
+const motionT = t => t - lostAt(t);
+const T_TOTAL = SCEN === 'pause' ? 69.5 : 63.0;
+const T_FORM = 4.0;     /* the first 4 s replay how the jam formed (12 s of real time shown 3x faster), as in the clip */
+/* modes: explain (default, narrated), fast (protocol at real decision speed), clip (no protocol: what the clip shows) */
+const QS = new URLSearchParams(location.search);
+const MODE = ['fast', 'clip'].includes(QS.get('mode')) ? QS.get('mode') : 'explain';
+const EMBED = QS.has('embed');
+let LOSS = false;       /* operator view toggle: car C missed car A's frame (values from the QNX log) */
+const PROTO = MODE !== 'clip';
+/* fast mode: decision and votes take tens of ms on QNX; shown slowed to 0.6 s, then the scripted driving */
+function mapT(t) {
+  if (MODE !== 'fast' || t < T_FORM) return t;
+  if (t < T_FORM + 0.6) return 10.5 + (t - T_FORM) / 0.6 * 2.1;
+  return t + 8.0;
+}
+const SC = 640 / 2750, OX = 1650 * SC, OY = 1000 * SC;   /* the same window as scene_layout.svg: s = -1650 .. 1100 cm, d = 1000 .. -470 cm */
+const px = s => OX + SC * s, py = d => OY - SC * d;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const lerp = (a, b, q) => a + (b - a) * q;
+const ease = q => q * q * (3 - 2 * q);
+
+const STAGES_BASE = [
+  { id: 7, from: 0.0, to: 4.00, text: 'Replay, 3x faster: how the jam formed (as described in reposts of the clip, not verified). Car A was already waiting near the kerb, with the human-driven car behind it. Car C came along the far side and stopped to let A through; car B, behind C, took the stop for parking, pulled round C below it and turned in, nose to nose with A. Each car yields when unsure, so all three wait.' },
+  { id: 0, from: 4.0, to: 5.50,  text: 'Standoff, as in the reference video: car A stands about 1.1 m from the kerb with a human-driven car 1.9 m behind it; car B has turned in across the centre line, nose to nose with A; car C stands beside B\'s rear, with a parked SUV and a person ahead of it. They are stuck, so they lock a session: members A, B and C; a car that arrives later waits.' },
+  { id: 1, from: 5.5, to: 7.00,  text: 'Exchange 1, views: each car sends its view, one signed 138-byte frame (position on the shared map, size, up to 4 outline lines, certificate digest, generation time, ECDSA signature). A separate edge-gateway process, standing in for a small radio-side board, checks size, type, CRC and rate before the QNX device /dev/v2v_ttl sees it.' },
+  { id: 2, from: 7.0, to: 8.00,  text: 'The device checks certificates and signatures and keeps each view for 300 ms (a 20 ms timer pulse sweeps old ones); the views are re-sent every 300 ms and kept for the session, so a lost copy is filled in.' },
+  { id: 3, from: 8.0, to: 9.00,  text: 'Every car fuses the views with the shared road map: the footprints of the three cars and of what sends nothing (the human-driven car, the parked SUV and car, the dumpster, the person), the kerbs, and the free strip between car A and the kerb.' },
+  { id: 4, from: 9.0, to: 10.50,  text: 'Distances: A has 1.9 m behind it (the human-driven car) and about 1.1 m of free ground on its kerb side, too little for a sideways step that keeps the 50 cm the road rules ask of meeting vehicles. B has about 1 m behind it (car C, whose front stands 25 cm from B\'s rear corner). C cannot go ahead (the parked SUV and the person) but has 9.3 m free behind. Once C has backed 7 m and stands there, B has 6.1 m: C\'s new place counts as an obstacle until C drives on.' },
+  { id: 5, from: 10.5, to: 11.60,  text: 'Each car computes the fewest-steps route for all of them by itself: 5 steps, 1 C backs off 7 m (9.3 m are free; a car backs as far as its room allows, at most 7 m), 2 B backs off 4.5 m along its own heading (6.1 m are free with C standing at its new place), 3 A passes straight, 4 B passes, 5 C waits clear. In every step the gap between two moving vehicles stays at least 50 cm (art. 100 (5) of the Taiwan road traffic safety rules: meeting vehicles keep not less than half a metre). The route gets an automatic number from its hash: R-4F39.' },
+  { id: 8, from: 11.6, to: 12.50,  text: 'Exchange 2, the ruling: each car sends back the route number it computed (a signed 106-byte vote). All three are R-4F39: the ruling passes and is relayed to every car. One missing view or another number: nobody moves yet, the views are re-sent.' },
+  { id: 6, from: 12.5, to: T_TOTAL + 0.01, text: 'Go in order: the car about to move signals its turn, or shows white reverse lamps when it backs (the traffic rules ask for the reverse light, art. 110); the others keep their hazard lights on. Each step ends with "step done" before the next one starts. Through the tight spot at walking pace (5 km/h), up to 15 km/h once clear (scripted speeds, illustrative). Every 300 ms each car sends CLEAR or PAUSE; a car moves only with CLEAR from all (motion scripted). Once the session is closed, car C drives on west, its own way.' }
+];
+const STAGES = SCEN === 'normal' ? STAGES_BASE : STAGES_BASE.slice(0, -1).concat([
+  { id: 6, from: 12.5, to: P0, text: 'Go in order: only the car about to move signals, the others keep their hazard lights on; each step ends with "step done" before the next one starts. Every 300 ms each car sends CLEAR or PAUSE.' },
+  { id: 9, from: P0, to: P1, text: 'Pause lock: a person walks across ahead of car A. The cars that see the person send PAUSE instead of CLEAR; a car moves only with CLEAR from every member, so car A stops where it is and nobody starts a step. All cars show their hazard lights. The plan R-4F39 is kept, not cancelled.' },
+  { id: 10, from: P1, to: T_TOTAL + 0.01, text: 'Resume: the person (walking at 1.3 m/s) has passed, every status is CLEAR again, and car A continues from where it stopped, then car B, with the same route number R-4F39; then car C drives on west.' }
+]);
+const stageAt = t => STAGES.find(s => t >= s.from && t < s.to) || STAGES[STAGES.length - 1];
+
+/* ---------- palettes ---------- */
+function palette() {
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return dark ? {
+    kerb:'#1b2433', walk:'#3a4458', lane:'#262f40', line:'#556078', bay:'rgba(93,202,165,0.18)', bayLine:'#5DCAA5',
+    text:'#D3D1C7', textStrong:'#F1EFE8', dumpster:'#0d1117', dumpLine:'#E24B4A', ped:'#ED93B1',
+    carA:'#9fd0c0', carAT:'#2C2C2A', carB:'#f5f7fa', carBT:'#2C2C2A', carC:'#cdb487', carCT:'#2C2C2A', carLine:'#B4B2A9',
+    teal:'#5DCAA5', packet:'#FAC775', gray:{fill:'#444441',stroke:'#B4B2A9',t:'#F1EFE8',s:'#D3D1C7'},
+    tealB:{fill:'#085041',stroke:'#5DCAA5',t:'#E1F5EE',s:'#9FE1CB'}, purple:{fill:'#3C3489',stroke:'#AFA9EC',t:'#EEEDFE',s:'#CECBF6'},
+    arrow:'#B4B2A9', hi:'#FAC775'
+  } : {
+    kerb:'#e9e6dc', walk:'#d9d4c4', lane:'#cfd3da', line:'#8a8f99', bay:'rgba(15,110,86,0.14)', bayLine:'#0F6E56',
+    text:'#444441', textStrong:'#2C2C2A', dumpster:'#2C2C2A', dumpLine:'#A32D2D', ped:'#993556',
+    carA:'#a8d8c8', carAT:'#2C2C2A', carB:'#ffffff', carBT:'#2C2C2A', carC:'#d6bf93', carCT:'#2C2C2A', carLine:'#444441',
+    teal:'#0F6E56', packet:'#BA7517', gray:{fill:'#F1EFE8',stroke:'#5F5E5A',t:'#444441',s:'#5F5E5A'},
+    tealB:{fill:'#E1F5EE',stroke:'#0F6E56',t:'#085041',s:'#0F6E56'}, purple:{fill:'#EEEDFE',stroke:'#534AB7',t:'#3C3489',s:'#534AB7'},
+    arrow:'#5F5E5A', hi:'#BA7517'
+  };
+}
+
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+}
+
+
+/* ---------- road scene after the reference video (gaps measured on frames of the clip, see evidence/scene_measurement/; the rest estimated) ----------
+   d = cross-street position in cm: street -230 .. 560 (about 7.9 m), the camera's sidewalk below it,
+   the far sidewalk and a parking lot above it. Same numbers are used for the SVG export. */
+const SCENE = {
+  street:  { d0: -230, d1: 560 },               /* about 7.9 m between the kerbs (estimated from the clip) */
+  walkNear:{ d0: -440, d1: -230 },              /* where the video was filmed: fence and planters along it */
+  walkFar: { d0: 560,  d1: 700 },               /* far sidewalk by the shops */
+  lot:     { d0: 700,  d1: 1400 },              /* parking lot full of cars */
+  fenceD: -420,
+  planters: [-1150, -850, -550, -250, 50, 350, 650, 950, 1250],
+  lotRows: [ { d: 760, h: 180 }, { d: 980, h: 180 } ],
+  lotCars: [-1460, -1180, -900, -620, -340, -60, 220, 500, 780, 1060, 1340],
+  dumpster: { s: -1400, d: -150, len: 150, wid: 160 },
+  humanCar: { s: -1030, d: -60, len: 480, wid: 185 },  /* human-driven car 1.9 m behind A: sends no frame */
+  whiteSuv: { s: -315, d: 445, len: 480, wid: 190 },   /* parked on the far side, ahead of car C */
+  blueCar:  { s: -930, d: 450, len: 460, wid: 180 },   /* parked on the far side, ahead of the SUV */
+  person:   { s: 0, d: 470 },                          /* the one person: standing in the gap behind the parked SUV */
+  freeStrip: { s0: -560, s1: 400, d0: -230, d1: -120 }  /* free ground between car A and the kerb: about 110 cm (6 s frame) */
+};
+function rand01(i) { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }   /* fixed pseudo-random */
+/* a car that sends no frame, drawn like the top view scene_layout.svg: sedan (rounded nose, windscreen, body-colour
+ * roof, rear window, mirrors, muted lamps) or SUV (long roof with rails, upright tailgate glass). Front = +x. */
+function drawPlainCar(ctx, o, kind, fill, P) {
+  const w = SC * o.len, h = SC * o.wid;
+  ctx.save(); ctx.translate(px(o.s), py(o.d)); ctx.rotate(-(o.h || 0) * Math.PI / 180);
+  const body = function () {
+    ctx.beginPath();
+    const x0 = -w / 2, y0 = -h / 2, x1 = w / 2, y1 = h / 2;
+    if (kind === 'suv') {
+      const rf = h * 0.42, rb = h * 0.2;
+      ctx.moveTo(x0 + rb, y0); ctx.lineTo(x1 - rf, y0); ctx.quadraticCurveTo(x1, y0, x1, y0 + rf); ctx.lineTo(x1, y1 - rf);
+      ctx.quadraticCurveTo(x1, y1, x1 - rf, y1); ctx.lineTo(x0 + rb, y1); ctx.quadraticCurveTo(x0, y1, x0, y1 - rb);
+      ctx.lineTo(x0, y0 + rb); ctx.quadraticCurveTo(x0, y0, x0 + rb, y0);
+    } else {
+      const rf = h * 0.36, rt = h * 0.26, e = h * 0.02;
+      ctx.moveTo(x0 + rt, y0 + e); ctx.lineTo(x1 - rf, y0); ctx.quadraticCurveTo(x1, y0, x1, y0 + rf); ctx.lineTo(x1, y1 - rf);
+      ctx.quadraticCurveTo(x1, y1, x1 - rf, y1); ctx.lineTo(x0 + rt, y1 - e); ctx.quadraticCurveTo(x0, y1 - e, x0, y1 - rt);
+      ctx.lineTo(x0, y0 + rt); ctx.quadraticCurveTo(x0, y0 + e, x0 + rt, y0 + e);
+    }
+    ctx.closePath();
+  };
+  ctx.save(); ctx.translate(2, 3); body(); ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.fill(); ctx.restore();   /* ground shadow */
+  const wl = w * 0.17, wt = h * 0.15, wx = kind === 'suv' ? 0.30 : 0.31;                                  /* tyres */
+  drawWheels(ctx, w, h, wx, wl, wt, o.steer || 0, 0);
+  body(); ctx.fillStyle = fill; ctx.fill();
+  const sh = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+  sh.addColorStop(0, 'rgba(255,255,255,0.35)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.28)');
+  body(); ctx.fillStyle = sh; ctx.fill(); ctx.lineWidth = 1.1; ctx.strokeStyle = P.carLine; ctx.stroke();
+  const glass = 'rgba(24,36,54,0.92)';
+  const poly = function (pts, col) { ctx.beginPath(); pts.forEach(function (q, i) { i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); };
+  if (kind === 'suv') {
+    poly([[w * 0.17, -h * 0.38], [w * 0.29, -h * 0.31], [w * 0.29, h * 0.31], [w * 0.17, h * 0.38]], glass);
+    poly([[-w * 0.34, -h * 0.35], [-w * 0.41, -h * 0.30], [-w * 0.41, h * 0.30], [-w * 0.34, h * 0.35]], glass);
+    rr(ctx, -w * 0.34, -h * 0.38, w * 0.51, h * 0.76, 4); ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.stroke();
+    ctx.fillStyle = '#2a2f37'; ctx.fillRect(-w * 0.32, -h * 0.30 - 0.8, w * 0.47, 1.6); ctx.fillRect(-w * 0.32, h * 0.30 - 0.8, w * 0.47, 1.6);
+  } else {
+    poly([[w * 0.24, -h * 0.40], [w * 0.10, -h * 0.34], [w * 0.10, h * 0.34], [w * 0.24, h * 0.40]], glass);
+    rr(ctx, -w * 0.20, -h * 0.36, w * 0.30, h * 0.72, 3); ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fill();
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(0,0,0,0.30)'; ctx.stroke();
+    poly([[-w * 0.20, -h * 0.34], [-w * 0.31, -h * 0.38], [-w * 0.31, h * 0.38], [-w * 0.20, h * 0.34]], glass);
+  }
+  ctx.fillStyle = fill; ctx.fillRect(w * 0.14, -h / 2 - 2, 4, 3); ctx.fillRect(w * 0.14, h / 2 - 1, 4, 3);               /* mirrors */
+  ctx.fillStyle = 'rgba(255,243,176,0.75)'; rr(ctx, w / 2 - 4, -h * 0.39, 3, h * 0.17, 1); ctx.fill(); rr(ctx, w / 2 - 4, h * 0.22, 3, h * 0.17, 1); ctx.fill();
+  ctx.fillStyle = 'rgba(226,75,74,0.8)'; rr(ctx, -w / 2 + 1, -h * 0.38, 2.2, h * 0.19, 1); ctx.fill(); rr(ctx, -w / 2 + 1, h * 0.19, 2.2, h * 0.19, 1); ctx.fill();
+  ctx.restore();
+}
+/* a transparent stick figure standing at (s, d), drawn upright, as in scene_layout.svg */
+function drawStick(ctx, s, d, col) {
+  upright(ctx, px(s), py(d), function () {
+    ctx.globalAlpha = 0.85; ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, -11, 3, 0, Math.PI * 2); ctx.fillStyle = 'rgba(237,147,177,0.25)'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, 0); ctx.moveTo(-4.5, -5); ctx.lineTo(4.5, -5);
+    ctx.moveTo(0, 0); ctx.lineTo(-3.5, 6.5); ctx.moveTo(0, 0); ctx.lineTo(3.5, 6.5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 8, 1.5, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+}
+/* the street, drawn like the top view scene_layout.svg (same scale, same layers) */
+function drawScene(ctx, P, t, cars) {
+  const S = SCENE, X0 = -3000, XW = 6640, GUT = 45.72;
+  ctx.fillStyle = P.lane; ctx.fillRect(X0, py(1600), XW, py(S.walkFar.d1) - py(1600));             /* parking lot (empty, as in the top view) */
+  ctx.fillStyle = P.walk;
+  ctx.fillRect(X0, py(S.walkFar.d1), XW, py(S.walkFar.d0) - py(S.walkFar.d1));
+  ctx.fillRect(X0, py(S.walkNear.d1), XW, py(-900) - py(S.walkNear.d1));
+  ctx.fillStyle = P.lane; ctx.fillRect(X0, py(S.street.d1), XW, py(S.street.d0) - py(S.street.d1));
+  ctx.fillStyle = 'rgba(90,100,120,0.35)';                                                           /* 18 in gutter strips along both kerbs */
+  ctx.fillRect(X0, py(S.street.d0 + GUT), XW, SC * GUT); ctx.fillRect(X0, py(S.street.d1), XW, SC * GUT);
+  ctx.strokeStyle = '#2c3446'; ctx.lineWidth = 1;                                                    /* sidewalk panel joints every 5 ft */
+  ctx.beginPath();
+  for (let k = -1650; k < 1700; k += 152) {
+    ctx.moveTo(px(k), py(S.walkFar.d1)); ctx.lineTo(px(k), py(S.walkFar.d0));
+    ctx.moveTo(px(k), py(S.walkNear.d1)); ctx.lineTo(px(k), py(-375));
+  }
+  ctx.stroke();
+  ctx.strokeStyle = P.line; ctx.lineWidth = 1.5;                                                     /* kerb lines */
+  ctx.beginPath();
+  [S.street.d0, S.street.d1, S.walkFar.d1].forEach(function (d) { ctx.moveTo(X0, py(d)); ctx.lineTo(X0 + XW, py(d)); });
+  ctx.stroke();
+  ctx.strokeStyle = '#15181d'; ctx.lineWidth = 3;                                                    /* near fence and planters */
+  ctx.beginPath(); ctx.moveTo(X0, py(-375)); ctx.lineTo(X0 + XW, py(-375)); ctx.stroke();
+  for (let k = -1600; k < 1700; k += 300) {
+    ctx.beginPath(); ctx.arc(px(k), py(-420), SC * 22, 0, 6.3); ctx.fillStyle = '#2d4a33'; ctx.fill();
+    ctx.beginPath(); ctx.arc(px(k), py(-420), SC * 15, 0, 6.3); ctx.fillStyle = '#4f7d4f'; ctx.fill();
+  }
+  const mid = (S.street.d0 + S.street.d1) / 2;                                                       /* dashed centre line */
+  ctx.strokeStyle = P.line; ctx.lineWidth = 1.6; ctx.setLineDash([SC * 150, SC * 150]);
+  ctx.beginPath(); ctx.moveTo(X0, py(mid)); ctx.lineTo(X0 + XW, py(mid)); ctx.stroke(); ctx.setLineDash([]);
+  for (let i = 0; i < 26; ++i) {                                                                     /* dappled shade of the big oaks */
+    const ss = -1600 + rand01(i) * 3200, dd = -300 + rand01(i + 500) * 1000, rad = SC * (120 + rand01(i + 900) * 160);
+    const g = ctx.createRadialGradient(px(ss), py(dd), rad * 0.1, px(ss), py(dd), rad);
+    g.addColorStop(0, 'rgba(0,0,0,0.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px(ss), py(dd), rad, 0, 6.3); ctx.fill();
+  }
+  const st = stageAt(t).id;
+  if (PROTO && st >= 3 && st <= 4) {                  /* the free strip by the kerb, shown while the views are fused and measured */
+    const Fs = S.freeStrip;
+    ctx.fillStyle = 'rgba(237,147,177,0.28)'; ctx.strokeStyle = '#ED93B1'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
+    ctx.fillRect(px(Fs.s0), py(Fs.d1), SC * (Fs.s1 - Fs.s0), SC * (Fs.d1 - Fs.d0));
+    ctx.strokeRect(px(Fs.s0), py(Fs.d1), SC * (Fs.s1 - Fs.s0), SC * (Fs.d1 - Fs.d0)); ctx.setLineDash([]);
+    label(ctx, 'free strip by the kerb: about 1.1 m (measured)', px(200), py((Fs.d0 + Fs.d1) / 2) + 4, '600 10px sans-serif', P.textStrong, 'center');
+  }
+  const Du = S.dumpster;                                                                              /* dumpster further back by the kerb */
+  ctx.fillStyle = P.dumpster; ctx.strokeStyle = P.dumpLine; ctx.lineWidth = 1.5;
+  ctx.fillRect(px(Du.s) - SC * Du.len / 2, py(Du.d) - SC * Du.wid / 2, SC * Du.len, SC * Du.wid);
+  ctx.strokeRect(px(Du.s) - SC * Du.len / 2, py(Du.d) - SC * Du.wid / 2, SC * Du.len, SC * Du.wid);
+  const Hc = humanAt(t, cars);                                                                        /* sends no frame */
+  drawPlainCar(ctx, { s: Hc.s, d: Hc.d, h: Hc.h, steer: Hc.steer, len: Hc.len, wid: Hc.wid }, 'sedan', '#4a5566', P);
+  drawPlainCar(ctx, Object.assign({ h: 180 }, S.whiteSuv), 'suv', '#c3c8d0', P);
+  drawPlainCar(ctx, Object.assign({ h: 180 }, S.blueCar), 'sedan', '#5d7290', P);
+  label(ctx, 'human-driven (no frame)', Math.max(px(Hc.s), 62), py(Hc.d - Hc.wid / 2) + 12, '10px sans-serif', P.text, 'center');   /* below it: car B passes above it */
+  label(ctx, 'parked SUV', px(S.whiteSuv.s), py(S.whiteSuv.d + S.whiteSuv.wid / 2) - 4, '10px sans-serif', P.text, 'center');
+  label(ctx, 'parked car', px(S.blueCar.s), py(S.blueCar.d + S.blueCar.wid / 2) - 4, '10px sans-serif', P.text, 'center');
+  drawStick(ctx, S.person.s, S.person.d, P.ped);                                                      /* the one person, behind the SUV */
+  label(ctx, 'person', px(S.person.s), py(S.person.d) - 18, '600 10px sans-serif', P.ped, 'center');
+  if (!PROTO || t < 12.5) label(ctx, 'parking lot', px(1090), py(S.walkFar.d1) - 6, '10px sans-serif', P.text, 'right');   /* the status box sits there later */
+  label(ctx, 'far sidewalk (shops)', px(-1600), py((S.walkFar.d0 + S.walkFar.d1) / 2) + 4, '10px sans-serif', P.text, 'left');
+  const evNear = SCEN === 'emergency' && t >= P0 && evAt(t).s - EV_LEN / 2 < -1300 && evAt(t).s + EV_LEN / 2 > -1710;   /* its label would sit there */
+  if (!evNear) label(ctx, 'centre line', px(-1600), py(mid) - 4, '10px sans-serif', '#FAC775', 'left');
+  label(ctx, 'near sidewalk (where the clip was filmed)', px(-1250), py(-412), '10px sans-serif', P.text, 'left');
+  label(ctx, 'dumpster', px(Du.s), py(Du.d) + SC * Du.wid / 2 + 11, '10px sans-serif', P.text, 'center');
+}
+
+/* ---------- scene state (scripted motion) ---------- */
+/* Front-steer cars (B, C and the human-driven car) follow a kinematic bicycle model: a path is the track of the REAR
+ * AXLE, the heading is its tangent (the rear tyres roll without sliding sideways), the body centre sits l_r ahead of
+ * the rear axle, and the front wheels are drawn at atan(wheelbase x curvature). Every arc has at least 520 cm at the
+ * rear axle (about 5.4 m at the body centre); arcs that turn opposite ways are joined by at least 80 cm of straight.
+ * drive(s, d, h, ops) chains straights ['S', cm] and arcs ['A', degrees, radius cm], left turns positive. */
+const TURN_R = 520;
+const KIN = { B:{ lr:145, wb:299 }, C:{ lr:142, wb:289 }, H:{ lr:140, wb:285 } };   /* rear axle behind the centre, wheelbase (cm) */
+const RAD = Math.PI / 180;
+function drive(s, d, h, ops) {
+  const pts = [[s, d, h]];
+  for (const op of ops) {
+    const s0 = s, d0 = d, h0 = h;
+    if (op[0] === 'S') {
+      const n = Math.max(1, Math.ceil(Math.abs(op[1]) / 10));
+      for (let i = 1; i <= n; ++i) {
+        const u = i / n;
+        s = s0 + op[1] * u * Math.cos(h0 * RAD); d = d0 + op[1] * u * Math.sin(h0 * RAD); pts.push([s, d, h0]);
+      }
+    } else {
+      const R = op[2] || TURN_R, sg = op[1] > 0 ? 1 : -1, n = Math.max(2, Math.ceil(Math.abs(op[1])));
+      for (let i = 1; i <= n; ++i) {
+        const u = i / n, a0 = h0 * RAD, a1 = (h0 + op[1] * u) * RAD;
+        s = s0 + sg * R * (Math.sin(a1) - Math.sin(a0)); d = d0 + sg * R * (Math.cos(a0) - Math.cos(a1)); h = h0 + op[1] * u;
+        pts.push([s, d, h]);
+      }
+    }
+  }
+  const len = [0];
+  for (let i = 1; i < pts.length; ++i) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  return { pts, len, total: len[len.length - 1] };
+}
+/* the start pose from which `ops` end exactly at `end` (rear axle pose): the ops walked backwards */
+function startFor(end, ops) {
+  let s = end.s, d = end.d, h = end.h;
+  for (let i = ops.length - 1; i >= 0; --i) {
+    const op = ops[i];
+    if (op[0] === 'S') { s -= op[1] * Math.cos(h * RAD); d -= op[1] * Math.sin(h * RAD); continue; }
+    const R = op[2] || TURN_R, sg = op[1] > 0 ? 1 : -1, h0 = h - op[1];
+    s -= sg * R * (Math.sin(h * RAD) - Math.sin(h0 * RAD)); d -= sg * R * (Math.cos(h0 * RAD) - Math.cos(h * RAD)); h = h0;
+  }
+  return { s, d, h };
+}
+const rearOf = (c, k) => ({ s: c.s - k.lr * Math.cos(c.h * RAD), d: c.d - k.lr * Math.sin(c.h * RAD), h: c.h });
+function driveTo(end, ops) { const st = startFor(end, ops); return drive(st.s, st.d, st.h, ops); }
+function pathAt(P, x) {                         /* rear axle and heading at a distance along the path */
+  x = Math.max(0, Math.min(P.total, x));
+  let lo = 0, hi = P.len.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (P.len[m] < x) lo = m; else hi = m; }
+  const a = P.pts[lo], b = P.pts[hi], q = (x - P.len[lo]) / Math.max(1e-9, P.len[hi] - P.len[lo]);
+  return { s: lerp(a[0], b[0], q), d: lerp(a[1], b[1], q), h: lerp(a[2], b[2], q) };
+}
+/* body centre, heading and front-wheel steer (degrees) at a distance along a rear-axle path; the steer uses the mean
+ * curvature over 80 cm of path, so the wheels turn over about half a second at walking pace instead of snapping */
+function poseOn(P, dist, k) {
+  const r = pathAt(P, dist), x0 = Math.max(0, dist - 40), x1 = Math.min(P.total, dist + 40);
+  const kap = x1 - x0 > 1 ? (pathAt(P, x1).h - pathAt(P, x0).h) * RAD / (x1 - x0) : 0;
+  return { s: r.s + k.lr * Math.cos(r.h * RAD), d: r.d + k.lr * Math.sin(r.h * RAD), h: r.h, steer: Math.atan(k.wb * kap) / RAD };
+}
+/* speed profiles. blendDist: the speed goes from v0 to v1 in T seconds along a half cosine (no jump in acceleration);
+ * profDist chains such segments [T, v0, v1]. Speeds in cm/s: 139 = 5 km/h (walking pace), 417 = 15 km/h. */
+function blendDist(u, T, v0, v1) { const q = clamp01(u / T); return T * (v0 * q + (v1 - v0) * (q - Math.sin(Math.PI * q) / Math.PI) / 2); }
+function profDist(t, segs) {
+  let x = 0, v = 0;
+  for (const g of segs) {
+    if (t <= g[0]) return x + blendDist(Math.max(0, t), g[0], g[1], g[2]);
+    x += g[0] * (g[1] + g[2]) / 2; t -= g[0]; v = g[2];
+  }
+  return x + v * t;
+}
+/* a pass: 1.1 s from standstill to the crawl speed v1, crawl through the tight spot (crawl cm), then 3 s up to v2
+ * and on out of view (peaks: 2.0 m/s^2, then 1.5 m/s^2). Returns cm travelled. */
+function crawlDist(t, crawl, total, v1, v2) {
+  const ta = 1.1, tb = 3.0, da = ta * v1 / 2;
+  if (t <= 0) return 0;
+  if (t <= ta) return Math.min(total, blendDist(t, ta, 0, v1));
+  const tc = ta + (crawl - da) / v1;
+  if (t <= tc) return Math.min(total, da + (t - ta) * v1);
+  const u = t - tc;
+  if (u <= tb) return Math.min(total, crawl + blendDist(u, tb, v1, v2));
+  return Math.min(total, crawl + tb * (v1 + v2) / 2 + (u - tb) * v2);
+}
+/* the moves, in seconds after T_FORM on the motion clock: C backs off 7 m, C waits clear (no motion, it only reports
+ * "step done"), B backs off 4.5 m along its own heading, A passes straight, B passes; after the session C drives on west */
+const TL = { c1:[8.6, 17.5], b3:[17.6, 22.6], a4:[22.7, 33.4], b5:[33.8, 40.0], c2:[40.1, 40.6], cOff: 40.8, h: 25.2 };   /* everyone goes as soon as the way is clear: the human driver 2.5 s behind A, C right after B has passed */
+/* replay of how the jam formed (shown 3x faster): C drives in along the far side and stops for A; B follows it in,
+ * waits 2.5 m behind it, pulls round it below it and turns in nose to nose with A, ending exactly at B's pose */
+const PATH_B_IN = driveTo(rearOf({ s:10, d:184, h:195 }, KIN.B), [['S', 1501.2], ['A', 30], ['S', 108.68], ['A', -29], ['S', 300], ['A', 14]]);
+const B_IN_PROF = [[2.2, 417, 417], [2.8, 417, 0], [0.5, 0, 0], [1.8, 0, 250], [(PATH_B_IN.total - 1501.2 - 450) / 250, 250, 250], [1.8, 250, 0]];
+const C_IN_PROF = [[1.5, 417, 417], [2.8, 417, 0]];            /* 15 km/h, then at most 2.3 m/s^2 to a stop at s = 351 */
+const B_FORM_STEER = poseOn(PATH_B_IN, PATH_B_IN.total, KIN.B).steer;
+/* step 3: B backs 450 cm along its own heading (straight, white reverse lamps); step 5: it drives the same line forward,
+ * keeps going 38 cm past its old place, straightens out (right turn) and passes west down the middle, 5 km/h until its
+ * rear has passed the human-driven car (s = -1270). One path from the backed pose: distance 450 = where B stood. */
+const B_BACK_CM = 450;
+const B_ORIG_REAR = rearOf({ s:10, d:184, h:195 }, KIN.B);
+const PATH_B_PASS = drive(B_ORIG_REAR.s - B_BACK_CM * Math.cos(195 * RAD), B_ORIG_REAR.d - B_BACK_CM * Math.sin(195 * RAD), 195, [['S', B_BACK_CM + 37.90], ['A', -15], ['S', 4500]]);
+const CRAWL_B = 1512 + B_BACK_CM;
+const CRAWL_A = 1300;                            /* A passes at 5 km/h until its rear is past car B's rear end */
+const T_BAY = 8.5;                               /* (emergency scenario withdrawn; kept so the dormant code below still parses) */
+const PATH_B_BAY = PATH_B_PASS, PATH_B_OUT = PATH_B_PASS, CRAWL_OUT = CRAWL_B;
+const C_WAIT = 1051, C_ROOM = 1051;               /* C backs 700 cm (the planner: its room minus the end margin, at most 7 m) */
+/* after the session: C drives on west, its own way. It pulls out to its left round the standing person and the parked
+ * cars (two opposite 30-degree arcs to d = 208, so that it keeps 55 cm from the parked SUV and 60 cm from the parked car) and
+ * keeps 5 km/h until its rear has passed the parked SUV (s = -555), then 15 km/h out of view */
+const C_D_PARKED = 440;                          /* C eases 9 cm away from the far kerb while it backs, so that its tail swing at the pull-out keeps its kerb gap */
+const pathCOff = s0 => drive(s0 + KIN.C.lr, C_D_PARKED, 180, [['A', 30], ['S', 202], ['A', -30], ['S', 4500]]);
+const PATH_C_OFF = pathCOff(C_WAIT);
+const CRAWL_C = (function () {                   /* path distance at which C's centre reaches s = -555 - 222 */
+  let lo = 0, hi = PATH_C_OFF.total;
+  for (let i = 0; i < 50; ++i) { const m = (lo + hi) / 2; if (poseOn(PATH_C_OFF, m, KIN.C).s > -777) lo = m; else hi = m; }
+  return hi;
+})();
+/* emergency: the human-driven car eases 30 cm toward the near kerb (two opposite 5-degree arcs, so its nose stays
+ * clear of the kerb) and stops */
+const PATH_H_PULL = drive(-1170, -60, 0, [['A', -5], ['S', 298.80], ['A', 5]]);
+/* the human-driven car: it followed car A in and stands 1.9 m behind it; in the emergency it makes room */
+function humanAt(t, cars) {
+  const H = Object.assign({ h: 0, steer: 0 }, SCENE.humanCar);
+  if (cars && cars.H) H.s = cars.H.s;              /* clip mode */
+  if (MODE !== 'clip' && !LOSS) {                  /* the human driver follows car A out as soon as A is ahead (same lane, same speed profile, 2.5 s later) */
+    const tl = motionT(t) - T_FORM;
+    if (tl >= TL.h) H.s = SCENE.humanCar.s + crawlDist(tl - TL.h, CRAWL_A, 1e6, 139, 417);
+  }
+  if (SCEN === 'emergency' && MODE !== 'clip' && !LOSS && t >= P0 + 0.5) {
+    const p = poseOn(PATH_H_PULL, ease(clamp01((t - P0 - 0.5) / 5.0)) * PATH_H_PULL.total, KIN.H);
+    H.s = p.s; H.d = p.d; H.h = p.h; H.steer = p.steer;
+  }
+  return H;
+}
+/* t: motion clock; tw: wall clock (the emergency hold does not stop car A, which is already out of view and driving on) */
+function carsAt(t, tw) {
+  if (tw === undefined) tw = t;
+  const c = { A:{s:-418.5,d:-25,h:0}, B:{s:10,d:184,h:-165,steer:B_FORM_STEER}, C:{s:351,d:449,h:-180} };
+  if (t < T_FORM) {                                /* how the jam formed: A and the human-driven car already stand */
+    const r = 3 * t;                               /* replayed 3x faster: r is real time */
+    c.C.s = 1560.3 - profDist(r, C_IN_PROF);
+    const pb = poseOn(PATH_B_IN, Math.min(PATH_B_IN.total, profDist(r, B_IN_PROF)), KIN.B);
+    c.B = { s: pb.s, d: pb.d, h: pb.h, steer: pb.steer };
+    return c;
+  }
+  t -= T_FORM;
+  if (MODE === 'clip') {                           /* sketch of what replies describe; timing not measured */
+    c.H = { s: -1030 };
+    if (t >= 6) c.A.d = lerp(-25, -45, ease(clamp01((t - 6) / 2)));          /* A edges toward the kerb a little */
+    if (t >= 11) c.A.s = lerp(-418.5, -468.5, ease(clamp01((t - 11) / 2)));  /* A reverses toward the car behind */
+    if (t >= 14) c.H.s = lerp(-1030, -1060, ease(clamp01((t - 14) / 2)));    /* the human driver reverses (and honks), up to the dumpster */
+    if (t >= 16) c.A.s = lerp(-468.5, -508.5, ease(clamp01((t - 16) / 2)));  /* A backs 40 cm more: still blocked */
+    if (t >= 9) c.C.s = lerp(351, 491, ease(clamp01((t - 9) / 3)));          /* C backs up a little: B still blocked by A */
+    return c;
+  }
+  if (LOSS) return c;                              /* votes do not match: everyone holds */
+  /* an eased move peaks at 1.5x its average speed: kept at or under 5 km/h */
+  if (t >= TL.c1[0]) { const qc = ease(clamp01((t - TL.c1[0]) / 8.7)); c.C.s = lerp(351, C_WAIT, qc); c.C.d = lerp(449, C_D_PARKED, ease(clamp01((qc - 0.5) / 0.5))); }   /* the sideways 9 cm only in the second half, when C's front is past B's tail */   /* step 1: C backs off 7 m (and 9 cm away from the kerb); it waits there until the end */
+  if (t >= TL.cOff) {                              /* after the session: C drives on west */
+    const pc = poseOn(PATH_C_OFF, crawlDist(t - TL.cOff, CRAWL_C, PATH_C_OFF.total, 139, 417), KIN.C);
+    c.C = { s: pc.s, d: pc.d, h: pc.h, steer: pc.steer };
+  }
+  if (t >= TL.b3[0] - 1.0 && t < TL.b3[0]) c.B.steer = B_FORM_STEER * (TL.b3[0] - t);      /* B straightens its wheels before it backs */
+  else if (t >= TL.b3[0]) c.B.steer = 0;
+  if (t >= TL.b3[0]) {                             /* step 3: B backs 450 cm along its own heading */
+    const q = ease(clamp01((t - TL.b3[0]) / 4.9));
+    const pb = poseOn(PATH_B_PASS, B_BACK_CM * (1 - q), KIN.B);
+    c.B = { s: pb.s, d: pb.d, h: pb.h, steer: 0 };
+  }
+  if (t >= TL.a4[0]) { c.A.s = -418.5 + crawlDist(t - TL.a4[0], CRAWL_A, 1e6, 139, 417); c.A.d = -25; }   /* step 4: A passes straight, no sideways step */
+  if (t >= TL.b5[0]) {                             /* step 5: B drives forward, straightens out and passes (after A's "step done") */
+    const pb = poseOn(PATH_B_PASS, crawlDist(t - TL.b5[0], CRAWL_B, PATH_B_PASS.total, 139, 417), KIN.B);
+    c.B = { s: pb.s, d: pb.d, h: pb.h, steer: pb.steer };
+  }
+  return c;
+}
+/* emergency: the vehicle is announced just before B's step. B is the only car left; the near kerb has no room (the
+ * human-driven car), so B reverses at walking pace into the space car C left, waits with hazards, then pulls out
+ * again and goes on with its pass. */
+function applyPullOver(c, t) {
+  if (SCEN !== 'emergency' || MODE === 'clip' || LOSS || t < P0 + 0.5) return c;
+  const pb = t < P1 ? poseOn(PATH_B_BAY, (1 - ease(clamp01((t - P0 - 0.5) / T_BAY))) * PATH_B_BAY.total, KIN.B)
+                    : poseOn(PATH_B_OUT, crawlDist(t - P1, CRAWL_OUT, PATH_B_OUT.total, 139, 417), KIN.B);
+  c.B = { s: pb.s, d: pb.d, h: pb.h, steer: pb.steer };
+  return c;
+}
+/* pause scenario: a person walks across ahead of car A at 1.3 m/s, from the far sidewalk to the near one */
+const PERSON_S = 90, PERSON_V = 130;   /* west of car B backed nose, ahead of car A */
+function personAt(t) {
+  if (SCEN !== 'pause' || t < P0 - 1.0) return null;
+  const d = 690 - PERSON_V * (t - (P0 - 1.0));
+  return d < -330 ? null : { s: PERSON_S, d };
+}
+/* emergency vehicle: a fire engine, 760 x 250 cm (290 cm across the mirrors), cab leading, from the west at 9.7 km/h
+ * along the middle of the corridor between the human-driven car pulled toward the kerb (top edge d = 2.5) and car B in
+ * the space (bottom edge d = 348) */
+const EV_D = 175, EV_V = 270, EV_LEN = 760, EV_WID = 250, EV_MIRROR = 290;
+const evAt = t => ({ s: -2030 + EV_V * (t - P0 - 6.8), d: EV_D, h: 0 });   /* its front reaches the edge of the view 6.8 s after P0 */
+/* sizes in cm, same as the SIM table in v2v_ttl_resmgr.c (published sizes of the vehicle types in the reference video: SUV 468 x 190, two-seat car 444.5 x 175, pod 363 x 190) */
+const CAR = { A:{len:363,wid:190}, B:{len:468,wid:190}, C:{len:444.5,wid:175} };
+
+/* ---------- camera: top-down, angled, or following one car ---------- */
+let VIEW = 'top', SENSOR = 'lidar', CAMZ = 1, CAMTY = 1;
+const VIEWS = { top:'Top-down', iso:'Angled 3D', A:'Car A', B:'Car B', C:'Car C' };
+function camFor(view, cars) {
+  if (view === 'iso') return { cx:320, cy:196, z:1.02, ty:0.58 };
+  if (view === 'A' || view === 'B' || view === 'C') {
+    const c = cars[view];
+    return { cx:px(c.s), cy:py(c.d), z:1.12, ty:1 };
+  }
+  return { cx:320, cy:180, z:1, ty:1 };
+}
+function w2s(cam, x, y) { return [320 + cam.z * (x - cam.cx), 180 + cam.z * cam.ty * (y - cam.cy)]; }
+/* text and round marks stay upright and undistorted whatever the camera does */
+function upright(ctx, x, y, fn) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(1 / CAMZ, 1 / (CAMZ * CAMTY)); fn(); ctx.restore();
+}
+let LABEL_HALO = '#14181f';   /* crisp dark halo outline keeps text readable over lines and cars */
+function label(ctx, str, x, y, font, color, align) {
+  upright(ctx, x, y, function () {
+    ctx.font = font; ctx.textAlign = align || 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round'; ctx.lineWidth = 2.5; ctx.strokeStyle = LABEL_HALO; ctx.strokeText(str, 0, 0);
+    ctx.fillStyle = color; ctx.fillText(str, 0, 0);
+  });
+}
+
+/* three generic, unbranded body styles drawn on canvas, after the real vehicle shapes (no logos, no names):
+   A boxy two-ended pod with four corner sensor pods, B white SUV with a roof sensor dome and side pucks,
+   C sleek electric sedan with a glass roof and a rear light bar. */
+/* four tyres, half outside the body so they show from above; the front pair turns by `steer` degrees, all four by
+ * `crab` (the two-ended pod's sideways step). A rim line shows which way each tyre points. */
+function drawWheels(ctx, w, h, wx, wl, wt, steer, crab, wb) {
+  const xf = Array.isArray(wx) ? wx[0] : wx, xr = Array.isArray(wx) ? wx[1] : wx;
+  const k = wb && steer ? Math.tan(steer * Math.PI / 180) / wb : 0, tw = 160;   /* Ackermann: the inner front wheel turns more */
+  [[xf, -1], [xf, 1], [-xr, -1], [-xr, 1]].forEach(function (q) {
+    const fs = q[0] > 0 ? (k ? Math.atan(wb * k / (1 + q[1] * k * tw / 2)) * 180 / Math.PI : steer) : 0;
+    const a = (crab + fs) * Math.PI / 180;
+    ctx.save(); ctx.translate(q[0] * w, q[1] * (h / 2 - wt * 0.1)); ctx.rotate(-a);
+    rr(ctx, -wl / 2, -wt / 2, wl, wt, 2.2); ctx.fillStyle = '#0b0d10'; ctx.fill();
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-wl * 0.35, 0); ctx.lineTo(wl * 0.35, 0); ctx.strokeStyle = 'rgba(200,205,215,0.55)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  });
+}
+function bodyPath(ctx, key, w, h, dx, dy) {
+  const x0 = -w / 2 + dx, y0 = -h / 2 + dy, x1 = w / 2 + dx, y1 = h / 2 + dy, my = dy;
+  ctx.beginPath();
+  if (key === 'C') {                                   /* crossover sedan: blunt rounded nose, soft shoulders, full-width tail */
+    const rf = h * 0.34, rt = h * 0.22;
+    ctx.moveTo(x0 + rt, y0);
+    ctx.bezierCurveTo(dx + w * 0.10, y0 - h * 0.01, dx + w * 0.34, y0 + h * 0.015, x1 - rf, y0 + h * 0.06);
+    ctx.quadraticCurveTo(x1, y0 + h * 0.10, x1, y0 + rf + h * 0.06);
+    ctx.lineTo(x1, y1 - rf - h * 0.06);
+    ctx.quadraticCurveTo(x1, y1 - h * 0.10, x1 - rf, y1 - h * 0.06);
+    ctx.bezierCurveTo(dx + w * 0.34, y1 - h * 0.015, dx + w * 0.10, y1 + h * 0.01, x0 + rt, y1);
+    ctx.arcTo(x0, y1, x0, y1 - rt, rt); ctx.lineTo(x0, y0 + rt); ctx.arcTo(x0, y0, x0 + rt, y0, rt);
+  } else if (key === 'B') {                            /* SUV: tall flat sides, rounded nose, squarer tail */
+    const rf = h * 0.42, rr_ = h * 0.2;
+    ctx.moveTo(x0 + rr_, y0); ctx.lineTo(x1 - rf, y0); ctx.arcTo(x1, y0, x1, y0 + rf, rf);
+    ctx.lineTo(x1, y1 - rf); ctx.arcTo(x1, y1, x1 - rf, y1, rf);
+    ctx.lineTo(x0 + rr_, y1); ctx.arcTo(x0, y1, x0, y1 - rr_, rr_);
+    ctx.lineTo(x0, y0 + rr_); ctx.arcTo(x0, y0, x0 + rr_, y0, rr_);
+  } else {                                             /* pod: same rounded shape at both ends */
+    const r = h * 0.3;
+    ctx.moveTo(x0 + r, y0); ctx.lineTo(x1 - r, y0); ctx.arcTo(x1, y0, x1, y0 + r, r);
+    ctx.lineTo(x1, y1 - r); ctx.arcTo(x1, y1, x1 - r, y1, r);
+    ctx.lineTo(x0 + r, y1); ctx.arcTo(x0, y1, x0, y1 - r, r);
+    ctx.lineTo(x0, y0 + r); ctx.arcTo(x0, y0, x0 + r, y0, r);
+  }
+  ctx.closePath();
+}
+
+function drawCar(ctx, P, key, st, label_) {
+  const g = CAR[key];
+  const x = px(st.s), y = py(st.d), w = SC * g.len, h = SC * g.wid;
+  const fill = P['car' + key];
+  const glass = 'rgba(24,36,54,0.92)', glassHi = 'rgba(150,185,220,0.35)';
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-st.h * Math.PI / 180);
+  let raised = false;
+  if (CAMTY < 0.95) {                    /* angled view: dark side wall under the body, body lifted */
+    const lift = 8 / (CAMZ * CAMTY);
+    ctx.save(); ctx.rotate(st.h * Math.PI / 180); ctx.translate(0, lift); ctx.rotate(-st.h * Math.PI / 180);
+    bodyPath(ctx, key, w, h, 0, 0); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
+    ctx.restore();
+    ctx.save(); ctx.rotate(st.h * Math.PI / 180); ctx.translate(0, -lift * 0.5); ctx.rotate(-st.h * Math.PI / 180);
+    raised = true;
+  }
+  bodyPath(ctx, key, w, h, 2, 3); ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fill();      /* ground shadow */
+  const K = KIN[key], wl = w * 0.17, wt = h * 0.15;          /* axles where the wheelbase puts them (B 299 cm, C 289 cm) */
+  const wx = key === 'A' ? 0.38 : [(K.wb - K.lr) / g.len, K.lr / g.len];
+  drawWheels(ctx, w, h, wx, wl, wt, st.steer || 0, st.crab || 0, key === 'A' ? 0 : K.wb);
+  bodyPath(ctx, key, w, h, 0, 0); ctx.fillStyle = fill; ctx.fill();
+  const sh = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+  sh.addColorStop(0, 'rgba(255,255,255,0.35)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.28)');
+  bodyPath(ctx, key, w, h, 0, 0); ctx.fillStyle = sh; ctx.fill();
+  ctx.lineWidth = 1.1; ctx.strokeStyle = P.carLine; ctx.stroke();
+
+  if (key === 'A') {                                      /* pod: mint sides, black ends with glass, corner sensor stalks, centre sliding doors */
+    ctx.fillStyle = '#1d2126';                            /* black end caps (both ends look the same) */
+    rr(ctx, -w / 2, -h / 2, w * 0.27, h, h * 0.3); ctx.fill();
+    rr(ctx, w / 2 - w * 0.27, -h / 2, w * 0.27, h, h * 0.3); ctx.fill();
+    ctx.fillStyle = 'rgba(70,100,130,0.55)';              /* glass in the black ends */
+    rr(ctx, -w * 0.44, -h * 0.34, w * 0.16, h * 0.68, 4); ctx.fill();
+    rr(ctx, w * 0.28, -h * 0.34, w * 0.16, h * 0.68, 4); ctx.fill();
+    rr(ctx, -w * 0.21, -h * 0.40, w * 0.42, h * 0.80, 4); ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();   /* flat roof */
+    ctx.fillStyle = '#1d2126';                            /* dark roof glass band over the doors */
+    rr(ctx, -w * 0.10, -h * 0.40, w * 0.20, h * 0.80, 3); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 0.8;            /* sliding doors in the middle of both sides */
+    ctx.beginPath(); ctx.moveTo(0, -h / 2 + 0.5); ctx.lineTo(0, -h * 0.40); ctx.moveTo(0, h / 2 - 0.5); ctx.lineTo(0, h * 0.40); ctx.stroke();
+    [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(function (q) {           /* sensor stalks on the four roof corners */
+      rr(ctx, q[0] * w * 0.43 - 4, q[1] * h * 0.44 - 4, 8, 8, 2.5); ctx.fillStyle = '#111418'; ctx.fill();
+      ctx.beginPath(); ctx.arc(q[0] * w * 0.43, q[1] * h * 0.44, 1.8, 0, 6.3); ctx.fillStyle = '#3d8fe0'; ctx.fill();
+    });
+    ctx.fillStyle = '#FFF3B0';                            /* light bars at both ends */
+    rr(ctx, w / 2 - 3.5, -h * 0.24, 2.5, h * 0.48, 1.2); ctx.fill();
+    rr(ctx, -w / 2 + 1, -h * 0.24, 2.5, h * 0.48, 1.2); ctx.fill();
+  } else if (key === 'B') {                               /* SUV: windscreen, long roof, sensor dome, roof rails, side pucks */
+    ctx.fillStyle = glass;
+    ctx.beginPath(); ctx.moveTo(w * 0.15, -h * 0.38); ctx.lineTo(w * 0.28, -h * 0.30); ctx.lineTo(w * 0.28, h * 0.30); ctx.lineTo(w * 0.15, h * 0.38); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-w * 0.30, -h * 0.34); ctx.lineTo(-w * 0.38, -h * 0.28); ctx.lineTo(-w * 0.38, h * 0.28); ctx.lineTo(-w * 0.30, h * 0.34); ctx.closePath(); ctx.fill();
+    rr(ctx, -w * 0.30, -h * 0.38, w * 0.45, h * 0.76, 5); ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.stroke();
+    ctx.fillStyle = '#2a2f37'; ctx.fillRect(-w * 0.28, -h * 0.34, w * 0.41, 1.6); ctx.fillRect(-w * 0.28, h * 0.34 - 1.6, w * 0.41, 1.6);
+    ctx.beginPath(); ctx.arc(-w * 0.03, 0, h * 0.25, 0, 6.3); ctx.fillStyle = '#1b2027'; ctx.fill();
+    ctx.beginPath(); ctx.arc(-w * 0.03, 0, h * 0.25, 0, 6.3); ctx.strokeStyle = '#3d7fd0'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = '#20262e'; rr(ctx, -w * 0.44 - 3, -h * 0.47, 6, 4, 1.5); ctx.fill(); rr(ctx, -w * 0.44 - 3, h * 0.47 - 4, 6, 4, 1.5); ctx.fill();
+    ctx.beginPath(); ctx.arc(-w * 0.03, 0, h * 0.17, 0, 6.3); ctx.fillStyle = '#3b4552'; ctx.fill();
+    ctx.beginPath(); ctx.arc(-w * 0.03 - h * 0.04, -h * 0.04, h * 0.04, 0, 6.3); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+    [[1, -1], [1, 1]].forEach(function (q) {
+      ctx.fillStyle = '#20262e'; rr(ctx, w * 0.42 - 3, q[1] * h * 0.42 - 3, 6, 6, 2); ctx.fill();
+    });
+    ctx.fillStyle = fill; ctx.fillRect(w * 0.16, -h / 2 - 2, 5, 3); ctx.fillRect(w * 0.16, h / 2 - 1, 5, 3);
+    ctx.fillStyle = '#FFF3B0'; rr(ctx, w / 2 - 5, -h * 0.4, 4, h * 0.2, 1.5); ctx.fill(); rr(ctx, w / 2 - 5, h * 0.2, 4, h * 0.2, 1.5); ctx.fill();
+    ctx.fillStyle = '#E24B4A'; rr(ctx, -w / 2 + 1, -h * 0.38, 3, h * 0.2, 1.5); ctx.fill(); rr(ctx, -w / 2 + 1, h * 0.18, 3, h * 0.2, 1.5); ctx.fill();
+  } else {                                                /* sedan/crossover: raked windscreen, one long glass roof, small tail window, light bar */
+    ctx.fillStyle = glass;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.28, -h * 0.36); ctx.lineTo(w * 0.12, -h * 0.43); ctx.lineTo(-w * 0.24, -h * 0.43);
+    ctx.lineTo(-w * 0.36, -h * 0.30); ctx.lineTo(-w * 0.36, h * 0.30); ctx.lineTo(-w * 0.24, h * 0.43);
+    ctx.lineTo(w * 0.12, h * 0.43); ctx.lineTo(w * 0.28, h * 0.36); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = glassHi; ctx.beginPath(); ctx.moveTo(w * 0.24, -h * 0.30); ctx.lineTo(w * 0.14, -h * 0.34); ctx.lineTo(w * 0.14, -h * 0.10); ctx.lineTo(w * 0.22, -h * 0.08); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = glass; rr(ctx, -w * 0.38, -h * 0.30, w * 0.07, h * 0.60, 3); ctx.fill();
+    ctx.fillStyle = '#FFF3B0';
+    rr(ctx, w / 2 - 9, -h * 0.34, 6, 2.2, 1); ctx.fill(); rr(ctx, w / 2 - 9, h * 0.34 - 2.2, 6, 2.2, 1); ctx.fill();
+    ctx.fillStyle = '#E24B4A'; rr(ctx, -w / 2 + 1, -h * 0.40, 2.6, h * 0.80, 1.3); ctx.fill();
+  }
+  if (raised) ctx.restore();
+  ctx.restore();
+  const lift2 = raised ? -4 / (CAMZ * CAMTY) : 0;
+  const side = key === 'C' && st.d > 440 ? -1 : 1;   /* C's plate sits above it while it stands by the far kerb, clear of car B below it */
+  upright(ctx, x, y + lift2 + side * (h / 2 + 11 / (CAMZ * CAMTY)), function () {   /* letter plate sits beside the car so the roof details stay visible */
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.stroke();
+    ctx.fillStyle = '#2C2C2A'; ctx.font = '700 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label_, 0, 0.5);
+  });
+}
+
+function badge(ctx, P, x, y, n) {
+  upright(ctx, x, y, function () {
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2);
+    ctx.fillStyle = P.teal; ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.font = '600 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(n), 0, 0.5);
+  });
+}
+
+/* each car's own plan hash, shown once the car has computed it; green once all three votes matched */
+const PLAN_HASH = '4F390A9A';
+function hashChip(ctx, P, x, y, t, key) {
+  const own = LOSS && key === 'C' ? 'E88DD551' : PLAN_HASH;     /* C computed without A's frame (QNX log) */
+  const decided = t >= 12.1, agreed = decided && !LOSS;
+  const rn = 'R-' + own.slice(0, 4);
+  const txt = decided && LOSS ? '\u2715 hold ' + rn : (agreed ? '\u2713 ' : '') + rn + (t >= 11.6 && !decided ? ' ?' : '');
+  upright(ctx, x, y, function () {
+    ctx.font = '600 10px ui-monospace, Menlo, monospace';
+    const w = ctx.measureText(txt).width + 10;
+    rr(ctx, -w / 2, -8, w, 16, 4);
+    ctx.fillStyle = agreed ? P.teal : decided ? P.dumpLine : 'rgba(255,255,255,0.92)'; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = agreed ? P.teal : decided ? P.dumpLine : P.packet; ctx.stroke();
+    ctx.fillStyle = decided ? '#ffffff' : '#2C2C2A'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(txt, 0, 0.5);
+  });
+}
+
+/* ---------- signals, step done, pause lock (locked-session rules) ---------- */
+/* steps on the motion timeline (seconds after T_FORM, see TL): C backs off, C waits clear, A backs
+ * diagonally toward the kerb, A passes, B passes. ind: the indicator the mover shows (by the direction of its move;
+ * 'hazard' while it backs straight), indFor: seconds after the start when it cancels, rev: white reverse lamps */
+const STEPS = [
+  { k:'C', from:TL.c1[0], to:TL.c1[1], ind:'hazard', rev:true },
+  { k:'B', from:TL.b3[0], to:TL.b3[1], ind:'hazard', rev:true },
+  { k:'A', from:TL.a4[0], to:TL.a4[1], ind:'' },
+  { k:'B', from:TL.b5[0], to:TL.b5[1], ind:'right', indFor:2.0 },
+  { k:'C', from:TL.c2[0], to:TL.c2[1], ind:'hazard' }
+];
+function lightsFor(key, t) {                      /* { ind: 'left' | 'right' | 'hazard' | '', rev: reverse lamps } */
+  if (!PROTO || LOSS || t < 12.5) return { ind:'', rev:false };
+  if (SCEN === 'emergency' && key === 'B' && t >= P0) {
+    if (t >= P1 - 1.0) return { ind: t < P1 + 3.8 ? 'left' : '', rev:false };          /* signals left and pulls out */
+    return { ind:'hazard', rev: t >= P0 + 0.3 && t < P0 + 0.5 + T_BAY };               /* backs into the space */
+  }
+  if (SCEN === 'emergency' && key === 'C' && t >= P0 && t < P0 + 4.5) return { ind:'hazard', rev: true };   /* backs to make room */
+  if (SCEN !== 'normal' && t >= P0 && t < P1) return { ind:'hazard', rev:false };
+  const tl = motionT(t) - T_FORM, tc = TL.cOff;
+  if (key === 'C' && tl >= tc - 1.0) return { ind: tl < tc + 3.5 ? 'left' : '', rev:false };   /* pulls out to its left, drives on */
+  for (const s of STEPS) if (s.k === key && tl >= s.from - 1.0 && tl < s.to)
+    return { ind: tl < s.from + (s.indFor || 1e9) ? s.ind : '', rev: !!s.rev && tl >= s.from - 0.3 };
+  return { ind:'hazard', rev:false };
+}
+/* lamps in the car's own frame (front = +x, left = -y): indicators blink at 1.5 Hz, reverse lamps are steady white */
+function drawLamps(ctx, st, len, wid, L, t) {
+  if (!L.ind && !L.rev) return;
+  const w = SC * len, h = SC * wid;
+  ctx.save(); ctx.translate(px(st.s), py(st.d)); ctx.rotate(-st.h * Math.PI / 180);
+  if (L.rev) for (const y of [-h * 0.3, h * 0.3]) {
+    ctx.beginPath(); ctx.arc(-w / 2, y, 5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill();
+    rr(ctx, -w / 2 - 1.2, y - 2.4, 3.2, 4.8, 1); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  }
+  if (L.ind && !(Math.floor(t * 3) % 2)) {
+    const pts = L.ind === 'hazard' ? [[w / 2, -h / 2], [w / 2, h / 2], [-w / 2, -h / 2], [-w / 2, h / 2]]
+              : L.ind === 'left' ? [[w / 2, -h / 2], [-w / 2, -h / 2]] : [[w / 2, h / 2], [-w / 2, h / 2]];
+    ctx.fillStyle = '#FFB020';
+    for (const q of pts) { ctx.beginPath(); ctx.arc(q[0], q[1], 4.2, 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.restore();
+}
+function drawLights(ctx, key, st, t) { drawLamps(ctx, st, CAR[key].len, CAR[key].wid, lightsFor(key, t), t); }
+/* the agreed route R-4F39, drawn from the moment it is computed: dashed path, arrow, step number; a step that is
+ * done is drawn faint. B's line is the track of its body centre on its step-5 path. Labels sit where no car drives. */
+const ROUTE_B = (function () {
+  const pts = [];
+  for (let x = 0; ; x += 25) { const p = poseOn(PATH_B_PASS, x, KIN.B); pts.push([p.s, p.d]); if (p.s < -1300) break; }
+  return pts;
+})();
+const B_BACKED = poseOn(PATH_B_PASS, 0, KIN.B);
+const ROUTE_C_OFF = (function () {
+  const pts = [];
+  for (let x = 0; ; x += 25) { const p = poseOn(PATH_C_OFF, x, KIN.C); pts.push([p.s, p.d]); if (p.s < -1650) break; }
+  return pts;
+})();
+const ROUTE = [
+  { k:'C', pts:[[351, 449], [1051, C_D_PARKED]], n:1, lab:[900, 610], txt:'backs off 7 m', al:'right' },
+  { k:'B', pts:[[10, 184], [B_BACKED.s, B_BACKED.d]], n:2, lab:[-420, -380], txt:'backs off 4.5 m', al:'left' },
+  { k:'A', pts:[[-418.5, -25], [1000, -25]], n:3, lab:[520, -380] },
+  { k:'B', pts:ROUTE_B, n:4, lab:[-1000, 280] },
+  { k:'C', pts:[[1051, C_D_PARKED]], n:5, lab:[1090, 700], txt:'waits clear', al:'right' }
+];
+function drawRoutes(ctx, P, t) {
+  if (!PROTO || LOSS || t < 10.5) return;
+  const tl = motionT(t) - T_FORM;
+  ctx.save(); ctx.setLineDash([7, 5]); ctx.lineCap = 'round';
+  if (tl >= STEPS[STEPS.length - 1].to) {          /* after the session: C's own drive on west, faint (not a plan step) */
+    ctx.strokeStyle = 'rgba(214,191,147,0.55)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ROUTE_C_OFF.forEach((q, j) => j ? ctx.lineTo(px(q[0]), py(q[1])) : ctx.moveTo(px(q[0]), py(q[1]))); ctx.stroke();
+  }
+  ROUTE.forEach((r, i) => {
+    const done = tl >= STEPS[i].to, col = done ? 'rgba(74,180,140,0.30)' : 'rgba(93,202,165,0.85)';
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2.0;
+    if (r.pts.length < 2) {                        /* a step without motion: a ring where the car waits */
+      ctx.setLineDash([]); ctx.beginPath(); ctx.arc(px(r.pts[0][0]), py(r.pts[0][1]), 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([7, 5]);
+      return;
+    }
+    ctx.beginPath(); r.pts.forEach((q, j) => j ? ctx.lineTo(px(q[0]), py(q[1])) : ctx.moveTo(px(q[0]), py(q[1]))); ctx.stroke();
+    const a = r.pts[r.pts.length - 2], b = r.pts[r.pts.length - 1];
+    const ang = Math.atan2(py(b[1]) - py(a[1]), px(b[0]) - px(a[0])), ex = px(b[0]), ey = py(b[1]);
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 9 * Math.cos(ang - 0.45), ey - 9 * Math.sin(ang - 0.45));
+    ctx.lineTo(ex - 9 * Math.cos(ang + 0.45), ey - 9 * Math.sin(ang + 0.45)); ctx.closePath(); ctx.fill();
+    ctx.setLineDash([7, 5]);
+  });
+  ctx.restore();
+}
+function drawRouteLabels(ctx, P, t) {
+  if (!PROTO || LOSS || t < 10.5) return;
+  const tl = motionT(t) - T_FORM;
+  if (tl >= STEPS[STEPS.length - 1].to) {
+    label(ctx, 'after the session: C drives on west', px(-1100), py(610) - 6, '600 11px sans-serif', 'rgba(214,191,147,0.95)', 'left');
+  }
+  ROUTE.forEach((r, i) => {
+    const done = tl >= STEPS[i].to, col = done ? 'rgba(126,224,181,0.5)' : '#7EE0B5';
+    if (r.pts.length < 2) {
+      if (LOSS || t >= 14.0) label(ctx, 'move ' + r.n + ' (' + r.k + '): ' + r.txt, px(r.lab[0]), py(r.lab[1]) - 6, '600 11px sans-serif', col, r.al || 'center');
+      return;
+    }
+    const m = r.lab;
+    if (LOSS || t >= 14.0) label(ctx, 'move ' + r.n + ' (' + r.k + ')' + (r.txt ? ': ' + r.txt : ''), px(m[0]), py(m[1]) - 6, '600 11px sans-serif', col, r.al || 'center');
+  });
+}
+function drawPerson(ctx, P, t) {                  /* pause scenario: a person crosses ahead of car A */
+  const pp = personAt(t);
+  if (!pp) return;
+  drawStick(ctx, pp.s, pp.d, P.ped);
+  const left = pp.d > 340;                        /* beside car C: label to its left; beside car B: to its right */
+  if (pp.d < 600) label(ctx, 'person crossing', px(pp.s) + (left ? -10 : 10), py(pp.d) + 4, '600 11px sans-serif', P.textStrong, left ? 'right' : 'left');
+}
+function drawEmergency(ctx, P, t) {             /* emergency scenario: a fire engine passes east, cab leading (front = east) */
+  if (SCEN !== 'emergency' || t < P0) return;
+  const e = evAt(t);
+  if (e.s - EV_LEN / 2 > 1160 || e.s + EV_LEN / 2 < -1710) return;   /* not in view: it drives on, it never stops */
+  const L = SC * EV_LEN, W = SC * EV_WID, x = px(e.s), y = py(e.d), M = SC * (EV_MIRROR - EV_WID) / 2;
+  const on = Math.floor(t * 4) % 2 === 0;          /* strobe: on and off every quarter second (one GIF frame each) */
+  ctx.save(); ctx.translate(x, y);
+  /* a US-style aerial ladder truck seen from above, front = +x (east, the way it drives) */
+  const cab = L * 0.25, fx = L / 2 - cab, red = '#C8191E';
+  ctx.save(); ctx.filter = 'blur(3px)'; ctx.fillStyle = 'rgba(0,0,0,0.45)'; rr(ctx, -L / 2 + 3, -W / 2 + 4, L, W, 6); ctx.fill(); ctx.restore();
+  /* tyres: one front axle under the cab, a tandem pair at the rear */
+  ctx.fillStyle = '#0b0d10';
+  for (const ax of [L / 2 - cab * 0.55, -L / 2 + L * 0.20, -L / 2 + L * 0.32])
+    for (const sy of [-1, 1]) { rr(ctx, ax - L * 0.045, sy * W / 2 - (sy > 0 ? 3 : 4), L * 0.09, 7, 2); ctx.fill(); }
+  /* body: red with a gloss band, rounded corners */
+  const g = ctx.createLinearGradient(0, -W / 2, 0, W / 2);
+  g.addColorStop(0, '#8E0F12'); g.addColorStop(0.18, red); g.addColorStop(0.45, '#E8383C'); g.addColorStop(0.55, '#E8383C'); g.addColorStop(0.82, red); g.addColorStop(1, '#8E0F12');
+  ctx.fillStyle = g; rr(ctx, -L / 2, -W / 2, L, W, 6); ctx.fill();
+  ctx.lineWidth = 1; ctx.strokeStyle = '#5E0A0C'; ctx.stroke();
+  /* white reflective stripe along both sides of the body */
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(-L / 2 + 4, -W / 2 + 2, fx + L / 2 - 6, 1.6); ctx.fillRect(-L / 2 + 4, W / 2 - 3.6, fx + L / 2 - 6, 1.6);
+  /* roll-up compartment doors along the sides (chrome edges) */
+  ctx.strokeStyle = 'rgba(230,230,235,0.55)'; ctx.lineWidth = 0.8;
+  for (let k = -L / 2 + L * 0.06; k < fx - 4; k += L * 0.085) {
+    ctx.beginPath(); ctx.moveTo(k, -W / 2 + 4); ctx.lineTo(k, -W / 2 + 9); ctx.moveTo(k, W / 2 - 4); ctx.lineTo(k, W / 2 - 9); ctx.stroke();
+  }
+  /* cab: white roof, dark windscreen at the very front, side windows, chrome bumper */
+  ctx.fillStyle = '#F4F4F2'; rr(ctx, fx + 2, -W / 2 + 3, cab - 7, W - 6, 4); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 0.8; ctx.stroke();
+  ctx.fillStyle = '#1B2430';
+  ctx.beginPath(); ctx.moveTo(L / 2 - 6, -W / 2 + 5); ctx.lineTo(L / 2 - 2, -W / 2 + 7); ctx.lineTo(L / 2 - 2, W / 2 - 7); ctx.lineTo(L / 2 - 6, W / 2 - 5); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(27,36,48,0.85)'; ctx.fillRect(fx + cab * 0.15, -W / 2 + 3, cab * 0.45, 2.2); ctx.fillRect(fx + cab * 0.15, W / 2 - 5.2, cab * 0.45, 2.2);
+  const cg = ctx.createLinearGradient(0, -W / 2, 0, W / 2);
+  cg.addColorStop(0, '#9AA0A6'); cg.addColorStop(0.5, '#F2F4F6'); cg.addColorStop(1, '#9AA0A6');
+  ctx.fillStyle = cg; rr(ctx, L / 2 - 1.5, -W / 2 + 3, 3, W - 6, 1.2); ctx.fill();          /* chrome front bumper */
+  /* light bar across the cab roof: red half and blue half, both flash together; a glow when on */
+  const bx = fx + cab * 0.30, bw = cab * 0.20;
+  if (on) {
+    for (const [cy, col] of [[-W / 4, 'rgba(255,59,59,'], [W / 4, 'rgba(47,123,255,']]) {
+      const gl = ctx.createRadialGradient(bx + bw / 2, cy, 1, bx + bw / 2, cy, W * 0.9);
+      gl.addColorStop(0, col + '0.55)'); gl.addColorStop(1, col + '0)');
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(bx + bw / 2, cy, W * 0.9, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.fillStyle = '#2A2E33'; rr(ctx, bx - 1, -W / 2 + 2, bw + 2, W - 4, 2); ctx.fill();          /* housing */
+  ctx.fillStyle = on ? '#FF3B3B' : '#5A1414'; rr(ctx, bx, -W / 2 + 3, bw, W / 2 - 4, 1.5); ctx.fill();
+  ctx.fillStyle = on ? '#2F7BFF' : '#14285A'; rr(ctx, bx, 1, bw, W / 2 - 4, 1.5); ctx.fill();
+  ctx.fillStyle = on ? '#FFFFFF' : '#6B6B6B';                                                 /* front corner flashers */
+  ctx.fillRect(L / 2 - 3.5, -W / 2 + 1, 2.5, 4); ctx.fillRect(L / 2 - 3.5, W / 2 - 5, 2.5, 4);
+  /* mirrors on chrome arms: 290 cm across */
+  ctx.fillStyle = '#C9CDD2'; ctx.fillRect(L / 2 - cab * 0.22, -W / 2 - M, 1.4, M); ctx.fillRect(L / 2 - cab * 0.22, W / 2, 1.4, M);
+  ctx.fillStyle = '#1B2430'; rr(ctx, L / 2 - cab * 0.22 - 2, -W / 2 - M - 1, 4, 3, 1); ctx.fill(); rr(ctx, L / 2 - cab * 0.22 - 2, W / 2 + M - 2, 4, 3, 1); ctx.fill();
+  /* aerial ladder: turntable at the rear, ladder lying forward over the body toward the cab */
+  const tx = -L / 2 + L * 0.16, ry = W * 0.20;
+  ctx.beginPath(); ctx.arc(tx, 0, W * 0.30, 0, Math.PI * 2); ctx.fillStyle = '#3A3F45'; ctx.fill();
+  ctx.lineWidth = 1; ctx.strokeStyle = '#9AA0A6'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(tx, 0, W * 0.16, 0, Math.PI * 2); ctx.fillStyle = '#C9CDD2'; ctx.fill();
+  const lx0 = tx, lx1 = fx + cab * 0.20;
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(lx0, -ry - 1, lx1 - lx0, 2 * ry + 2);
+  ctx.strokeStyle = '#E3E6EA'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(lx0, -ry); ctx.lineTo(lx1, -ry); ctx.moveTo(lx0, ry); ctx.lineTo(lx1, ry); ctx.stroke();
+  ctx.strokeStyle = '#B9BEC4'; ctx.lineWidth = 0.9;
+  for (let k = lx0 + 5; k < lx1; k += 5) { ctx.beginPath(); ctx.moveTo(k, -ry); ctx.lineTo(k, ry); ctx.stroke(); }
+  /* rear: chrome step and amber/red warning lights */
+  ctx.fillStyle = cg; rr(ctx, -L / 2 - 1.5, -W / 2 + 4, 2.5, W - 8, 1); ctx.fill();
+  ctx.fillStyle = on ? '#7A4A00' : '#FFB020'; ctx.fillRect(-L / 2 + 0.5, -W / 2 + 2, 2.5, 4); ctx.fillRect(-L / 2 + 0.5, W / 2 - 6, 2.5, 4);
+  ctx.restore();
+  label(ctx, 'fire engine', x - L / 2 - 6, y + 4, '600 11px sans-serif', '#FFFFFF', 'right');   /* in the empty lane behind it, not on the body */
+}
+function drawStatus(ctx, P, t) {                  /* screen space: step done and the CLEAR / PAUSE exchange */
+  if (!PROTO || LOSS || t < 12.5) return;
+  const tl = motionT(t) - T_FORM, paused = SCEN !== 'normal' && t >= P0 && t < P1;
+  const steps = STEPS.map((s, i) => (i + 1) + (tl >= s.to ? ' ✓' : tl >= s.from ? ' ▶' : ' …')).join('   ');
+  const closed = tl >= STEPS[STEPS.length - 1].to;
+  const stat = !paused ? 'A CLEAR · B CLEAR · C CLEAR' : SCEN === 'emergency' ?
+    (t < P0 + 0.3 ? 'EMERGENCY → pull over?' : 'EMERGENCY: clear the road ✓A ✓B ✓C, B backs aside') : 'A PAUSE · B PAUSE · C PAUSE → locked';
+  ctx.save();
+  ctx.fillStyle = 'rgba(11,15,23,0.78)'; rr(ctx, 8, 36, 430, 40, 6); ctx.fill();
+  ctx.font = '600 12px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#E8EBF0'; ctx.fillText('Moves (step done): ' + steps, 16, 52);
+  ctx.fillStyle = paused ? '#E6A23C' : '#5DCAA5';
+  ctx.fillText(closed ? 'Session closed: street clear, route R-4F39 done' : 'Every 300 ms: ' + stat, 16, 69);
+  ctx.restore();
+}
+
+function drawStreet(ctx, t, P) {
+  ctx.clearRect(0, 0, 640, 360);
+  const cars = applyPullOver(carsAt(motionT(t), t), t);   /* steer (B, C) and crab (A) come with the poses */
+  LABEL_HALO = P.lane;
+  const cam = camFor(VIEW, cars);
+  CAMZ = cam.z; CAMTY = cam.ty;
+  ctx.fillStyle = P.kerb; ctx.fillRect(0, 0, 640, 360);
+  ctx.save();
+  ctx.translate(320, 180); ctx.scale(cam.z, cam.z * cam.ty); ctx.translate(-cam.cx, -cam.cy);
+  ctx.fillStyle = P.kerb; ctx.fillRect(-3000, -3000, 6640, 6360);
+  drawScene(ctx, P, t, cars);
+
+  /* measurements shown while the rules are explained */
+  const st = stageAt(t).id;
+  if (PROTO && MODE === 'explain' && st === 4) {
+    ctx.strokeStyle = P.packet; ctx.fillStyle = P.packet; ctx.lineWidth = 2; ctx.setLineDash([]);
+    /* A: 1.9 m between its rear bumper (s = -600) and the human-driven car's front (s = -790) */
+    ctx.beginPath(); ctx.moveTo(px(-600), py(10)); ctx.lineTo(px(-790), py(10)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(-600), py(10) - 4); ctx.lineTo(px(-600), py(10) + 4);
+    ctx.moveTo(px(-790), py(10) - 4); ctx.lineTo(px(-790), py(10) + 4); ctx.stroke();
+    label(ctx, 'A: 1.9 m to the car behind', px(-695), py(110), '600 11px sans-serif', P.textStrong, 'center');
+    label(ctx, 'B: about 1 m free behind', px(1090), py(285), '600 10px sans-serif', P.textStrong, 'right');
+    label(ctx, 'C: SUV and person ahead, 9.3 m free behind', px(1090), py(625), '600 10px sans-serif', P.textStrong, 'right');
+  }
+  if (VIEW === 'A' || VIEW === 'B' || VIEW === 'C') {      /* what this car senses all around */
+    const c = cars[VIEW];
+    const cx0 = px(c.s), cy0 = py(c.d), R = SC * 900, hd = -c.h * Math.PI / 180;
+    ctx.strokeStyle = P.teal; ctx.fillStyle = P.bay; ctx.lineWidth = 1.5;
+    if (SENSOR === 'camera') {            /* forward-facing cameras: a cone ahead, blind behind */
+      ctx.beginPath(); ctx.moveTo(cx0, cy0); ctx.arc(cx0, cy0, R, hd - 0.96, hd + 0.96); ctx.closePath();
+      ctx.fill(); ctx.setLineDash([6, 5]); ctx.stroke(); ctx.setLineDash([]);
+    } else {                              /* lidar: full ring plus a rotating beam */
+      ctx.beginPath(); ctx.arc(cx0, cy0, R, 0, Math.PI * 2); ctx.fill();
+      ctx.setLineDash([6, 5]); ctx.stroke(); ctx.setLineDash([]);
+      const a = (t * 2.2) % (Math.PI * 2);
+      ctx.beginPath(); ctx.moveTo(cx0, cy0); ctx.lineTo(cx0 + R * Math.cos(a), cy0 + R * Math.sin(a));
+      ctx.strokeStyle = P.packet; ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+  drawRoutes(ctx, P, t);
+  drawCar(ctx, P, 'A', cars.A, 'A');
+  drawCar(ctx, P, 'B', cars.B, 'B');
+  drawCar(ctx, P, 'C', cars.C, 'C');
+  drawRouteLabels(ctx, P, t);
+  for (const k of ['A', 'B', 'C']) drawLights(ctx, k, cars[k], t);
+  if (SCEN === 'emergency' && PROTO && !LOSS && t >= P0 && t < P0 + 5.5) {   /* the human-driven car signals right, toward the kerb */
+    const Hc = humanAt(t, cars);
+    drawLamps(ctx, Hc, Hc.len, Hc.wid, { ind:'right', rev:false }, t);
+  }
+  drawPerson(ctx, P, t);
+  drawEmergency(ctx, P, t);
+  if (PROTO && t >= 11.6 && t < 12.5) {                     /* votes: every car sends its signed hash to the other two */
+    const q = clamp01((t - 11.6) / 0.5), e = ease(q), K = ['A', 'B', 'C'];
+    ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+    for (const a of K) for (const b of K) {
+      if (a === b) continue;
+      const x0 = px(cars[a].s), y0 = py(cars[a].d), x1 = px(cars[b].s), y1 = py(cars[b].d);
+      ctx.strokeStyle = P.packet; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      if (q < 1) { ctx.fillStyle = P.packet; ctx.fillRect(lerp(x0, x1, e) - 3, lerp(y0, y1, e) - 3, 6, 6); }
+    }
+    ctx.setLineDash([]);
+  }
+  if (PROTO && t >= 10.5 && (LOSS || t < 14.0)) {         /* route numbers and order: shown until the moves start, then the route lines carry the numbers */
+    for (const k of ['A', 'B', 'C']) {                     /* B's chip sits to its right, clear of the person and the SUV */
+      if (k === 'B') hashChip(ctx, P, px(cars.B.s) + 78, py(cars.B.d) + 4, t, k);
+      else hashChip(ctx, P, px(cars[k].s), py(cars[k].d) - SC * 100 - 34, t, k);
+    }
+    if (!LOSS) {                                           /* no agreed plan, no pass order */
+      badge(ctx, P, px(cars.C.s) - 22, py(cars.C.d) - SC * 87.5 - 11, 1);   /* either side of C's letter plate */
+      badge(ctx, P, px(cars.C.s) + 22, py(cars.C.d) - SC * 87.5 - 11, 2);
+      badge(ctx, P, px(cars.A.s) - 12, py(cars.A.d) - SC * 95 - 12, 3);
+      badge(ctx, P, px(cars.A.s) + 12, py(cars.A.d) - SC * 95 - 12, 4);
+      badge(ctx, P, px(cars.B.s) + 78, py(cars.B.d) + 24, 5);
+    }
+  }
+  ctx.restore();
+  /* screen-space overlay: view name, server marker and the frames travelling to it */
+  ctx.fillStyle = P.text; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  if (!EMBED) ctx.fillText('View: ' + VIEWS[VIEW] + (VIEW.length === 1 ? ' | ' + (SENSOR === 'camera' ? 'camera: forward cone only' : 'lidar: full 360 degrees') + ', 9 m (illustration; the simulation gives every car the same 360-degree ray cast)' : ''), 10, 16);
+  /* frames travelling from the cars to the server marker while step 1 runs */
+  const sx = 320, sy = 22;
+  ctx.fillStyle = 'rgba(11,15,23,0.72)'; rr(ctx, 452, 40, 182, 18, 4); ctx.fill();
+  ctx.fillStyle = '#D6B468'; ctx.font = '600 10px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('SIMULATION · scripted motion', 543, 53);
+  if (t < T_FORM) {                                         /* the formation is a replay, 3x faster than real time */
+    ctx.fillStyle = 'rgba(11,15,23,0.80)'; rr(ctx, 8, 36, 300, 22, 6); ctx.fill();
+    ctx.fillStyle = '#D6B468'; ctx.font = '600 12px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('\u25B6\u25B6 replay at 3x speed: how the jam formed', 16, 51);
+  }
+  if (!PROTO) return;
+  drawStatus(ctx, P, t);
+  ctx.fillStyle = P.textStrong; ctx.font = '600 11px sans-serif'; ctx.textAlign = 'center';
+  ctx.strokeStyle = P.teal; ctx.lineWidth = 1; ctx.strokeRect(sx - 92, sy - 11, 184, 20);
+  ctx.fillText('MCU gateway \u2192 /dev/v2v_ttl', sx, sy + 4);
+  if (t >= 5.5 && t < 7.2) {
+    const q = clamp01((t - 5.5) / 1.5);
+    for (const key of ['A', 'B', 'C']) {
+      const sp = w2s(cam, px(cars[key].s), py(cars[key].d)), x0 = sp[0], y0 = sp[1];
+      ctx.strokeStyle = P.packet; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(sx, sy + 10); ctx.stroke(); ctx.setLineDash([]);
+      const e = ease(q);
+      ctx.fillStyle = P.packet; ctx.fillRect(lerp(x0, sx, e) - 4, lerp(y0, sy + 10, e) - 4, 8, 8);
+    }
+  }
+}
+
+/* ---------- pipeline diagram: the same architecture as protocol_diagram.svg, drawn 1:1 (no down-scaling, so the
+ * text stays sharp; the canvas is sized by devicePixelRatio) ---------- */
+const PIPE = {
+  containers: [
+    { x:8, y:148, w:624, h:98, kind:'purple', title:'QNX resource manager /dev/v2v_ttl (uid 1000)', right:'thread pool · abilities locked' },
+    { x:8, y:250, w:624, h:50, kind:'tealB', title:'', right:'' }
+  ],
+  boxes: [
+    { x:16,  y:6,   w:184, h:40, kind:'gray',  title:'Car A', sub:'own sensors and planner' },
+    { x:228, y:6,   w:184, h:40, kind:'gray',  title:'Car B', sub:'own sensors and planner' },
+    { x:440, y:6,   w:184, h:40, kind:'gray',  title:'Car C', sub:'own sensors and planner' },
+    { x:16,  y:54,  w:608, h:40, kind:'gray',  title:'V2V radio (simulated)', sub:'join 283 B (certificate + first frame) · frame 138 B · vote 106 B · step done · CLEAR / PAUSE' },
+    { x:16,  y:102, w:608, h:40, kind:'gray',  title:'Edge gateway (uid 1100): own process, stands in for a radio-side board', sub:'known sizes and types · CRC · hash-chain value · 200/s for members, 200/s for the rest, 50 per car' },
+    { x:16,  y:176, w:112, h:62, kind:'tealB', title:'Certificates', sub:'proven by a frame' },
+    { x:140, y:176, w:112, h:62, kind:'tealB', title:'Frame cache', sub:'TTL 300 ms' },
+    { x:264, y:176, w:112, h:62, kind:'tealB', title:'Fuse with map', sub:'lines + footprints' },
+    { x:388, y:176, w:112, h:62, kind:'tealB', title:'Plan + number', sub:'fewest steps' },
+    { x:16,  y:256, w:140, h:40, kind:'tealB', title:'1 Views', sub:'exchanged, kept' },
+    { x:172, y:256, w:140, h:40, kind:'tealB', title:'2 Route no.', sub:'each car computes' },
+    { x:328, y:256, w:140, h:40, kind:'tealB', title:'3 Ruling', sub:'numbers match 3/3' },
+    { x:484, y:256, w:140, h:40, kind:'tealB', title:'4 Go in order', sub:'signal · step done' },
+    { x:16,  y:306, w:300, h:36, kind:'gray',  title:'No ruling in 1.5 s', sub:'never a silent stall: back off ≤ 50 cm, ask for help' },
+    { x:324, y:306, w:300, h:36, kind:'gray',  title:'Link lost', sub:'hazards · 4G to the control centre · retry 1, 2, 4, 8 s' },
+    { x:512, y:176, w:112, h:62, kind:'tealB', title:'Vote relay', sub:'relays all votes' }
+  ],
+  arrows: [
+    [108,46,108,52],[320,46,320,52],[532,46,532,52],[320,94,320,100],[320,142,320,146],
+    [128,207,138,207],[252,207,262,207],[376,207,386,207],
+    [156,276,170,276],[312,276,326,276],[468,276,482,276]
+  ]
+};
+/* which boxes and arrows glow in each stage */
+const ACTIVE = {
+  0: { boxes:[],                 arrows:[] },
+  1: { boxes:[0,1,2,3,4,9],      arrows:[0,1,2,3,4] },
+  2: { boxes:[5,6],              arrows:[5] },
+  3: { boxes:[6,7],              arrows:[6] },
+  4: { boxes:[7],                arrows:[] },
+  5: { boxes:[8,10],             arrows:[7,8] },
+  6: { boxes:[12],               arrows:[10] },
+  7: { boxes:[],                 arrows:[] },
+  8: { boxes:[0,1,2,3,4,15,11],  arrows:[9] },
+  9: { boxes:[0,1,2,12],         arrows:[] },
+  11:{ boxes:[0,1,2,3,4,12],     arrows:[0,1,2,3,4] },
+  12:{ boxes:[12],               arrows:[10] },
+  10:{ boxes:[12],               arrows:[10] }
+};
+
+function drawPipe(ctx, t, P) {
+  ctx.clearRect(0, 0, 640, 360);
+  ctx.save();
+  const stg = stageAt(t), act = LOSS && t >= 12.1 ? { boxes:[0,1,2,11,15], arrows:[9] } : ACTIVE[stg.id];   /* mismatch: the ruling holds, nobody goes */
+  ctx.textBaseline = 'middle';
+  for (const c of PIPE.containers) {
+    const p = P[c.kind];
+    rr(ctx, c.x, c.y, c.w, c.h, 12); ctx.fillStyle = p.fill; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = p.stroke; ctx.stroke();
+    ctx.textAlign = 'left'; ctx.font = '600 14px sans-serif'; ctx.fillStyle = p.t; ctx.fillText(c.title, c.x + 12, c.y + 16);
+    ctx.textAlign = 'right'; ctx.font = '11px sans-serif'; ctx.fillStyle = p.s; ctx.fillText(c.right, c.x + c.w - 12, c.y + 16);
+  }
+  const tl = motionT(t) - T_FORM, hold = SCEN !== 'normal' && t >= P0 && t < P1, exec = PROTO && !LOSS && t >= 12.5;
+  const mover = exec ? (STEPS.find(s => tl >= s.from - 1.0 && tl < s.to) || {}).k : null;
+  PIPE.boxes.forEach((b0, i) => {
+    const b = Object.assign({}, b0);
+    if (exec && i <= 2) {                         /* the cars: who moves, who holds, what status it sends */
+      const k = 'ABC'[i];
+      const last = STEPS.filter(s => s.k === k).pop(), gone = tl >= last.to;
+      const soon = STEPS.some(s => s.k === k && tl >= s.from - 1.0 && tl < s.from);
+      b.sub = gone ? (k === 'C' ? 'out of the way · sends CLEAR' : 'through · sends CLEAR')
+            : hold ? (SCEN === 'emergency' ? 'backs into the free space · hazards' : 'sees the person · PAUSE')
+            : soon ? 'about to move · turn signal' : mover === k ? 'moving · turn signal' : 'holding · hazards';
+    }
+    if (exec && i === 3) b.sub = hold && SCEN === 'emergency' ? 'one exchange: PULL OVER confirmed by all' : 'every 300 ms: CLEAR or PAUSE from every car';
+    if (exec && i === 12) b.sub = hold ? (SCEN === 'emergency' ? 'PULL OVER: plan waits' : 'PAUSE LOCK: plan kept')
+                                       : 'step ' + Math.min(STEPS.length, STEPS.filter(s => tl >= s.to).length + (mover ? 1 : 0)) + ' of ' + STEPS.length + ' · step done';
+    if (i === 11 && LOSS && t >= 12.1) b.sub = 'MISMATCH: all hold';
+    const p = P[b.kind], on = act.boxes.includes(i) || (exec && i <= 2 && (hold || mover === 'ABC'[i]));
+    rr(ctx, b.x, b.y, b.w, b.h, 8); ctx.fillStyle = p.fill; ctx.fill();
+    ctx.lineWidth = on ? 3.2 : 1; ctx.strokeStyle = on ? (hold ? '#FFB020' : P.hi) : p.stroke; ctx.stroke();
+    const ty = b.h >= 60 ? b.y + b.h / 2 - 9 : b.y + b.h / 2 - 7, sy = b.h >= 60 ? b.y + b.h / 2 + 11 : b.y + b.h / 2 + 9;
+    ctx.textAlign = 'center'; ctx.font = (b.h >= 40 ? '600 14px' : '600 13px') + ' sans-serif'; ctx.fillStyle = p.t; ctx.fillText(b.title, b.x + b.w / 2, ty);
+    ctx.font = '11px sans-serif'; ctx.fillStyle = p.s; ctx.fillText(b.sub, b.x + b.w / 2, sy);
+  });
+  PIPE.arrows.forEach((a, i) => {
+    const on = act.arrows.includes(i), col = on ? P.hi : P.arrow;
+    const ang = Math.atan2(a[3] - a[1], a[2] - a[0]);
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = on ? 2.6 : 1.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(a[2] - Math.cos(ang) * 3, a[3] - Math.sin(ang) * 3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a[2], a[3]);
+    ctx.lineTo(a[2] - 7 * Math.cos(ang - 0.45), a[3] - 7 * Math.sin(ang - 0.45));
+    ctx.lineTo(a[2] - 7 * Math.cos(ang + 0.45), a[3] - 7 * Math.sin(ang + 0.45)); ctx.closePath(); ctx.fill();
+    if (on) {                                   /* a packet travelling along the arrow */
+      const q = ease(clamp01((t - stg.from) / Math.max(0.2, (Math.min(stg.to, stg.from + 1.2) - stg.from))));
+      ctx.fillStyle = P.packet;
+      ctx.fillRect(lerp(a[0], a[2], q) - 5, lerp(a[1], a[3], q) - 5, 10, 10);
+    }
+  });
+  ctx.restore();
+  ctx.fillStyle = P.text; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Glowing = the step that is running now', 10, 356);
+}
+
+/* ---------- driver ---------- */
+const streetC = document.getElementById('street'), pipeC = document.getElementById('pipe');
+const capEl = document.getElementById('caption'), seek = document.getElementById('seek');
+seek.max = String(Math.round(T_TOTAL * 1000));
+const clockEl = document.getElementById('clock'), playBtn = document.getElementById('play'), speedSel = document.getElementById('speed');
+function setupCanvas(c) {
+  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  c.width = Math.round(640 * dpr); c.height = Math.round(360 * dpr);
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+}
+let sctx = setupCanvas(streetC), pctx = setupCanvas(pipeC);
+let tNow = 0, playing = true, lastMs = null, lastStage = -1;
+
+/* operator view: one row per car */
+/* the car's speed in the animation script (position change over 0.2 s of the motion clock), km/h; 1 cm/s = 0.036 km/h */
+function scriptSpeedKmh(k, t) {
+  const dt = 0.1, at = x => applyPullOver(carsAt(motionT(x), x), x)[k];
+  const a = at(Math.max(0, t - dt)), b = at(t + dt);
+  return Math.hypot(b.s - a.s, b.d - a.d) / (2 * dt) * 0.036;
+}
+function opState(k, t) { const r = opState0(k, t); r.push(scriptSpeedKmh(k, t).toFixed(1) + ' km/h'); return r; }
+function opState0(k, t) {
+  const NAME = { A:'Car A (two-ended)', B:'Car B (SUV)', C:'Car C (two-seat)' };
+  if (t < 5.5) return [NAME[k], '-', '-', '-', '-', t < T_FORM ? 'driving in' : 'stopped: yields when unsure'];
+  const cert = 'valid, 60 s';
+  const frame = t < 6.5 ? 'sending' : 'fresh (< 300 ms)';
+  if (t < 10.5) return [NAME[k], cert, frame, t < 9 ? '-' : 'computing', '-', 'stopped: waiting for the plan'];
+  const own = LOSS && k === 'C' ? '0xE88DD551 (2 frames)' : '0x' + PLAN_HASH + ' (3 frames)';
+  const nv = t < 11.6 ? 0 : t < 12.1 ? 1 + Math.min(2, Math.floor((t - 11.6) / 0.17)) : 3;
+  if (t < 12.1) return [NAME[k], cert, frame, own, nv + '/3', 'stopped: collecting votes'];
+  if (LOSS) return [NAME[k], cert, frame, own, '3/3, MISMATCH', 'HOLD: retry next round (300 ms)'];
+  const tl = motionT(t) - T_FORM, held = SCEN !== 'normal' && t >= P0 && t < P1;
+  const VERB = ['step 1: backing off 7 m', 'step 2: backing off 4.5 m', 'step 3: passing straight', 'step 4: passing', 'step 5: waits clear'];
+  const mine = STEPS.map((s, i) => ({ s, i })).filter(o => o.s.k === k);
+  const cur = mine.find(o => tl >= o.s.from && tl < o.s.to), next = mine.find(o => tl < o.s.from);
+  const plan = cur ? VERB[cur.i] : !next ? (k === 'C' ? (tl >= TL.cOff - 1.0 ? 'session closed: drives on west' : 'out of the way, waits') : 'through')
+             : next.i > 0 && STEPS[next.i - 1].k === k ? VERB[next.i - 1]
+             : next.i === 0 ? 'agreed: about to back off' : 'agreed: waits for ' + STEPS[next.i - 1].k;
+  const doing = held ? (SCEN === 'emergency' ? (k === 'B' ? (t < P0 + 0.5 + T_BAY ? 'CLEAR THE ROAD: backs into the free space' : 'CLEAR THE ROAD: waits in the space') : k === 'C' && t < P0 + 4.5 ? 'CLEAR THE ROAD: backs 3.7 m to make room' : 'through: CLEAR')
+                                             : (k === 'C' ? 'PAUSE: person crossing ahead' : 'PAUSE: a person ahead of A'))
+    : plan;
+  return [NAME[k], cert, frame, own, '3/3, all match', doing];
+}
+const opBody = document.querySelector('#optable tbody');
+function renderOperator(t) {
+  if (!opBody) return;
+  opBody.innerHTML = ['A', 'B', 'C'].map(function (k) {
+    const r = opState(k, t);
+    const cls = /HOLD/.test(r[5]) ? ' class="hold"' : /^step|passing/.test(r[5]) ? ' class="moving"' : '';
+    return '<tr' + cls + '>' + r.map(function (x) { return '<td>' + x + '</td>'; }).join('') + '</tr>';
+  }).join('');
+}
+
+function render(t) {
+  const P = palette();
+  if (EMBED) { drawStreet(sctx, mapT(t), P); return; }
+  renderOperator(t);
+  drawStreet(sctx, t, P);
+  drawPipe(pctx, t, P);
+  const stg = stageAt(t);
+  const held = LOSS && t >= 12.1, key = stg.id + (held ? 'L' : '');
+  if (key !== lastStage) {
+    capEl.textContent = held ? 'Votes do not match: car C missed car A\'s frame and computed 0xE88DD551, A and B computed 0x4F390A9A. Nobody moves yet; the views are re-sent in the next round (300 ms) and kept for the session, so car C gets car A\'s view and all three then rule on the same number. The hold is the second agreement round in the QNX log.' : stg.text;
+    lastStage = key;
+    const rows = document.querySelectorAll('#qnx tbody tr');
+    rows.forEach(r => r.classList.toggle('on', r.dataset.st.split(' ').includes(String(stg.id === 6 ? 5 : stg.id))));
+  }
+  clockEl.textContent = t.toFixed(1) + ' s';
+  seek.value = String(Math.round(t * 1000));
+}
+function frame(ms) {
+  if (lastMs === null) lastMs = ms;
+  if (playing) {
+    tNow += (ms - lastMs) / 1000 * parseFloat(speedSel.value);
+    if (tNow >= T_TOTAL) tNow = 0;
+  }
+  lastMs = ms;
+  render(tNow);
+  requestAnimationFrame(frame);
+}
+document.getElementById('replay').addEventListener('click', () => { tNow = 0; lastMs = null; playing = true; playBtn.textContent = 'Pause'; render(0); });
+playBtn.addEventListener('click', () => { playing = !playing; playBtn.textContent = playing ? 'Pause' : 'Play'; });
+seek.addEventListener('input', () => { tNow = parseFloat(seek.value) / 1000; playing = false; playBtn.textContent = 'Play'; render(tNow); });
+
+const viewsEl = document.getElementById('views');
+Object.keys(VIEWS).forEach(function (k) {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = VIEWS[k]; b.dataset.view = k;
+  b.addEventListener('click', function () { setView(k); });
+  viewsEl.appendChild(b);
+});
+const sensorsEl = document.getElementById('sensors');
+[['lidar', 'Lidar: 360 degrees'], ['camera', 'Camera: forward cone']].forEach(function (q) {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = q[1]; b.dataset.sensor = q[0];
+  b.addEventListener('click', function () { setSensor(q[0]); });
+  sensorsEl.appendChild(b);
+});
+function setSensor(k) {
+  SENSOR = k;
+  sensorsEl.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.sensor === k); });
+  render(tNow);
+}
+function setView(k) {
+  if (!VIEWS[k]) return;
+  VIEW = k;
+  viewsEl.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === k); });
+  render(tNow);
+}
+const params = new URLSearchParams(location.search);
+setSensor(params.get('sensor') === 'camera' ? 'camera' : 'lidar');
+if (params.has('view')) setView(params.get('view')); else setView('top');
+if (params.has('gif')) document.body.classList.add('gif');
+if (EMBED) document.body.classList.add('embed');
+const lossBox = document.getElementById('loss');
+if (lossBox && params.has('loss')) { lossBox.checked = true; LOSS = true; }
+if (lossBox) lossBox.addEventListener('change', function () { LOSS = lossBox.checked; render(tNow); });
+window.addEventListener('message', function (e) {      /* the before/after page drives the clock of both panels */
+  if (!EMBED || e.source !== window.parent || !e.data || typeof e.data.t !== 'number') return;
+  tNow = e.data.t; render(tNow);
+});
+if (EMBED) {
+  render(parseFloat(params.get('t')) || 0);
+} else if (params.has('t')) {            /* fixed time: used to render GIF frames reproducibly */
+  playing = false; tNow = Math.max(0, Math.min(T_TOTAL, parseFloat(params.get('t')) || 0));
+  render(tNow);
+} else {
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+[package]
+name = "v2v_core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Rust port of the pure logic of qnx_target/src/v2v_ttl_resmgr.c (frame check, CRC, vote commit rule), checked bit for bit against the C original"
+license = "MIT"
+publish = false
+
+[lib]
+name = "v2v_core"
+crate-type = ["rlib", "staticlib"]
+
+[features]
+c_lib = []   # build the static library for C: no_std with its own panic handler (cargo build --release --features c_lib)
+emerg = []   # job J10: emergency-vehicle yield planner (rust_port/src/emerg.rs), off by default
+spec2 = []   # job J12: SPEC V2 part 1 (rust_port/src/spec2.rs, spec2_ffi.rs; pairs with C -DV2V_SPEC2): class gaps, judgement, yielding, queueing; the planner gap becomes run-time (default 91 cm since J14, 75 cm in J12/J13), off by default
+resv_entry = []   # job G13 (pairs with C -DV2V_RESV_ENTRY, owner decision T-2): reservation message check, table entry decision, hand-shake answers (rust_port/src/resv_entry.rs, resv_entry_ffi.rs), off by default
+fix_n1 = []   # candidate fix for finding N1 (pairs with C -DV2V_FIX_N1): reserved join quota, digest bound at join, per-link noise cap
+fix_n1_noreserve = ["fix_n1"]   # negative control (pairs with C -DV2V_FIX_N1_NORESERVE): the fix without the reserved join quota
+fix_equiv = []   # J4 (pairs with C -DV2V_FIX_EQUIV): a second, different, validly signed vote of one car in one round is kept as proof and relayed
+low_s = []   # J4 (pairs with C -DV2V_LOW_S): only low-s ECDSA signatures are accepted
+fix_a05 = []   # J5 variant DP1 (pairs with C -DV2V_FIX_A05): every device refusal of a chain-valid frame is charged to its chain value
+fix_a05_link = ["fix_a05"]   # J5 as written, not in B4 (pairs with C -DV2V_FIX_A05_LINK): the refusal is also charged to the sender's link
+fix_vtype = []   # J6 (pairs with C -DV2V_FIX_VTYPE): the frame's vehicle_type must equal the certificate's
+fix_vtype_noframe = ["fix_vtype"]   # negative control (C -DV2V_FIX_VTYPE_NOFRAME): without the check of later frames
+fix_idfair = []   # J7 F2-ID (pairs with C -DV2V_FIX_IDFAIR): member budget shared fairly by pseudo-ID after 150 of 200
+fix_idfair_noshare = ["fix_idfair"]   # negative control (C -DV2V_FIX_IDFAIR_NOSHARE): counters kept, drop rule removed
+fix_equiv_bb = []   # J11 / owner decision H (pairs with C -DV2V_FIX_EQUIV_BB): black-box evidence ring + ordered path (step gate); replaces fix_equiv in B4
+fix_equiv_bb_nogate = ["fix_equiv_bb"]   # negative control (C -DV2V_FIX_EQUIV_BB_NOGATE): the predecessor check of the step gate removed
+fix_equiv_bb_nohash = ["fix_equiv_bb"]   # negative control (C -DV2V_FIX_EQUIV_BB_NOHASH): a step done with another plan hash is accepted
+fix_n3 = []   # job G19 (pairs with C -DV2V_FIX_N3): the gateway's chain table evicts by the last accepted frame (finding N3); own mask v2v_rs_g19_features
+fix_n4 = []   # job G19 (pairs with C -DV2V_FIX_N4): a join whose first frame the cache refuses is undone, the slot restored (finding N4)
+edge = []   # G17 step 2 (owner decision U): front filter of the simulated ESP-class edge unit (rust_port/src/edge.rs, edge_ffi.rs; C mirror qnx_target/src/v2v_edge.inc.c), off by default
+
+[dependencies]
+
+[profile.release]
+panic = "abort"
+opt-level = 2

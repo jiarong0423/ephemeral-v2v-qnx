@@ -1,0 +1,160 @@
+# j24c_cmds.txt - QNX 8.0.6 boot commands for J24C (GA resmgr boundary, GC budget/probes, GT switchover)
+# Simulation values only; design on a certifiable platform; nothing certified.
+J=${J24C_DIR:-/tmp/j24c}
+B=${J24C_BIN:-/system/bin}
+rm -rf "$J"; mkdir -p "$J"
+J24C_SECPOL=no; J24C_OPTSRC=none
+for f in /proc/boot/build/options /ifs/build/options; do
+  if [ -f "$f" ]; then
+    v=$(sed -n -E "s/^OPT_SECPOL=['\"]?([a-z]+)['\"]?$/\1/p" "$f" | head -1)
+    if [ -n "$v" ]; then J24C_SECPOL=$v; J24C_OPTSRC=$f; break; fi
+  fi
+done
+J24_USB=unknown
+[ -f "$J24C_OPTSRC" ] && J24_USB=$(sed -n -E "s/^OPT_USB=['\"]?([a-z]+)['\"]?$/\1/p" "$J24C_OPTSRC" | head -1)
+echo "[J24C] mode secpol=${J24C_SECPOL} (from ${J24C_OPTSRC}) OPT_USB=${J24_USB}"
+echo "[J24C] programs: $(ls $B 2>/dev/null | grep -c -E '^(v2v-j23b|v2v-g10-resmgr-b4|test_j24c|test_j23b_proc|test_j23b|test_b4gate)')"
+if [ -e /proc/boot/secpol.bin ]; then echo "J23B-SECPOL-FILE present"; else echo "J23B-SECPOL-FILE absent"; fi
+
+ont() { t=$1; shift; if [ "$J24C_SECPOL" = no ] || [ "$J24C_SECPOL" = host ]; then "$@"; else on -T "$t" "$@"; fi; }
+
+case "$J24C_SECPOL" in
+  no) export J23B_MODE=nopol; unset J23B_ON ;;
+  host) export J23B_MODE=host; unset J23B_ON ;;
+  *) export J23B_MODE=secpol; export J23B_ON=1 ;;
+esac
+
+# ---- 1. Start v2v-g10-resmgr-b4 BEFORE gate & act ----
+if [ "$J24C_SECPOL" = no ] || [ "$J24C_SECPOL" = host ]; then
+  $B/v2v-g10-resmgr-b4 --server --car-uid 1310 --drop-uid 1310 --path /dev/v2v_ttl --allow-unsigned --quiet --resv-time-div 5 > $J/resmgr.log 2>&1 &
+else
+  on -T v2v_resmgr_t $B/v2v-g10-resmgr-b4 --server --car-uid 1310 --drop-uid 1310 --path /dev/v2v_ttl --allow-unsigned --quiet --resv-time-div 5 > $J/resmgr.log 2>&1 &
+fi
+RP=$!
+i=0; while [ ! -e /dev/v2v_ttl ] && [ $i -lt 20 ]; do sleep 1; i=$((i+1)); done
+RP_REAL=$(sed -n 's/.*resmgr_attach OK.*pid \([0-9][0-9]*\).*/\1/p' $J/resmgr.log 2>/dev/null | head -1)
+[ -z "$RP_REAL" ] && RP_REAL=$RP
+echo "[J24C] /dev/v2v_ttl $([ -e /dev/v2v_ttl ] && echo present || echo ABSENT) after ${i}s pid=${RP_REAL} (bg=${RP})"
+grep -v '^==' $J/resmgr.log 2>/dev/null || true
+
+# ---- 2. GA unit + devctl tests & 5 negative controls ----
+run j24c_ga $B/test_j24c
+run j24c_ga_dev ont j23b_test_t $B/test_j24c --devctl /dev/v2v_ttl --div 5
+run j24c_neg_resv $B/test_j24c_neg_resv
+run j24c_neg_hash $B/test_j24c_neg_hash
+run j24c_neg_cell $B/test_j24c_neg_cell
+run j24c_neg_def  $B/test_j24c_neg_def
+run j24c_neg_down $B/test_j24c_neg_down
+run j24c_j23b $B/test_j23b
+
+# ---- 3. GC probes (sig0/sigcont/sigterm/sigkill + test_ctrl dummy) + PI + loop_p99_ms proc sample ----
+mkdir -p $J/proc $J/csv
+run j24c_proc ont j23b_test_t $B/test_j23b_proc $B $J/proc --tag qnx_${J24C_SECPOL} --csv $J/csv --trials 2 --only gate_kill --probe --pi
+
+# ---- 4. GT QNX switchover configs (4 configs x 105 eps/path >= 100) using live /dev/v2v_ttl ----
+make_gt_keys() {
+  d=$1; mkdir -p "$d"; chmod 0777 "$d"
+  dd if=/dev/urandom of="$d/permit_gate.key" bs=32 count=1 2>/dev/null
+  cp "$d/permit_gate.key" "$d/permit_act.key"
+  dd if=/dev/urandom of="$d/fleet_gate.key" bs=32 count=1 2>/dev/null
+  cp "$d/fleet_gate.key" "$d/fleet_comm.key"
+  chmod 0400 "$d"/*.key
+  chown 1310:1310 "$d/permit_gate.key" "$d/fleet_gate.key" 2>/dev/null || true
+  chown 1311:1311 "$d/permit_act.key" 2>/dev/null || true
+  chown 1313:1313 "$d/fleet_comm.key" 2>/dev/null || true
+}
+
+run_gt_cfg() {
+  cfg=$1; gpath=$2; def=$3; post=$4; with_load=$5; cid=$6
+  d="$J/gt_${cfg}"; rm -rf "$d"; make_gt_keys "$d"
+  touch "$d/gate.log" "$d/act.log" "$d/planner.log" "$d/comm.log" "$d/load.log"
+  chown 1310:1310 "$d/gate.log" 2>/dev/null || true
+  chown 1311:1311 "$d/act.log" 2>/dev/null || true
+  chown 1312:1312 "$d/planner.log" 2>/dev/null || true
+  chown 1313:1313 "$d/comm.log" 2>/dev/null || true
+  chown 1315:1315 "$d/load.log" 2>/dev/null || true
+
+  sp_gate() { if [ "$J24C_SECPOL" = no ]; then exec "$@" --drop-uid 1310; else exec on -T j23b_gate_t -u 1310:1310 "$@"; fi; }
+  sp_act()  { if [ "$J24C_SECPOL" = no ]; then exec "$@" --drop-uid 1311; else exec on -T j23b_act_t -u 1311:1311 "$@"; fi; }
+  sp_plan() { if [ "$J24C_SECPOL" = no ]; then exec "$@" --drop-uid 1312; else exec on -T j23b_planner_t -u 1312:1312 "$@"; fi; }
+  sp_comm() { if [ "$J24C_SECPOL" = no ]; then exec "$@" --drop-uid 1313; else exec on -T j23b_comm_t -u 1313:1313 "$@"; fi; }
+  sp_load() { if [ "$J24C_SECPOL" = no ]; then exec "$@" --drop-uid 1315; else exec on -T j23b_load_t -u 1315:1315 "$@"; fi; }
+
+  (sp_gate $B/v2v-j23b gate --key "$d/permit_gate.key" --fkey "$d/fleet_gate.key" --veh 1 --map 0 --j24c --map-seg 14 --car-id "$cid" --resv-path /dev/v2v_ttl --gt-switch --timing --log "$d/gate.log" --ident uid --j24-prio 66 --tick-prio 66) &
+  GP=$!; sleep 1
+  X0=-600; PFLAG=""
+  [ "$post" = "1" ] && { X0=200; PFLAG="--gt-post-commit"; }
+  (sp_act $B/v2v-j23b act --dir "$d" --key "$d/permit_act.key" --veh 1 --map 0 --j24c --map-seg 14 --x0 "$X0" --gt-switch --gt-path "$gpath" --timing --log "$d/act.log" --j24-prio 65) &
+  AP=$!
+  LP1=""; LP2=""
+  if [ "$with_load" = "1" ]; then
+    (sp_load $B/v2v-j23b load --mb 4 --busy-ms 25 --period-ms 50 --prio 40 --rr --log "$d/load.log") &
+    LP1=$!
+    (sp_load $B/v2v-j23b load --mb 4 --busy-ms 25 --period-ms 50 --prio 40 --rr --log "$d/load.log") &
+    LP2=$!
+  fi
+  (sp_comm $B/v2v-j23b comm --gt-comm --fkey "$d/fleet_comm.key" --gt-path "$gpath" --gt-episodes 105 --gt-depth-mm 125 --gt-defect "$def" $PFLAG --gt-seg 14 --log "$d/comm.log" --prio 40) &
+  CP=$!
+  (sp_plan $B/v2v-j23b planner --gt-plan --gt-path "$gpath" --gt-episodes 105 --gt-seg 14 --log "$d/planner.log" --prio 40) &
+  PP=$!
+
+  w=0
+  while [ $w -lt 45 ]; do
+    if grep -q "GT-COMM done" "$d/comm.log" 2>/dev/null && grep -q "GT-PLAN done" "$d/planner.log" 2>/dev/null; then break; fi
+    sleep 1; w=$((w+1))
+  done
+  GP_REAL=$(sed -n 's/.* START pid=\([0-9][0-9]*\).*/\1/p' "$d/gate.log" 2>/dev/null | head -1)
+  AP_REAL=$(sed -n 's/.* START pid=\([0-9][0-9]*\).*/\1/p' "$d/act.log" 2>/dev/null | head -1)
+  kill $PP $CP $AP $GP $LP1 $LP2 $AP_REAL $GP_REAL 2>/dev/null || true
+  sleep 1
+  kill -9 $PP $CP $AP $GP $LP1 $LP2 $AP_REAL $GP_REAL 2>/dev/null || true
+  wait $PP $CP $AP $GP $LP1 $LP2 2>/dev/null || true
+  gw=0; while [ -e /dev/name/local/j23b_gate ] && [ $gw -lt 5 ]; do sleep 1; gw=$((gw+1)); done
+  echo "=== J24C-GT-LOG BEGIN ${cfg} ==="
+  grep -E '\[GT-SW\]|J24C-GATE-STATS|J24C-STATS|GT-COMM done|GT-PLAN done|ERROR' "$d/act.log" "$d/gate.log" "$d/comm.log" "$d/planner.log" 2>/dev/null || true
+  echo "=== J24C-GT-LOG END ${cfg} ==="
+}
+
+run_gt_cfg hs2map_noload hs2map 0 0 0 11
+run_gt_cfg hs2map_load   hs2map 0 0 1 12
+run_gt_cfg map2ret_pre   map2ret 1 0 0 13
+run_gt_cfg map2ret_post  map2ret 1 1 1 14
+
+# ---- 5. Live GA-DOWN resmgr kill check on QNX ----
+d="$J/ga_down"; rm -rf "$d"; make_gt_keys "$d"
+touch "$d/gate.log" "$d/act.log" "$d/planner.log" "$d/comm.log"
+chown 1310:1310 "$d/gate.log" 2>/dev/null || true
+chown 1311:1311 "$d/act.log" 2>/dev/null || true
+chown 1312:1312 "$d/planner.log" 2>/dev/null || true
+chown 1313:1313 "$d/comm.log" 2>/dev/null || true
+if [ "$J24C_SECPOL" = no ]; then
+  $B/v2v-j23b gate --key "$d/permit_gate.key" --fkey "$d/fleet_gate.key" --veh 1 --map 0 --j24c --map-seg 14 --car-id 15 --resv-path /dev/v2v_ttl --log "$d/gate.log" --ident uid --j24-prio 66 --tick-prio 66 --drop-uid 1310 &
+  GP=$!; sleep 1
+  $B/v2v-j23b act --dir "$d" --key "$d/permit_act.key" --veh 1 --map 0 --j24c --map-seg 14 --x0 200 --log "$d/act.log" --j24-prio 65 --drop-uid 1311 &
+  AP=$!
+  $B/v2v-j23b comm --gt-comm --fkey "$d/fleet_comm.key" --gt-path hs2map --gt-episodes 50 --gt-seg 14 --log "$d/comm.log" --prio 40 --drop-uid 1313 &
+  CP=$!
+  $B/v2v-j23b planner --gt-plan --gt-path hs2map --gt-episodes 50 --gt-seg 14 --log "$d/planner.log" --prio 40 --drop-uid 1312 &
+  PP=$!
+else
+  on -T j23b_gate_t -u 1310:1310 $B/v2v-j23b gate --key "$d/permit_gate.key" --fkey "$d/fleet_gate.key" --veh 1 --map 0 --j24c --map-seg 14 --car-id 15 --resv-path /dev/v2v_ttl --log "$d/gate.log" --ident uid --j24-prio 66 --tick-prio 66 &
+  GP=$!; sleep 1
+  on -T j23b_act_t -u 1311:1311 $B/v2v-j23b act --dir "$d" --key "$d/permit_act.key" --veh 1 --map 0 --j24c --map-seg 14 --x0 200 --log "$d/act.log" --j24-prio 65 &
+  AP=$!
+  on -T j23b_comm_t -u 1313:1313 $B/v2v-j23b comm --gt-comm --fkey "$d/fleet_comm.key" --gt-path hs2map --gt-episodes 50 --gt-seg 14 --log "$d/comm.log" --prio 40 &
+  CP=$!
+  on -T j23b_planner_t -u 1312:1312 $B/v2v-j23b planner --gt-plan --gt-path hs2map --gt-episodes 50 --gt-seg 14 --log "$d/planner.log" --prio 40 &
+  PP=$!
+fi
+i=0; while [ $i -lt 10 ]; do grep -q " ISSUE " "$d/gate.log" 2>/dev/null && break; sleep 1; i=$((i+1)); done
+sleep 1
+echo "[J24C-GADOWN] kill_resmgr pid=${RP_REAL} bg=${RP}"
+kill -9 $RP_REAL $RP 2>/dev/null || true
+sleep 2
+GP_REAL=$(sed -n 's/.* START pid=\([0-9][0-9]*\).*/\1/p' "$d/gate.log" 2>/dev/null | head -1)
+AP_REAL=$(sed -n 's/.* START pid=\([0-9][0-9]*\).*/\1/p' "$d/act.log" 2>/dev/null | head -1)
+kill -9 $PP $CP $AP $GP $AP_REAL $GP_REAL 2>/dev/null || true
+wait $PP $CP $AP $GP 2>/dev/null || true
+echo "=== J24C-GADOWN-LOG BEGIN ==="
+cat "$d/gate.log" "$d/act.log" 2>/dev/null || true
+echo "=== J24C-GADOWN-LOG END ==="

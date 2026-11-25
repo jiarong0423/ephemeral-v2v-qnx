@@ -1,0 +1,53 @@
+# J24C QNX runs 2026-11-25 11:03:20 rounds 'secpol' dryrun 0
+WARN lint: (101, 1, "ability 'spawn_setuid' not in the known vocabulary")
+WARN lint: (101, 1, "ability 'spawn_setgid' not in the known vocabulary")
+CHECK POLICY-CONNECT PASS connections between J23B types ['j23b_act_t->j23b_gate_t', 'j23b_comm_t->j23b_gate_t', 'j23b_perc_t->j23b_gate_t', 'j23b_planner_t->j23b_gate_t', 'j23b_radio_t->j23b_comm_t', 'j23b_test_t->j23b_gate_t']
+CHECK POLICY-SIGNAL PASS role types with signal / type / uid abilities: none (the planner cannot signal the gate, also as root)
+CHECK POLICY-LAUNCH PASS harness j23b_test_t can start the roles as "on -T <type> -u <uid>:<gid>" and write their key files as their uid: missing none; role types with spawn_setuid/_setgid: none (system grants j24c_sysconn.txt read)
+CHECK POLICY-NOPIPE PASS role types connecting to the pipe manager: none
+CHECK POLICY-NAME PASS names in the path space: j23b_gate_t may register the gate name /dev/name/local/j23b_gate (owners: ['j23b_gate_t']); other J23B types attach: none; missing: none; wildcard: none; channel-type change: none
+CHECK POLICY-SESSION PASS the gate type j23b_gate_t has pgrp in a nonroot ability block: yes (setsid() needs PROCMGR_AID_PGRP; without its own session any process of the harness's session, the planner too, may SIGCONT the gate whatever the uids)
+CHECK POLICY-PRIO PASS gate max 70, act max 70, other J23B types max planner 63, comm 63, radio 63, perc 63, load 63, test 63; no violation
+INFO POLICY-PRIO system types of the learned base policy above 63 (outside the J23B claim): v2v_resmgr_t:70
+CHECK POLICY-RESMGR PASS resmgr=v2v_resmgr_t path=/dev/v2v_ttl clients=['j23b_gate_t', 'j23b_test_t']; no violation
+CHECK policy ALL PASS
+INFO merge-policy: learned for j23b_act_t, not granted (review; G17d table in A_NOTES_G17.md): channel_connect:j23b_comm_t
+INFO merge-policy: learned for j23b_load_t, not granted (review; G17d table in A_NOTES_G17.md): signal:15 channel_connect:j23b_comm_t
+INFO merge-policy: learned for j23b_perc_t, not granted (review; G17d table in A_NOTES_G17.md): channel_connect:j23b_comm_t
+INFO merge-policy: learned for j23b_planner_t, not granted (review; G17d table in A_NOTES_G17.md): signal:0,15,25 signal:0,25(root) channel_connect:j23b_comm_t
+INFO merge-policy: test harness type (outside the isolation claims) j23b_test_t kept spawn_setuid:1310-1316 spawn_setgid:1310-1316 setuid:1310-1311,1314 setgid:1310-1311,1314 spawn fork prot_exec signal:0,9,15-16 map_fixed channel_connect:devb_t,random_t,pipe_t; removed channel_connect:j23b_gate_t settypeid:j23b_gate_t settypeid:j23b_act_t settypeid:j23b_comm_t settypeid:j23b_planner_t settypeid:j23b_load_t settypeid:j23b_radio_t settypeid:j23b_perc_t; not in the reviewed seed, dropped iofunc/chown
+WARN merge-policy: learned for the test harness type but not in its reviewed seed in the policy (dropped; add it to the seed with a reason if the test drivers need it): j23b_test_t (root block): iofunc/chown
+INFO merge-policy: 0 console / non-policy lines dropped (-), 0 statements that do not parse dropped
+PASS merge-policy: 106 learned statements, 87 kept (26 system type declarations), 19 dropped (subject one of j23b_act_t,j23b_comm_t,j23b_gate_t,j23b_load_t,j23b_perc_t,j23b_planner_t,j23b_radio_t,j23b_test_t,v2v_resmgr_t), 0 console lines dropped, 0 unparsable dropped; 10 reviewed grants, 1 test-type rules; combined policy syntax check PASS (129 statements, 35 types)
+WARN lint: (107, 1, "ability 'spawn_setuid' not in the known vocabulary")
+WARN lint: (107, 1, "ability 'spawn_setgid' not in the known vocabulary")
+WARN lint: (504, 1, "ability 'spawn_setuid' not in the known vocabulary")
+WARN lint: (504, 1, "ability 'spawn_setgid' not in the known vocabulary")
+CHECK POLICY-CONNECT PASS connections between J23B types ['j23b_act_t->j23b_gate_t', 'j23b_comm_t->j23b_gate_t', 'j23b_perc_t->j23b_gate_t', 'j23b_planner_t->j23b_gate_t', 'j23b_radio_t->j23b_comm_t', 'j23b_test_t->j23b_gate_t']
+CHECK POLICY-SIGNAL PASS role types with signal / type / uid abilities: none (the planner cannot signal the gate, also as root)
+CHECK POLICY-LAUNCH PASS harness j23b_test_t can start the roles as "on -T <type> -u <uid>:<gid>" and write their key files as their uid: missing none; role types with spawn_setuid/_setgid: none (system grants j24c_sysconn.txt absent: inline)
+CHECK POLICY-NOPIPE PASS role types connecting to the pipe manager: none
+CHECK POLICY-NAME PASS names in the path space: j23b_gate_t may register the gate name /dev/name/local/j23b_gate (owners: ['j23b_gate_t']); other J23B types attach: none; missing: none; wildcard: none; channel-type change: none
+CHECK POLICY-SESSION PASS the gate type j23b_gate_t has pgrp in a nonroot ability block: yes (setsid() needs PROCMGR_AID_PGRP; without its own session any process of the harness's session, the planner too, may SIGCONT the gate whatever the uids)
+CHECK POLICY-PRIO PASS gate max 70, act max 70, other J23B types max planner 63, comm 63, radio 63, perc 63, load 63, test 63; no violation
+INFO POLICY-PRIO system types of the learned base policy above 63 (outside the J23B claim): devb_t:66 devb_t__run:66 random_t:66 random_t__run:66 v2v_resmgr_t:70
+CHECK POLICY-RESMGR PASS resmgr=v2v_resmgr_t path=/dev/v2v_ttl clients=['j23b_gate_t', 'j23b_test_t']; no violation
+CHECK policy ALL PASS
+# J24C compile round secpol 2026-11-25 11:03:20 SDK <WORKDIR>/qnx806_side/sdp:ro rehearsal=0
+[+] round secpol compiled into qnx_target/build_j24c/secpol (14 programs; binaries.sha256 159d811927e7df7c)
+[lock] taken after 0 s
+qemu-system-aarch64: warning: Machine type 'virt-7.2' is deprecated: machines more than 3 years old are subject to deletion after 6 years
+qemu-system-aarch64: terminating on signal 15 from pid 96799 (<unknown process>)
+boot_seconds=86
+[+] saw V2V MINI END (PASS BOOT-CONTINUITY end marker at line 867, no reset before it (one V2V MINI START, no early "Startup complete"))
+PASS secpol:BOOT-MARK start=True end=True usb=no secpol_file=True resmgr_dev=True
+PASS secpol:GA-UNIT j24c_ga:rc=0 j24c_ga_dev:rc=0 j24c_j23b:rc=0 j24c_neg_resv:OK j24c_neg_hash:OK j24c_neg_cell:OK j24c_neg_def:OK j24c_neg_down:OK
+PASS secpol:GA-DOWN-QNX resv_down_in_log=True fb_or_down=True
+PASS secpol:J24C-PROC rc=0 loop_p99_present=True
+PASS secpol:GC-PROBE secpol=1 rp_bad=none tc_bad=none gate_alive=1 dummy_alive_before=1 dummy_exited=1
+PASS secpol:GC-BUDGET mode=measured_proc TTL=500.0ms commit_mm=125 stale_p40_max=639.6ms(>TTL) flood_p99=51.5ms(max=1139.8ms) ctrl_p99=13.0ms ctrl_max=30.0ms headroom=435.5ms | n_low=20000 n_same=20000 p99_low=1968.0us p99_same=14425.0us (p99_sep=7.33x(>=2.0x) p999 same=30990.0us vs low=31125.0us)
+INFO secpol: CHECK GT-HS2MAP PASS n=210(min=200,idx=207) T_switch p50=9ms p99=12ms max=14ms(budget=120ms) wo=0 post_commit_ill=0 ctr_delta=0 trans_ok=1
+INFO secpol: CHECK GT-MAP2RET PASS n=210(min=200,idx=207) T_switch p50=9ms p99=12ms max=20ms(budget=120ms) wo=0 post_commit_ill=0 ctr_delta=0 trans_ok=1
+INFO secpol: CHECK GT ALL PASS total_episodes=420
+PASS secpol:GT-SW episodes=420 (4 configs x 105 target)
+CHECK secpol ALL PASS

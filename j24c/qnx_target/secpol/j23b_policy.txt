@@ -1,0 +1,136 @@
+# j23b_policy.txt - J23B (fix of J23 after its first QNX boots): QNX 8.0.6 security policy for the processes of src/v2v_j23b.c, which talk
+# through QNX native message passing (channels), not FIFOs. Each process has its own type; the only channel connections between J23B types
+# are the ones the design needs. Forms as qnx_target/secpol/g17_policy.txt and j23_policy.txt (lint: python3 -I scripts/g17_secpol_tool.py
+# lint; model and rule check: python3 -I scripts/j23b_policy_tool.py check). DRAFT: compiled by secpolcompile and enforced only in the
+# secpol boot of scripts/j23b_qnx_all.sh; nothing here claims enforcement before that boot's probes say so. Design on a certifiable
+# platform; nothing certified.
+#
+# Types (one process each; uid by "on -u", type by "on -T" in tests/test_j23b_proc.c):
+#   j23b_gate_t     v2v-j23b gate (uid 1310): owns /dev/name/local/j23b_gate (name_attach: public_channel); connects to no J23B channel
+#   j23b_act_t      v2v-j23b act (uid 1311): connects ONLY to the gate (permits come back in the gate's reply; it owns no channel)
+#   j23b_planner_t  v2v-j23b planner (uid 1312): connects to the gate only; NO signal ability: it cannot stop or kill the gate, not even
+#                   as root (probe "rootplanner": refused with the policy, allowed without it in the nopol control boot)
+#   j23b_comm_t     v2v-j23b comm (uid 1313): owns /dev/name/local/j23b_comm (radio input); connects to the gate
+#   j23b_radio_t    v2v-j23b peer (uid 1314): connects to the communication process only
+#   j23b_perc_t     v2v-j23b perc (uid 1316): perception reports (non-equipped vehicles); connects to the gate only
+#   j23b_load_t     v2v-j23b load (uid 1315): vision-like load: connects to NO J23B channel
+#   j23b_test_t     tests/test_j23b_proc.c and the "on" it runs (root): harness outside the isolation claims: fork / spawn, type and uid
+#                   switch of the roles, signals to them (fault injection), its own connection to the gate (health fault, test hook)
+# Heartbeats are pulses (MsgSendPulse) to a channel of another uid: "connection" ability for the clients.
+# merge-policy system-grants: j23b_sysconn.txt
+# merge-policy keep-learned: j23b_test_t
+
+type j23b_gate_t;
+type j23b_act_t;
+type j23b_planner_t;
+type j23b_comm_t;
+type j23b_radio_t;
+type j23b_perc_t;
+type j23b_load_t;
+type j23b_test_t;
+
+# ---- channel connections between J23B types (everything not listed is refused: a process may connect only to channels of type default
+# unless a rule allows it)
+allow j23b_planner_t j23b_gate_t:channel connect;
+allow j23b_act_t j23b_gate_t:channel connect;
+allow j23b_comm_t j23b_gate_t:channel connect;
+allow j23b_perc_t j23b_gate_t:channel connect;
+allow j23b_test_t j23b_gate_t:channel connect;
+allow j23b_radio_t j23b_comm_t:channel connect;
+
+# ---- names in the path space (J23D, after the J23C secure boot: "[gate] ERROR name_attach j23b_gate errno=13" in every trial, then every
+# client's name_open ENOENT: the planner's positive control connect_gate REFUSED errno=2, actuation GATE_OPEN errno=2, PI "open errno=2").
+# name_attach() registers /dev/name/local/<name> in procnto's path space; it needs no pathspace ability (lib_ref name_attach.html) but,
+# once a policy is installed, "it is not possible to attach any path that is not explicitly allowed" (security.system
+# secpol_language.html, allow_attach); the SDK's own example for a name_attach name is "allow_attach secpolgen_t
+# /dev/name/local/_tracelog;" (using_secpolgenerate_secure_system.html). Exact paths, no wildcard, no channel-type change (the channel
+# keeps the owner's type, which the connect rules above name). The gate's name ONLY for j23b_gate_t; the communication process owns
+# its own name (radio input, header line 19; radio connect_comm must stay ALLOWED) and gets exactly that one path. No other J23B type
+# may attach anything (rule POLICY-NAME, scripts/j23b_policy_tool.py check-j23d).
+allow_attach j23b_gate_t /dev/name/local/j23b_gate;
+allow_attach j23b_comm_t /dev/name/local/j23b_comm;
+
+# ---- abilities (start-up: prot_exec, map_fixed; priorities 1-63 for the timing and PI probes)
+# J23D: pgrp = setsid() (lib_ref setsid.html: "your process must have the PROCMGR_AID_PGRP ability"). The gate leaves the harness's
+# session at start; without its own session every process started by the harness in that session (the planner too) may send it SIGCONT
+# whatever the uids (POSIX kill(): same-session SIGCONT), which the J23C probe showed against the launcher. Under a policy pgrp is not
+# implicit: the learned system policy grants it explicitly (console_t, dhcpcd_t, g17_test_t). Rule POLICY-SESSION.
+allow j23b_gate_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    public_channel
+    pgrp
+};
+allow j23b_act_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_planner_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_comm_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    public_channel
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_radio_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    connection
+    channel_connect:j23b_comm_t
+};
+allow j23b_perc_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    connection
+    channel_connect:j23b_gate_t
+};
+allow j23b_load_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+    priority:1-63
+};
+# test harness (root, never drops): fork + spawn of "on" and the roles, settypeid for the J23B types only, setuid / setgid 1310-1316,
+# signals to the roles (fault injection, stop), wait, its own connection to the gate.
+# J23C (after the J23B secure boot: every role launch printed "on: Operation not permitted", every trial "ERROR keys", 0 trial lines):
+# - spawn_setuid / spawn_setgid 1310-1316: "on -u <uid>:<gid>" starts the role by posix_spawn with a credential, which needs these abilities
+#   (posix_spawnattr_setcred: PROCMGR_AID_SPAWN_SETUID / _SPAWN_SETGID); the harness had only setuid / setgid (its OWN uid), so every
+#   "on -T <type> -u ..." was refused and no role ever started (also why "the gate is not alive after the probes": it never ran).
+# - the keys: the J23B harness wrote each key as root and chown'ed it to the role (refused under the policy); J23C writes each role's own
+#   copy from a forked child that switched to the role's uid (setuid / setgid above); that child is NON-root, so it needs the nonroot
+#   file-system connection of qnx_target/secpol/j23b_sysconn.txt (j23b_test_t, nonroot, channel_connect:devb_t).
+allow j23b_test_t self:ability {
+    spawn_setuid:1310-1316
+    spawn_setgid:1310-1316
+};
+allow j23b_test_t self:ability {
+    fork
+    spawn
+    prot_exec
+    map_fixed
+    wait
+    signal:1-64
+    connection
+    priority:1-63
+    settypeid:j23b_gate_t,j23b_act_t,j23b_planner_t,j23b_comm_t,j23b_radio_t,j23b_perc_t,j23b_load_t
+    setuid:1310-1316
+    setgid:1310-1316
+    channel_connect:j23b_gate_t
+};

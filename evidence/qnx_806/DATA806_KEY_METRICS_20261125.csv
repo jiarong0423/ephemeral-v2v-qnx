@@ -1,0 +1,73 @@
+set,run,mode,metric,value,unit,limit_or_note
+J24,A1 07:44,nopol,J24-LOOP largest actuation loop interval,45,ms,limit 50
+J24,A2 08:21,nopol,J24-LOOP largest actuation loop interval,47,ms,limit 50
+J24,AS1 10:24,secpol,J24-LOOP largest actuation loop interval,48,ms,limit 50
+J24,AS2 10:57,secpol,J24-LOOP largest actuation loop interval,44,ms,limit 50
+J24,A1 07:44,nopol,J24-DEATH gate death seen max,5,ms,limit 100
+J24,A2 08:21,nopol,J24-DEATH gate death seen max,7,ms,limit 100
+J24,AS1 10:24,secpol,J24-DEATH gate death seen max,10,ms,limit 100
+J24,AS2 10:57,secpol,J24-DEATH gate death seen max,8,ms,limit 100
+J24,A1 07:44,nopol,J24-DEATH onset to brake max,6,ms,
+J24,A2 08:21,nopol,J24-DEATH onset to brake max,8,ms,
+J24,AS1 10:24,secpol,J24-DEATH onset to brake max,10,ms,
+J24,AS2 10:57,secpol,J24-DEATH onset to brake max,8,ms,
+J24,A1 07:44,nopol,J24-DEATH onset to safe max,305,ms,
+J24,A2 08:21,nopol,J24-DEATH onset to safe max,304,ms,
+J24,AS1 10:24,secpol,J24-DEATH onset to safe max,305,ms,
+J24,AS2 10:57,secpol,J24-DEATH onset to safe max,306,ms,
+J24,all four,both,J24-POS oracle entries / mismatches,111 / 0,count,
+J24,all four,both,J24-NEGB death watch off (must fail) max,-1,ms,fails as required
+J24,A1 07:44,nopol,decision_to_actuation p99 A off,30410,us,same F9 load
+J24,A1 07:44,nopol,decision_to_actuation p99 A on,11882,us,
+J24,A2 08:21,nopol,decision_to_actuation p99 A off,35974,us,
+J24,A2 08:21,nopol,decision_to_actuation p99 A on,12010,us,
+J24,AS1 10:24,secpol,decision_to_actuation p99 A off,30630,us,
+J24,AS1 10:24,secpol,decision_to_actuation p99 A on,11920,us,
+J24,AS2 10:57,secpol,decision_to_actuation p99 A off,29986,us,
+J24,AS2 10:57,secpol,decision_to_actuation p99 A on,12001,us,
+J24B,B-n 09:03,nopol,slm kill to resume (planner restarted),9706 -> 12555,log ms stamps,planner pid 536598 -> 806934
+J24B,B-s 11:12,secpol,slm kill to resume (planner restarted),6575 -> 9379,log ms stamps,planner pid 598038 -> 684054
+J24C,C-n 08:31,nopol,GT HS to MAP T_switch p99 / max,12 / 14,ms,budget 120; 420 episodes
+J24C,C-n 08:31,nopol,GT MAP to RET T_switch p99 / max,12 / 20,ms,budget 120
+J24C,C-s 11:05,secpol,GT HS to MAP T_switch p99 / max,12 / 14,ms,budget 120; 420 episodes
+J24C,C-s 11:05,secpol,GT MAP to RET T_switch p99 / max,12 / 20,ms,budget 120
+J24C,C-n 08:31,nopol,control p99 / max,14.0 / 30.0,ms,
+J24C,C-s 11:05,secpol,control p99 / max,13.0 / 30.0,ms,
+J24C,recalc nopol,nopol,GC-BUDGET stale p40 max (premise needs > 500),46.1,ms,criterion FAIL (not relaxed); this is the J23D input; across five boots the stale max is 46.1-243.0 ms (A1 243.0 / A2 60.0 / AS1 200.7 / AS2 171.9 / J23D 46.1)
+J24C,recalc nopol,nopol,GC-BUDGET flood p99 / max,90.6 / 945.1,ms,
+J24C,recalc nopol,nopol,GC-BUDGET headroom to TTL 500 ms,395.4,ms,at p99 only; flood max 781-1051 ms exceeded the 500 ms TTL in every boot (CRITERIA_V2_RECALC)
+J24C,recalc secpol,secpol,GC-BUDGET headroom to TTL 500 ms,396.4,ms,
+J23D,D 09:20,nopol,PROC-DEADLINE detect to safe max,309,ms,deadline 850
+J23D,D 09:20,nopol,PROC-DEADLINE onset to brake max,516,ms,deadline 850
+J23D,D 09:20,nopol,PI load p99 with PI / without,122 / 1072126,us,ratio 8788 (criterion >= 10)
+G23,G23 16:46,nopol,release to pulse p99 base / low load / same load,152 / 784 / 12406,us,N 20000 each
+G23,G23 16:46,nopol,release to pulse p99.9 base / low / same,194 / 30543 / 30864,us,
+G23,G23 16:46,nopol,devctl round trip p99 base / low / same,120 / 423 / 9397,us,
+G23,G23 16:46,nopol,p99 separation same / low,15.82,x,J24C clause 1 (>= 2.0) passes
+G23,G23 16:46,nopol,p99.9 same vs low (original G23 rule: same > low),30864 > 30543 TRUE,us,CHK-SEP PASS under the original rule; the J24C copy had the sign inverted (v1 FAIL) - see CRITERIA_V2_RECALC
+G23,G23 16:46,nopol,largest gap in fault window / normal max,14.4 / 40.2,ms,ratio 0.36 limit 2.0
+RC1,run2 07:00,nopol,C vs Rust differences (5 harnesses),0,count,
+RC1,run2 07:00,nopol,bench median ticks crc16 C / Rust,63 / 62,ticks of 16 ns,QEMU TCG
+RC1,run2 07:00,nopol,bench median ticks input_digest8 C / Rust,438 / 375,ticks of 16 ns,
+RC1,run2 07:00,nopol,bench median ticks member_digest16 C / Rust,375 / 125,ticks of 16 ns,
+RC1,run2 07:00,nopol,bench median ticks agree_decide16 C / Rust,62 / 62,ticks of 16 ns,
+RC1+W2,RC1 run2 07:00 (target FINAL hash of 4 variants) and W2 boot 16:39 (TRACE_ALL value-by-value),nopol,w2trace FINAL hash target / host rebuilt with the QNX errno numbers,6D3B1D1EA40C1BA4 / 6D3B1D1EA40C1BA4,hash,the 9753-line value-by-value equality is against the W2 boot; the FINAL hash of the 4 variants is from RC1 run2
+E,probes boot1 / boot2,nopol,runmask ratio same CPU vs split,1.92 / 1.85,x,
+E,probes boot1 / boot2,nopol,SPORADIC second thread share,0.752 / 0.749,share,FIFO control 0.000
+E,probes boot1 / boot2,nopol,event-blocking wait median,0.48 / 0.61,ms,20 of 20 ok
+E,probes boot1 / boot2,nopol,10 ms polling wait median,6.79 / 6.72,ms,20 of 20 ok
+E,trace 12:15,secpol,Security events ALLOW non-root / root,1342 / 701,count,908164 trace lines; 2066 SEC events
+E,trace 12:15,secpol,Security events DENY non-root / root,12 / 7,count,
+SPEC2,17:23,host,coverage never-taken branch outcomes / zero-count lines,164 / 27,count,harness ALL AGREE (not in the submitted image)
+SPEC2,17:35,host,Rust mutants killed / total,50 / 54,count,4 survive after retry
+SPEC2,17:50,host,C mutants killed (incl 3 on retry) / total,30 / 36,count,6 survive after retry
+SPEC2,17:52,host,m1-m14 mutants killed / total,12 / 14,count,survivors m2_silent m3_g3upon
+SPEC2,17:54,host,boundary mutants killed / survived / invalid,2 / 2 / 6,count,invalid = before-text not found at the line
+J24,A50 23:58 (divisor 50),nopol,B4M2-DEV device-path scenarios passed,1/6,count,test divisor 50 (divisor 5 gives 6/6); all other checks PASS; ledger 50
+J24,A50 23:58 (divisor 50),nopol,J24-LOOP largest actuation loop interval,39,ms,limit 50; 0 trials over
+G17L,G17L 00:26,learn,policy merge learned / kept / dropped,103 / 87 / 15,statements,lint 0 errors; 3 of 118 statements differ from the earlier base; ledger 51
+G23S,G23S 00:40,secpol,CHK-DENY refused EPERM at start / after uid drop,6/6 / 4218/4218,count,base policy learned on 8.0.6; ledger 52
+G23S,G23S 00:40,secpol,release to pulse p99 base / low / same,187 / 1554 / 13802,us,N 20000 each
+G23S,G23S 00:40,secpol,release to pulse p99.9 base / low / same,286 / 20412 / 30648,us,CHK-SEP original rule same > low PASS (J24C v1 FAIL / v2 PASS)
+G23S,G23S 00:40,secpol,fault window largest gap / normal max,15.120 / 43.465 (ratio 0.35),ms,limit 2.0
+SC806,SC806 20:31 (trimmed boot),nopol,single_car largest loop interval min / median / max (20 trials),29 / 36.5 / 74,ms,not a judged J24 run; host load about 4; poll dominant 20/20; ledger 49

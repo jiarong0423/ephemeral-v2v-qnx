@@ -1,0 +1,11 @@
+param	value	status	unit	note
+v_crawl_mmps	300	G23L_D2	mm/s	nominal narrow-segment crawl speed
+a_brake_mmps2	1000	G23L_D2	mm/s^2	nominal worst-case service braking
+stop_margin_mm	20	G23L_D2	mm	stopping safety buffer before entry line
+t_ttl_ms	500	G23L_D2	ms	permit lease TTL
+commit_depth_mm	125	ASSUMED	mm	v^2/(2*a) ~ 45 mm + 80 mm margin (nominal commit point depth)
+pos_tol_mm	150	ASSUMED	mm	arrival tolerance at target point
+devctl_tmo_ms	8	J24C	ms	bounded TimerTimeout < 20 ms act poll & < 100 ms overrun
+t_switch_budget_host_ms	50	J24C	ms	host emulation upper bound for GT p99
+t_switch_budget_qnx_ms	120	J24C	ms	QEMU TCG relative upper bound for GT p99
+min_episodes_per_path	100	J24C	episodes	each switch path requires n >= 100 episodes
