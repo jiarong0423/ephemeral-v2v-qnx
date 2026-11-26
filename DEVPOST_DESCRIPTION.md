@@ -3,7 +3,7 @@
 **Hackathon Category:** Automotive & Mobility · **Bonus Track:** Best Use of QNX-Specific Technologies
 
 > **TL;DR — Key Measured Results (Host & QNX 8.0.6 QEMU `aarch64le`):**
-> * **Take-over requests `32.05% → 0.061%`:** our give-way rule versus the waiting baseline at the preregistered `50 cm` clearance (`−31.99 pp`); rule + borrow-cell map `0.077%`. `594,000` simulated runs = three arms × `198,000` runs at `50 cm`. Baseline: the car waits in place, never yields on its own, and requests a take-over after `45 s`.
+> * **Take-over requests `32.05% → 0.061%`:** our give-way rule versus the waiting baseline at the preregistered `50 cm` clearance (`−31.99 pp`); rule + borrow-cell map `0.077%`. `594,000` simulated runs = three arms × `198,000` runs at `50 cm`. Against a first car that always or randomly yields, take-overs are `0.00%` with or without our rule, so there our contribution is one shared, QNX-enforced answer to who yields — a design goal, not a measured gain. Baseline: the car waits in place, never yields on its own, and requests a take-over after `45 s`.
 > * **`p99` 11.9–12.0 ms on QEMU TCG under load:** `SCHED_FIFO` `66/65` priority isolation cut our program's decision-to-actuation `p99` from **30.0–36.0 ms** to **11.9–12.0 ms** (`p99` only).
 > * **Policy-enforced isolation & fast watchdog:** **100% `EPERM` refusal** of unauthorized `/dev/v2v_ttl` opens (`6/6` as started + `4,218/4,218` after the privilege drop) and gate-death detection within **5–10 ms** via `_PULSE_CODE_COIDDEATH` (four control-matrix boots).
 >
