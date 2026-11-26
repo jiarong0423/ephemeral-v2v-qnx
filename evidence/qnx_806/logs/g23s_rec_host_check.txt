@@ -1,0 +1,13 @@
+PASS CHK-MARK start True end True done True; carriage returns none
+PASS CHK-MODE mode secure (want secure), compiled policy file present
+PASS CHK-TRANS probe transports {'base': 'qnx', 'low': 'qnx', 'same': 'qnx'} (want qnx)
+PASS CHK-SRV server {'present': '1', 'waited_s': '1', 'job': '475154'}
+PASS CHK-RC section rc {'g23_info': 0, 'g23_srv': 0, 'g23_base': 0, 'g23_low': 0, 'g23_same': 0}
+PASS CHK-COUNT base samples 20000 raw 20000 invalid 0 miss 0 capped 0; low samples 20000 raw 20000 invalid 0 miss 0 capped 0; same samples 20000 raw 20000 invalid 0 miss 0 capped 0 (N 20000)
+PASS CHK-STAT on-target figures equal the recomputed ones for 6 condition-metric pairs
+PASS CHK-PRIO probe FIFO/40 above low RR/20, equal to same RR/40; loads {'low': 3, 'same': 3}
+PASS CHK-FAULT kill 1 rc 0 gone 1; crash trigger rc 0, crash line 1, gone 1; ended normally {'2': True}; window 34775824000..49857666992 kill 43828362000 crash 46206162992 (ms after start 9052.5 / 11430.3)
+PASS CHK-GAP low: largest gap in the fault window 14.823 ms (7726 gaps); normal max 46.605 ms (32272 gaps: base 19999, low outside the window 12273); ratio 0.32 (limit 2.0); samples after the crash 9994
+PASS CHK-DENY secure: 6 loads; attempts as started 6 (refused EPERM 6, allowed 0), after the uid drop 4093 (refused EPERM 4093)
+PASS CHK-SEP release->pulse p99.9 same 30683.0 us vs low 30598.0 us
+CHECK secpol ALL PASS
