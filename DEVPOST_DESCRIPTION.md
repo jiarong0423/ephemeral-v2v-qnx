@@ -4,6 +4,8 @@
 **Target & Toolchain:** QNX Neutrino RTOS 8.0.6 (`aarch64le` QEMU TCG) · QNX SDP 8.0.6 (`qcc`, `mkqnximage`, `secpolcompile`), C & Rust (`staticlib`)  
 **Development Window:** Nov 3 – Nov 26, 2026 (QNX Global Hackathon Submission Period)
 
+> **Demo video line references:** Line numbers shown in the demo video (`README.md:3–136`) point to `README.md` at commit [`fd47ccd`](https://github.com/jiarong0423/ephemeral-v2v-qnx/blob/fd47ccd/README.md).
+
 ---
 
 ## 1. The Problem
@@ -34,7 +36,7 @@ When two automated vehicles meet head-on in a single-car street without a shared
 |---|---|---|
 | **Take-over requests** | **32.05% → 0.061%** (`−31.99 pp`) | `50 cm` clearance, `198,000` runs/arm vs. waiting baseline (`45 s`) |
 | **Policy isolation (`secpol`)** | **6/6 root** + **4,218/4,218 post-drop** `EPERM` (`0` allowed) | Unauthorized `/dev/v2v_ttl` opens on QNX 8.0.6 |
-| **Fault disconnect & braking** | **5–10 ms** detection, **≤ 10 ms** brake (`~3 mm` vs. `477 ms` expiry) | `_PULSE_CODE_COIDDEATH`, 4 control-matrix boots (`0.3 m/s`) |
+| **Fault disconnect & braking** | **5–10 ms** detection, **6–10 ms** brake (`~3 mm` vs. `477 ms` expiry) | `_PULSE_CODE_COIDDEATH`, 4 control-matrix boots (`0.3 m/s`) |
 | **Priority isolation (`SCHED_FIFO 66/65`)** | **`p99` 30.0–36.0 → 11.9–12.0 ms** under load | Decision-to-actuation `p99`, 4 boots (`2 nopol + 2 secpol`) |
 | **Mode switchover & C/Rust parity** | **`p99` 12 ms** (`420` eps) · **0 differences** across 5 harnesses | `HANDSHAKE → MAP` / `MAP → RETREAT`; Rust `staticlib` (`nopol`) |
 
