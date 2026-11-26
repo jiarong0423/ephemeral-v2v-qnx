@@ -35,7 +35,7 @@
   <rect x="175" y="347" width="4" height="14" rx="1" fill="#16a34a"/>
   <text x="187" y="358" fill="#15803d" font-size="12" font-weight="700">0.161%</text>
 
-  <text x="44" y="375" fill="#64748b" font-size="11.5">baseline = the car waits in place; human-driver model uncalibrated</text>
+  <text x="44" y="375" fill="#64748b" font-size="11.5">baseline = a car that never yields on its own; human-driver model uncalibrated</text>
 
   <!-- Panel 2: QNX 8.0.6 control matrix -->
   <rect x="612" y="112" width="564" height="270" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
