@@ -32,12 +32,13 @@ Every number on the Devpost page (`DEVPOST_DESCRIPTION.md`) with the repository 
 | Number | Meaning | Source |
 |---|---|---|
 | `6/6`, `4,218/4,218`, `0` allowed | `EPERM` refusals as started / after the uid drop (`G23S`) | `g23s_qnx_summary.txt:13`; run: `bash scripts/g23_qnx_check.sh evidence/qnx_806/logs/g23s_qnx_secpol.serial.clean.log secpol secure` |
+| `6/6` allowed, `3,844/3,844` `EACCES` | `G23` `nopol` control: root allowed `6/6`; post-drop refused by file permissions (`EACCES`) | `g23_nopol_qnx_summary.txt:13,35` |
 | `0.35×`, `15.120 ms`, `43.465 ms`, limit `2×` | fault-window gap vs normal max (`G23S`) | `g23s_qnx_summary.txt:12` |
 | `n = 20,000` | samples per condition (`G23S`) | `g23s_qnx_summary.txt:20-25` (table rows) |
 | `66/65` | `SCHED_FIFO` priorities of `gate` / `act` (timer pulse `66`) | `as1_qnx_secpol.serial.clean.log:909` |
 | `29,986–35,974 µs` (`30.0–36.0 ms`) | decision-to-actuation `p99` under load, priority guarantee off | `a1_nopol_qnx_nopol.serial.clean.log:928`, `a2_nopol_qnx_nopol.serial.clean.log:928`, `as1_qnx_secpol.serial.clean.log:929`, `as2_qnx_secpol.serial.clean.log:929`; `evidence/qnx_806/DATA806_KEY_METRICS_20261125.csv:20-27` |
 | `11,882–12,010 µs` (`11.9–12.0 ms`) | the same with the priority guarantee on | same logs, lines `934` (`a1`, `a2`) and `935` (`as1`, `as2`) |
-| `5–10 ms` | gate death seen, max per boot (`5`, `7`, `10`, `8`) | `a1_nopol_qnx_nopol.serial.clean.log:911`, `a2_nopol_qnx_nopol.serial.clean.log:911`, `as1_qnx_secpol.serial.clean.log:912`, `as2_qnx_secpol.serial.clean.log:912` |
+| `5–10 ms` (`12 ms` in separate `EV3H`) | gate death seen, max per boot (`5`, `7`, `10`, `8` in `J24A`; `12 ms` in `EV3H`) | `a1_nopol_qnx_nopol.serial.clean.log:911`, `a2_nopol_qnx_nopol.serial.clean.log:911`, `as1_qnx_secpol.serial.clean.log:912`, `as2_qnx_secpol.serial.clean.log:912`, `ev3h_qnx_secpol.serial.clean.log:912` |
 | `6–10 ms` | onset-to-brake, same four boots | same four lines |
 | `304–306 ms` | onset-to-safe, same four boots | same four lines |
 | `10 ms` → `3 mm`; `477 ms` → `14.3 cm` | gate-death braking vs expiry path with the death watch off, at `0.3 m/s` (`0.3 × 0.010 = 0.003 m`; `0.3 × 0.477 = 0.1431 m`) | `as1_qnx_secpol.serial.clean.log:912` |
@@ -45,7 +46,7 @@ Every number on the Devpost page (`DEVPOST_DESCRIPTION.md`) with the repository 
 | `45`, `48`, `44 ms` (pass); `97 ms` (miss) | largest actuation-loop interval of the four `secpol` boots `EV3H`, `AS1`, `AS2`, `EV3I`; limit `50 ms` | `ev3h_qnx_secpol.serial.clean.log:911`, `as1_qnx_secpol.serial.clean.log:911`, `as2_qnx_secpol.serial.clean.log:911`, `ev3i_qnx_secpol.serial.clean.log:930` |
 | `1` of `135` | trials over the limit in `EV3I` | `ev3i_qnx_secpol.serial.clean.log:930` (`trials over: 1`) |
 | `4.58` | host load peak during `EV3I` | `ev3i_host_load.log` (last line) |
-| `420`, `12 ms`, `14 / 20 ms`, `120 ms`, `0` | `HS ↔ MAP` episodes, `p99`, max, budget, moves without a permit (`J24C`, `secpol`) | `j24c_secpol_qnx_all.log:49-51`; `nopol`: `evidence/qnx_806/DATA806_KEY_METRICS_20261125.csv:30-31` |
+| `420`, `12 ms`, `14 / 20 ms`, `120 ms`, `0` | `HANDSHAKE → MAP` and `MAP → RETREAT` episodes, `p99`, max, budget, moves without a permit (`J24C`, `secpol`) | `j24c_secpol_qnx_all.log:49-51`; `nopol`: `evidence/qnx_806/DATA806_KEY_METRICS_20261125.csv:30-31` |
 | `slm` revoke → restart → resume | `J24B`, `secpol` | `j24b_qnx_secpol.serial.clean.log:22,26,56,367,369,379,951,58,612` |
 | `0` differences, `5` harnesses, `100,000`, `5,000` | C vs Rust on target (`RC1`) | `rc1_qnx_nopol.serial.clean.log:99-117` |
 | `908,164`, `2,066` | `tracelogger` trace lines and `SEC` events | `e806_qnx_secpol.serial.clean.log:69`; commands `probes/scripts/e806_j24_cmds.txt:46-59` |

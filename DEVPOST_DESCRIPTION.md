@@ -75,7 +75,7 @@ When two automated vehicles meet head-on in a street only one car wide without a
 * **`12 ms` `p99` mode switchover & `slm` recovery (`J24C`, `J24B`):**
   * Across `420` episodes per boot (`nopol` + `secpol`), `HANDSHAKE → MAP` and `MAP → RETREAT` switchover `p99` stayed at **`12 ms`** (max `14 ms` and `20 ms` respectively, budget `120 ms`, `0` moves without a permit).
   * Killing `planner` under QNX `slm` revoked the permit, stopped `act`, started a new `planner`, and resumed traffic.
-* **`0` differences across `5` C-vs-Rust on-target harnesses (`RC1`, QNX 8.0.6, `evidence/qnx_806/logs/rc1_qnx_nopol.serial.clean.log:99-117`):**
+* **`0` differences across `5` C-vs-Rust on-target harnesses (`RC1`, QNX 8.0.6 `nopol`, `evidence/qnx_806/logs/rc1_qnx_nopol.serial.clean.log:99-117`):**
   * Our Rust-backed trust core (`staticlib` linked via `qcc`) matched the C reference across `100,000` stage-1 cases and `5,000` cases each for state, gateway, votes, and silent-member paths.
 
 ---
