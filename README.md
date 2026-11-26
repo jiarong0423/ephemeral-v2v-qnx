@@ -49,13 +49,15 @@ QNX-Ephemeral-V2V treats physical road entry like a microkernel capability with 
 
 1. **Zero-install interactive walkthrough (browser):** Open [`visualizer/before_after.html`](visualizer/before_after.html), [`visualizer/handshake_demo.html`](visualizer/handshake_demo.html), or [`visualizer/portal.html`](visualizer/portal.html).
 2. **Host verification & recorded QNX 8.0.6 log check (no QNX licence needed):**
-```bash
-make -C qnx_target test                  # ALL PASS (0 failed) & SECMEM ALL PASS (0 failed)
-cd rust_port && cargo test               # 16 passed; 0 failed
-node visualizer/legal_gap_report.mjs     # RESULT: PASS (>= 50 cm moving-vehicle clearance)
-bash scripts/g23_qnx_check.sh evidence/qnx_806/logs/g23s_qnx_secpol.serial.clean.log secpol secure
-# Expected: PASS CHK-DENY (6/6 + 4,218/4,218 EPERM) & CHECK secpol ALL PASS
-```
+
+   ```bash
+   make -C qnx_target test                  # ALL PASS (0 failed) & SECMEM ALL PASS (0 failed)
+   cd rust_port && cargo test               # 16 passed; 0 failed
+   node visualizer/legal_gap_report.mjs     # RESULT: PASS (>= 50 cm moving-vehicle clearance)
+   bash scripts/g23_qnx_check.sh evidence/qnx_806/logs/g23s_qnx_secpol.serial.clean.log secpol secure
+   # Expected: PASS CHK-DENY (6/6 + 4,218/4,218 EPERM) & CHECK secpol ALL PASS
+   ```
+
 3. **Python 3.10+ & full QNX 8.0.6 build/boot recipe:** Run `python3 -I j24c/scripts/j24c_gt_analyzer.py selftest` (`CHECK GT ALL PASS total_episodes=210`). Full `qcc` / `secpolcompile` / `mkqnximage` / QEMU boot steps are in [`docs/TECHNICAL_APPENDIX.md`](docs/TECHNICAL_APPENDIX.md#5-build-and-boot-on-qnx-806-qemu-aarch64le).
 
 ---
