@@ -49,7 +49,7 @@
   <text x="755" y="250" fill="#115e59" font-size="12" font-weight="700">11,882-12,010 us (FIFO 66/65)</text>
 
   <text x="632" y="290" fill="#334155" font-size="13" font-weight="600">Actuation-loop max: <tspan fill="#0f766e" font-weight="700">44-48 ms</tspan> (limit 50 ms)</text>
-  <text x="632" y="320" fill="#334155" font-size="13" font-weight="600">Gate death seen: <tspan fill="#0f766e" font-weight="700">5-10 ms</tspan> (limit 100 ms)</text>
+  <text x="632" y="320" fill="#334155" font-size="13" font-weight="600">Gate death seen: <tspan fill="#0f766e" font-weight="700">5-10 ms</tspan> (4 boots; 12 ms EV3H)</text>
   <text x="632" y="350" fill="#64748b" font-size="11.5">Measured on QEMU aarch64le with SCHED_FIFO 66/65 priority roles</text>
 
   <!-- Panel 3: QNX 8.0.6 security policy -->
@@ -80,5 +80,5 @@
   <text x="650" y="594" fill="#1e40af" font-size="11.5">HANDSHAKE -&gt; MAP (max 14 ms) &amp; MAP -&gt; RETREAT (max 20 ms), budget 120 ms</text>
 
   <!-- Footnote -->
-  <text x="24" y="672" fill="#475569" font-size="12">QEMU TCG relative timings. One earlier policy-enforced run missed the 50 ms loop limit at 97 ms (1 of 135 trials); reported as measured.</text>
+  <text x="24" y="672" fill="#475569" font-size="12">QEMU TCG relative timings. In a separate 4-boot secpol set (EV3H, AS1, AS2, EV3I), EV3I missed the 50 ms limit at 97 ms (1/135) while host load peaked at 4.58.</text>
 </svg>
