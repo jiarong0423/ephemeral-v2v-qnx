@@ -1,0 +1,80 @@
+PASS nopol: end marker present
+PASS nopol: mode secpol=no (expected no)
+PASS nopol: 6 J23B programs in the image ([J23B] programs: 6)
+PASS nopol: J23B-SECPOL-FILE absent
+FAIL nopol: test_j23b rc=None []
+FAIL nopol: negative control test_j23b_neg_occ rc=None fails [] (must contain J23B-OCC)
+FAIL nopol: j23b_sim rc=None, matrix rows PASS 0/10
+FAIL nopol: J23B-ISO missing
+FAIL nopol: J23B-SIGNAL missing
+FAIL nopol: J23B-PI missing
+FAIL nopol: PROC-ENTRY missing
+FAIL nopol: PROC-DEADLINE missing
+FAIL nopol: PROC-SAFE missing
+FAIL nopol: J23B-ISO-BYPASS missing
+FAIL nopol: PROC-BADPERMIT missing
+FAIL nopol: PROC-GATE-SURVIVES missing
+FAIL nopol: PROC-MAP missing
+FAIL nopol: PROC-PEERREPLAY missing
+FAIL nopol: PROC-ROGUE missing
+FAIL nopol: PROC-OCC missing
+FAIL nopol: PROC-COMPOUND missing
+FAIL nopol: PROC-SINGLE missing
+INFO nopol: (replaced by the J24 count below) FAIL nopol: test_j23b_proc rc=None, 0 trial lines (want 50)
+INFO nopol: (replaced by the J24 count below) FAIL nopol: timing lines 0 (want 3 conditions x 6 metrics; emulator time, relative only)
+FAIL nopol: PI negative control (gate channel _NTO_CHF_FIXED_PRIORITY) fails J23B-PI: rc=None no line
+FAIL nopol: J23B-PI-COMPARE priority inheritance vs the fixed-priority control: missing PI lines (with PI [], without [])
+FAIL nopol: file matrix_sim.csv in the log (0 lines)
+FAIL nopol: file results.csv in the log (0 lines)
+FAIL nopol: file trials.csv in the log (0 lines)
+FAIL nopol: file matrix_proc.csv in the log (0 lines)
+FAIL nopol: file j23b_qnx_no_stats.csv in the log (0 lines)
+FAIL nopol: file j23b_qnx_no_runs.csv in the log (0 lines)
+FAIL nopol: file j23b_qnx_no_events.csv in the log (0 lines)
+FAIL nopol: file j23b_qnx_no_denials.csv in the log (0 lines)
+INFO nopol: 0 files written to <local-scratch>/qnx_x_sc806_20261125/evidence/j24/qnx/qnx_nopol_csv
+PASS nopol: BOOT-CONTINUITY end marker at line 199, no reset before it (one V2V MINI START, no early "Startup complete")
+FAIL nopol: J23D-SIGTARGET missing
+PASS nopol: J23D-NAME no "ERROR name_attach" line (0; first: none)
+FAIL nopol: J23D-POSITIVE planner connect_gate None, send_req None (want ALLOWED, ALLOWED: the policy must let the planner reach the gate); gate alive after the probes ? (want 1)
+FAIL nopol: B4M2-GATE test_b4gate rc None, S171-S179 PASS 0/9, summary ALL PASS False
+FAIL nopol: B4M2-NEG test_b4gate_neg_noresv rc None (want 1), [FAIL] S175 lines 0 (want >= 1)
+FAIL nopol: B4M2-DEV /dev/v2v_ttl present False, test_b4gate --devctl rc None, S174-DEV..S179-DEV PASS 0/6
+FAIL nopol: test_j23b_proc rc=None, 0 trial lines (want 27 rows x 5 trials)
+FAIL nopol: J24-TRIALS trials per row 5 (want >= 5), [ROW] lines 0 (want 27), rows below 5: none
+FAIL nopol: timing lines 0 (want 4 conditions x 6 metrics: base, low, same = A off, j24same = A on; emulator time, relative only)
+FAIL nopol: J24-PRIO missing
+FAIL nopol: J24-POS missing
+FAIL nopol: J24-LOOP missing
+FAIL nopol: J24-DEATH missing
+FAIL nopol: PROC-DEADLINE missing
+FAIL nopol: J24-AOFF F9 rows with A off: rc=None (reported), 0 trial lines (want 25), J24-PRIO in off mode missing/FAIL
+FAIL nopol: J24-NEGB death watch off (J24_NEG 0x01) must fail J24-DEATH: rc=None no line
+FAIL nopol: J24-POLICY-COVER "Undefined type" lines 0; no [J24] image OPT_USB line
+INFO nopol: J24-A-COMPARE same F9 load (3 x SCHED_RR 40): no timing lines; no row lines
+CHECK nopol FAIL
+INFO nopol [lock] taken after 0 s boot_seconds=353 guard=end 
+INFO nopol diag: [DIAG] single_car 19 [gate] t=167371 START pid=1548307 sid=1548307 epoch=167371 veh=1 map=0 need_comm=0 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO nopol diag: [DIAG] single_car 19 [gate] t=167793 ISSUE seq=1 ttl=500
+INFO nopol diag: [DIAG] single_car 19 [gate] t=175900 STATS issued=1 renewed=79 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=82 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=1073 refused_load=0 refused_radio=0 refused_unknown=0 
+INFO nopol diag: [DIAG] single_car 19 [act] t=167452 START pid=1552404 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+INFO nopol diag: [DIAG] single_car 19 [act] t=170064 ENTRY commit_valid=1 valid=1 wo_permit=0 committed_then_revoked=0 commit_at=169914 x=0.5 v=300.0
+INFO nopol diag: [DIAG] single_car 19 [act] t=175063 EXIT x=1500.2
+INFO nopol diag: [DIAG] single_car 19 [act] t=175888 STATS entries=1 entries_wo_permit=0 committed_then_revoked=0 fallbacks=0 refuges=0 accepted=80 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=834 poll_fail=1 x=1746.5
+INFO nopol diag: [DIAG] single_car 19 [perc] t=167452 START pid=1552405 occ_ms=3000 occ_x=700 occ_at=0
+INFO nopol diag: [DIAG] single_car 19 [perc] t=175774 STATS reports=82
+INFO nopol diag: [DIAG] map_no_borrow 7 [gate] t=236071 START pid=1949715 sid=1949715 epoch=236071 veh=1 map=2 need_comm=0 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO nopol diag: [DIAG] map_no_borrow 7 [gate] t=236433 BLOCK reason=map
+INFO nopol diag: [DIAG] map_no_borrow 7 [gate] t=244577 STATS issued=0 renewed=0 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=82 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=1072 refused_load=0 refused_radio=0 refused_unknown=0 r
+INFO nopol diag: [DIAG] map_no_borrow 7 [act] t=236149 START pid=1953812 veh=1 map=2 x0=-600 channels_owned=0 CPS 62500000
+INFO nopol diag: [DIAG] map_no_borrow 7 [act] t=244563 STATS entries=0 entries_wo_permit=0 committed_then_revoked=0 fallbacks=0 refuges=0 accepted=0 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=832 poll_fail=0 x=-20.0
+INFO nopol diag: [DIAG] map_no_borrow 7 [perc] t=236148 START pid=1953813 occ_ms=3000 occ_x=700 occ_at=0
+INFO nopol diag: [DIAG] map_no_borrow 7 [perc] t=244448 STATS reports=82
+INFO nopol diag: [DIAG] map_no_borrow 12 [gate] t=279075 START pid=2195475 sid=2195475 epoch=279075 veh=1 map=2 need_comm=0 need_perc=1 timing=0 ident=uid test_hook=1 pi_only=0 CPS 62500000
+INFO nopol diag: [DIAG] map_no_borrow 12 [gate] t=279426 BLOCK reason=map
+INFO nopol diag: [DIAG] map_no_borrow 12 [gate] t=287563 STATS issued=0 renewed=0 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=81 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=1065 refused_load=0 refused_radio=0 refused_unknown=0 r
+INFO nopol diag: [DIAG] map_no_borrow 12 [act] t=279152 START pid=2199572 veh=1 map=2 x0=-600 channels_owned=0 CPS 62500000
+INFO nopol diag: [DIAG] map_no_borrow 12 [act] t=287552 STATS entries=0 entries_wo_permit=0 committed_then_revoked=0 fallbacks=0 refuges=0 accepted=0 rej_mac=0 rej_vehicle=0 rej_epoch=0 rej_dup=0 rej_late=0 rej_future=0 rej_format=0 polls=826 poll_fail=0 x=-20.0
+INFO nopol diag: [DIAG] map_no_borrow 12 [perc] t=279153 START pid=2199573 occ_ms=3000 occ_x=700 occ_at=0
+INFO nopol diag: [DIAG] map_no_borrow 12 [perc] t=287436 STATS reports=81
+missing input: <local-scratch>/qnx_x_sc806_20261125/evidence/j23b_inputs/J23_FAULT_MATRIX_OWNER_20261117.csv <local-scratch>/qnx_x_sc806_20261125/evidence/j23b/sim/matrix_sim.csv

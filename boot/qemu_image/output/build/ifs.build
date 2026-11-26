@@ -1,0 +1,199 @@
+###############################################################################
+#
+# IFS Build file
+#
+###############################################################################
+
+[search=/workspace/qnx800/target/qnx/aarch64le:/workspace/qnx800/target/qnx/aarch64le/boot/sys:/workspace/qnx800/target/qnx:.]
+
+[+dupignore]
+[+optional]
+
+
+[uid=0 gid=0 dperms=0555 perms=0555]
+
+[image=0x40080000]
+[virtual=aarch64le,raw ] boot = {
+    startup-qemu-virt  
+    # Setting PATH and LD_LIBRARY_PATH here allows them to be set both for
+    # procnto as well as programs run from the IFS startup script.
+    PATH=/proc/boot:/system/bin
+    LD_LIBRARY_PATH=/proc/boot:/system/lib:/system/lib/dll
+    [+keeplinked uid=0 gid=0 perms=0700 ] LDQNX=/proc/boot/ldqnx-64.so.2 CONFIG_PATH=/proc/boot:/system/etc procnto-smp-instr -mr -d 0777 -u 0777  
+}
+
+[+script] startup-script = {
+
+    TERM=qansi
+    HOME=/data/home/root
+    #50.builtin
+    setconf TIMEZONE UTC0
+    mount -uo noexec /dev/shmem
+    # ARM Motherboard Express uATX features a PrimeCell PL031 RTC as per:
+    # - http://infocenter.arm.com/help/topic/com.arm.doc.dui0447j/Caccaigc.html
+    # - http://infocenter.arm.com/help/topic/com.arm.doc.dui0447j/ch04s02s02.html
+    rtc -b 0x9010000 primecell
+    display_msg "---> Loading security policy"
+    secpolpush
+    /proc/boot/j24b_boot.sh
+    #~30.builtin
+    /proc/boot/startup.sh
+    #~80.builtin
+
+    display_msg "Startup complete"
+    uname -a
+
+    reopen /dev/ser1
+}
+
+startup.sh=output/build/startup.sh
+mount_fs.sh=output/build/mount_fs.sh
+
+#############################################
+### Toybox
+#############################################
+toybox=usr/bin/toybox
+[type=link] cat=toybox
+[type=link] chmod=toybox
+[type=link] dd=toybox
+[type=link] echo=toybox
+[type=link] ln=toybox
+[type=link] ls=toybox
+[type=link] rm=toybox
+[type=link] grep=toybox
+[type=link] sleep=toybox
+
+#############################################
+### Utilities
+#############################################
+bin/on
+# waitfor and ability are same binary as on
+[type=link] waitfor=on
+[type=link] ability=on
+sbin/rtc
+bin/setfacl
+bin/ksh
+bin/pidin
+# Allow sh to be found in PATH
+[type=link] sh=ksh
+bin/mount
+bin/umount
+usr/bin/getconf
+# getconf and setconf are same binary
+[type=link] setconf=getconf
+sbin/devc-serpl011
+bin/slog2info
+
+
+#############################################
+### Services
+#############################################
+sbin/devb-virtio
+bin/slogger2
+sbin/fsevmgr
+
+
+
+#############################################
+### Miscellaneous
+#############################################
+# Capture the build information
+
+[perms=0444] build/options=local/options
+[perms=0444] build/options.inc=output/inc/options.inc
+[perms=0444] build/ifs.build=output/build/ifs.build
+[perms=0444] build/system.build=output/build/system.build
+[perms=0444] build/data.build=output/build/data.build
+
+[perms=0444] build.date = output/build/build.date
+
+#############################################
+### Customization
+#############################################
+
+[-autolink]
+
+lib/libc.so.6
+usr/lib/ldqnx-64.so.2
+lib/libgcc_s.so.1
+lib/libm.so.3
+lib/libcam.so.2
+lib/dll/io-blk.so
+lib/dll/cam-disk.so
+lib/dll/fs-qnx6.so
+lib/dll/fs-dos.so
+lib/libslog2.so.1
+[type=link] libslog2.so=libslog2.so.1
+usr/lib/libcrypto.so.3
+lib/libsocket.so.4
+[type=link] libsocket.so=libsocket.so.4
+usr/lib/libz.so.2
+lib/libslog2shim.so.1
+lib/libsecpol.so.1
+lib/libpci.so.3.0
+lib/libjson.so.1
+lib/libslog2parse.so.1
+lib/libjail.so.1
+lib/libfsnotify.so.1
+
+
+usr/lib/libqcrypto.so.1.0
+lib/dll/qcrypto-openssl-3.so
+lib/libqh.so.1
+lib/libregex.so.1
+
+[uid=0 gid=0 perms=0444] qcrypto.conf={
+openssl-3 tags=*
+}
+
+[type=link] /bin/ksh=/proc/boot/ksh
+[type=link] /bin/sh=/proc/boot/ksh
+[type=link] /bin/cp=/proc/boot/toybox
+[type=link] /bin/rm=/proc/boot/toybox
+[type=link] /usr/bin/ssh=/system/bin/ssh
+[type=link] /tmp=/data/var/tmp
+[type=link] /usr/share/terminfo=/system/etc/terminfo
+[type=link] /etc=/data/var/etc
+[type=link] /var=/data/var
+# J24B Candidate C/D: safety gate + actuation + SLM + boot script + XML configs in IFS
+[perms=755] v2v-j23b=/workspace/qnx_target/build_j24/secpol/v2v-j23b-aarch64
+[perms=755] j24b_boot.sh=/workspace/scripts/j24b_boot.sh
+[perms=755] slm=usr/sbin/slm
+[perms=755] slmctl=bin/slmctl
+[perms=644] j24b_slm_pos.xml=/workspace/evidence/j24b/qnx/j24b_slm_pos_secpol.xml
+[perms=644] j24b_slm_neg.xml=/workspace/evidence/j24b/qnx/j24b_slm_neg_secpol.xml
+#############################################
+### secpol (security policies) --policy option
+#############################################
+[-optional] secpol.bin=output/build/secpol.bin
+#############################################
+### QTD
+#############################################
+qtd_public_key.pem=local/misc_files/qtd_public_key.pem
+fs-qtd.so=lib/dll/fs-qtd.so
+#############################################
+### secpol components (opt_secpol)
+#############################################
+bin/secpol
+bin/secpolpush
+[perms=ugo=rx,u+s] bin/secpollaunch
+secpollaunch-rootish_t.cfg = {
+[pidin]
+    cmd = /proc/boot/pidin %*
+    type = rootish_pidin_t
+}
+secpollaunch-pre_rootish_t.cfg = {
+[global]
+    type = rootish_t
+    launch_if = cmd /system/bin/rootish_allowed
+    dir = /data/home/rootish
+    creds = 900:900
+    set_env = HOME=/data/home/rootish USER=rootish LOGNAME=rootish
+    keep_env = SSH_CLIENT SSH_TTY SSH_CONNECTION
+[splsh]
+    cmd = /proc/boot/ksh %*
+# sshd prepends a - when you're logging in signaling the need for a login shell
+[-splsh]
+    cmd = /proc/boot/ksh -l %*
+    set_env = SHELL=/bin/sh
+}

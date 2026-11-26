@@ -1,0 +1,15 @@
+# G23 compile round secpol 2026-11-26 00:37:22 SDK <local-scratch>/qnx806_side/sdp:ro rehearsal=0 neg=none
+# command: cd /workspace/qnx_target  && qcc -Vgcc_ntoaarch64le -Wall -Wextra -O2 -Iinclude src/v2v_ttl_resmgr.c -o /workspace/qnx_target/build_g23/secpol/v2v-ttl-resmgr-aarch64 -lcrypto -lm  && qcc -Vgcc_ntoaarch64le -Wall -Wextra -O2 -Iinclude -DV2V_G10 src/v2v_ttl_resmgr.c -o /workspace/qnx_target/build_g23/secpol/v2v-g10-resmgr-aarch64 -lcrypto -lm  && qcc -Vgcc_ntoaarch64le -Wall -Wextra -O2 -Iinclude  tests/g23_probe.c -o /workspace/qnx_target/build_g23/secpol/g23-probe-aarch64  && qcc -Vgcc_ntoaarch64le -Wall -Wextra -O2 -Iinclude  tests/g23_load.c -o /workspace/qnx_target/build_g23/secpol/g23-load-aarch64  && ls -l /workspace/qnx_target/build_g23/secpol
+QNX_HOST=/workspace/qnx800/host/linux/x86_64
+QNX_TARGET=/workspace/qnx800/target/qnx
+MAKEFLAGS=-I/workspace/qnx800/target/qnx/usr/include
+total 400
+-rw-r--r-- 1 root root    944 Nov 25 16:37 compile.log
+-rwxr-xr-x 1 root root  23336 Nov 25 16:37 g23-load-aarch64
+-rwxr-xr-x 1 root root  29120 Nov 25 16:37 g23-probe-aarch64
+-rwxr-xr-x 1 root root 176528 Nov 25 16:37 v2v-g10-resmgr-aarch64
+-rwxr-xr-x 1 root root 167736 Nov 25 16:37 v2v-ttl-resmgr-aarch64
+efd563aeeafdf28499a3b55a9b0ee8186b3fcf319d103af72302d3ee32bbb8f8  g23-load-aarch64
+fe75391e728455db722ae108dd72d81518cb0b98af12661368c4415b7277a7c5  g23-probe-aarch64
+959724b455c85356e74ea264f3c66a863132e341eddcc9e186e7c3ab8ed4d76f  v2v-g10-resmgr-aarch64
+fb8f250b5368b6972fa4a6b9306a48274cadf6a7367ba66421f788a57465dd89  v2v-ttl-resmgr-aarch64

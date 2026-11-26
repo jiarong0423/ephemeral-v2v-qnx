@@ -1,0 +1,6 @@
+QNX_HOST=/workspace/qnx800/host/linux/x86_64
+QNX_TARGET=/workspace/qnx800/target/qnx
+MAKEFLAGS=-I/workspace/qnx800/target/qnx/usr/include
+/workspace/qnx800/host/linux/x86_64/usr/bin/secpolcompile
+-rw-r--r-- 1 root root 6336 Nov 25 16:37 /tmp/g23_check.bin
+0898876c2ca919736f81666708daa33754943c2b61610b61f0c06a7b3ac41de1  /tmp/g23_check.bin

@@ -1,0 +1,11 @@
+# probe_cmds.txt - boot commands of the extension probe boot (2026-11-24). Appended by build_qnx_image.sh after its run() helper, between
+# "=== V2V MINI START ===" and "=== V2V MINI END ===". Runs only the two probe programs; nothing here is judged by scripts/j24_qnx_check.py.
+# Emulator times (QEMU TCG): relative only. Simulation values only; nothing certified, no guarantee.
+B=/system/bin
+echo "=== PROBE BEGIN ==="
+echo "[PROBE] uname: $(uname -a 2>&1)"
+echo "[PROBE] programs in /system/bin: $(ls $B 2>/dev/null | grep -c -E '^(probe_ext|probe_ipc)$') of 2"
+echo "[PROBE] cpus online: $(pidin info 2>/dev/null | head -3 | tr '\n' ' ')"
+run probe_ext $B/probe_ext
+run probe_ipc $B/probe_ipc
+echo "=== PROBE END ==="

@@ -1,0 +1,78 @@
+# B4M4 geometry parameter registry (SIMULATION inputs; task B4M4A deliverable 1). Tab separated, 12 columns. Loaded by the B4M4 runners and test S188
+# (src/v2v_b4m4_geo.inc.c b4m4_reg_load). FIXED rows = the B4M3 inputs of include/v2v_map.h V2V_MAP_PROV (values must stay equal; S188 checks).
+# TO FILL a 2026-11-18 tape value (no code change): on the placeholder line set status FILLED, value (cm or %), label MEASURED (both endpoints known)
+# or MEASURED_UNCONFIRMED, source (record file + line), endpoints (e.g. outer edge of the left parking-bay white line – outer edge of the right parking-bay white line); keep the fallback columns. Then rerun the strata tool
+# (the runner refuses a strata file computed from another registry). Labels: MEASURED MEASURED_UNCONFIRMED PHOTO_ESTIMATE MAP_DERIVED ASSUMED (vehicle rows also SPEC).
+key	kind	status	value	unit	label	source	endpoints	target	fallback_value	fallback_label	fallback_source
+seg:8.*	site	FIXED	-	cm	ASSUMED	j22_params.json (street before the zone, 6 m)	-	-	-	-	-
+seg:9.*	site	FIXED	-	cm	ASSUMED	READINGS:6 tape stopped at 500 cm (lower bound only); zone width swept 550/700/900, zone length 8 m	-	-	-	-	-
+seg:10.*	site	FIXED	-	cm	ASSUMED	alley start 8 m, length swept 25/40/60 m, flat (not measured)	-	-	-	-	-
+seg:10.w	site	FIXED	380	cm	MEASURED	READINGS:7 / original text "about 380 cm"	between the outer edges of the two red lines (owner confirmed 2026-11-18: both tape ends on the outer edges of the red lines)	-	-	-	-
+seg:11.*	site	FIXED	-	cm	ASSUMED	far-end road 6 m (j22_params.json)	-	-	-	-	-
+cell:0.*	site	FIXED	-	cm	ASSUMED	mouth zone as a wide area (swept width)	-	-	-	-	-
+cell:1.*	site	FIXED	-	cm	ASSUMED	gate apron 3 x 2.5 m (owner-marked place READINGS:28, no dimension)	-	-	-	-	-
+cell:2.*	site	FIXED	-	cm	ASSUMED	recess: depth 2.5 m, length 5 m, 6 m into the alley not measured; occupied by a small truck READINGS:7 (arm recocc)	-	-	-	-	-
+cell:2.lw	site	FIXED	380	cm	MEASURED	READINGS:7 / original text "about 380 cm"	between the outer edges of the two red lines (owner confirmed 2026-11-18: both tape ends on the outer edges of the red lines)	-	-	-	-
+cell:3.*	site	FIXED	-	cm	ASSUMED	far-end road	-	-	-	-	-
+cell:11.*	site	FIXED	-	cm	ASSUMED	street behind the platoon (three cars)	-	-	-	-	-
+scene:1.*	site	FIXED	-	cm	ASSUMED	M1 scenario lines (gate, safe points, detour 191 m) not measured	-	-	-	-	-
+seg:12.*	site	FIXED	-	cm	ASSUMED	cross street = junction width	-	-	-	-	-
+seg:13.*	site	FIXED	-	cm	ASSUMED	junction extent 5.9 m along the route	-	-	-	-	-
+seg:13.w	site	FIXED	590	cm	PHOTO_ESTIMATE	READINGS:45 tape 500 cm + photo projection / original text "5.87–5.91 m"	-	-	-	-	-
+seg:13.slope	site	FIXED	0	%	ASSUMED	B4M2 value; the 5.6 % reading belongs here (READINGS:21), used by the B4M3 main geometry	-	-	-	-	-
+seg:14.*	site	FIXED	-	cm	ASSUMED	alley 38 m (open map says about 42 m, READINGS:42; not measured)	-	-	-	-	-
+seg:14.w	site	FIXED	330	cm	PHOTO_ESTIMATE	READINGS:43 / original text "about 3.35 m"	-	-	-	-	-
+seg:14.slope	site	FIXED	5.6	%	ASSUMED	B4M2 placed the junction reading in the alley (READINGS:21 says junction); alley slope not measured	-	-	-	-	-
+seg:15.*	site	FIXED	-	cm	ASSUMED	top end 5 m	-	-	-	-	-
+cell:4.*	site	FIXED	-	cm	ASSUMED	stop box extent 5.5 m at the mouth	-	-	-	-	-
+cell:4.dep	site	FIXED	140	cm	PHOTO_ESTIMATE	READINGS:44 (B4M2 rounded 1.45 m down to 1.40 m) / original text "1.45 m"	-	-	-	-	-
+cell:4.lw	site	FIXED	330	cm	PHOTO_ESTIMATE	READINGS:43 / original text "about 3.35 m"	-	-	-	-	-
+cell:5.*	site	FIXED	-	cm	ASSUMED	end of the left parking band 2.1 x 5 m	-	-	-	-	-
+cell:5.lw	site	FIXED	330	cm	PHOTO_ESTIMATE	READINGS:43 / original text "about 3.35 m"	-	-	-	-	-
+cell:6.*	site	FIXED	-	cm	ASSUMED	back out to the cross street	-	-	-	-	-
+cell:6.lw	site	FIXED	590	cm	PHOTO_ESTIMATE	READINGS:45 / original text "5.87–5.91 m"	-	-	-	-	-
+cell:7.*	site	FIXED	-	cm	ASSUMED	top end	-	-	-	-	-
+scene:2.*	site	FIXED	-	cm	ASSUMED	M2 scenario lines; blind junction from the owner (READINGS:56), extent not measured; slope extent over the alley (B4M2)	-	-	-	-	-
+seg:16.*	site	FIXED	-	cm	ASSUMED	junction road 6 m	-	-	-	-	-
+seg:17.*	site	FIXED	-	cm	ASSUMED	fence lane length 35 m not measured	-	-	-	-	-
+seg:17.w	site	FIXED	450	cm	MEASURED_UNCONFIRMED	READINGS:11 / original text "about 450 cm"	-	-	-	-	-
+seg:17.slope	site	FIXED	17.1	%	MEASURED	READINGS:23 / original text "17.1%"	phone level laid along the alley (single-point reading, no two endpoints)	-	-	-	-
+seg:18.*	site	FIXED	-	cm	ASSUMED	dead-end branch, same width and slope assumed	-	-	-	-	-
+cell:8.*	site	FIXED	-	cm	ASSUMED	pocket 5.5 x 2.1 m in the parked row not measured	-	-	-	-	-
+cell:8.lw	site	FIXED	450	cm	MEASURED_UNCONFIRMED	READINGS:11 / original text "about 450 cm"	-	-	-	-	-
+cell:8.slope	site	FIXED	17.1	%	MEASURED	READINGS:23 / original text "17.1%"	phone level laid along the alley (single-point reading, no two endpoints)	-	-	-	-
+cell:9.*	site	FIXED	-	cm	ASSUMED	open ground 4 x 4 m	-	-	-	-	-
+cell:10.*	site	FIXED	-	cm	ASSUMED	lower road	-	-	-	-	-
+scene:3.*	site	FIXED	-	cm	ASSUMED	M3 scenario lines	-	-	-	-	-
+scene:3.slope	site	FIXED	17.1	%	MEASURED	READINGS:23 / original text "17.1%"	phone level laid along the alley (single-point reading, no two endpoints)	-	-	-	-
+b4m3:m2_lane_w	site	FIXED	436	cm	MEASURED_UNCONFIRMED	READINGS:8 / original text "about 436 cm"	-	-	-	-	-
+b4m3:m2_lane_w_photo	site	FIXED	330	cm	PHOTO_ESTIMATE	READINGS:43 (sensitivity arm lane330 only) / original text "about 3.35 m"	-	-	-	-	-
+b4m3:m2_stop_box_dep	site	FIXED	145	cm	PHOTO_ESTIMATE	READINGS:44 / original text "1.45 m"	-	-	-	-	-
+b4m3:m2_junction_slope	site	FIXED	5.6	%	MEASURED	READINGS:21 / original text "≈5.6%"	phone level laid along the alley (single-point reading, no two endpoints)	-	-	-	-
+b4m3:m2_alley_slope	site	FIXED	0	%	ASSUMED	alley slope not measured (READINGS:21: the 5.6 % is the junction); main arm 0 %	-	-	-	-	-
+b4m3:m2_alley_slope_sens	site	FIXED	5.6	%	ASSUMED	sensitivity arm slope56: the junction reading transferred to the alley	-	-	-	-	-
+b4m3:m1_recess_dep	site	FIXED	250	cm	ASSUMED	recess depth not measured	-	-	-	-	-
+b4m3:m1_recess_occupied	site	FIXED	1	n	MEASURED	READINGS:7 (field observation; arm recocc) / original text "small truck parked in the recess"	field observation (not a length)	-	-	-	-
+b4m3:hw_main	vehicle	FIXED	210	cm	SPEC	CAR_WIDTH_SPECS:17 (other car mirror-inclusive width, median n=10) / original text "2.10 + 0.5 = **2.60 m**"	-	-	-	-	-
+b4m3:hw_sens	vehicle	FIXED	220	cm	SPEC	CAR_WIDTH_SPECS:18 (about P90, 2.21 m) / original text "2.21 + 0.5 = **2.71 m**"	-	-	-	-	-
+b4m3:mirror_side	vehicle	FIXED	13	cm	SPEC	CAR_WIDTH_SPECS:11 (median 131 mm per side) / original text "median 131"	-	-	-	-	-
+b4m3:legal_gap	vehicle	FIXED	50	cm	SPEC	CAR_WIDTH_SPECS:16 (need = mirror width + 0.5 m; art. 100 para 5, S2JB_VEH_MIN_CM) / original text "mirror-inclusive width + 0.5 m"	-	-	-	-	-
+b4m3:av_l	vehicle	FIXED	468	cm	SPEC	CAR_WIDTH_SPECS:76 / original text "4.68 × 1.90 m"	-	-	-	-	-
+b4m3:av_body	vehicle	FIXED	190	cm	SPEC	CAR_WIDTH_SPECS:76 / original text "4.68 × 1.90 m"	-	-	-	-	-
+b4m3:av_w	vehicle	FIXED	214	cm	SPEC	CAR_WIDTH_SPECS:77 (own mirror-inclusive width) / original text "about 2.14 m"	-	-	-	-	-
+b4m3:rmin_main	vehicle	FIXED	570	cm	SPEC	CAR_WIDTH_SPECS:14 (5.3 m was optimistic) / original text "suggested nominal value 5.7 m"	-	-	-	-	-
+b4m3:rmin_sens	vehicle	FIXED	600	cm	SPEC	CAR_WIDTH_SPECS:14 / original text "6.0 m for the sensitivity analysis"	-	-	-	-	-
+b4m3:wheelbase	vehicle	FIXED	269	cm	ASSUMED	J2B_WB	-	-	-	-	-
+b4m3:rear_overhang	vehicle	FIXED	100	cm	ASSUMED	J2B_ROH	-	-	-	-	-
+b4m3:track	vehicle	FIXED	160	cm	ASSUMED	J2B_TW	-	-	-	-	-
+b4m3:dirchange_s	vehicle	FIXED	3	s	ASSUMED	time per direction change of a multi-point entry	-	-	-	-	-
+b4m3:max_dirchanges	vehicle	FIXED	3	n	ASSUMED	task sheet B4M3 (at most 3 direction changes)	-	-	-	-	-
+b4m4:hw_narrow	vehicle	FIXED	200	cm	ASSUMED	B4M4_PREREG_DRAFT_20261118 section 5 sensitivity need 250 cm (narrow car) = other car's mirror-inclusive width 200 + 50	-	geo arm hw200	-	-	-
+b4m4:m2_drivable_w	site	PENDING	-	cm	-	-	-	M2 alley lane (seg 14 w) + stop_box / left_band lane width (main and every arm except lane330)	305	PHOTO_ESTIMATE	video + paint-line measurement (qnx_reg_20261118/REGISTRY_NOTES.md; owner instruction 2026-11-18: label it a photo estimate); replaces 436 (the alley getting wider further in was a bias; owner confirmed the alley body has one width)
+b4m4:m2_bay_len	site	PENDING	-	cm	-	-	-	M2 stop_box length x1 - x0 (owner: empty parking bay inside the alley = short-stop bay, READINGS site 2C)	550	ASSUMED	cell:4 stop box extent 5.5 m at the mouth (not measured)
+b4m4:m2_bay_dep	site	PENDING	-	cm	-	-	-	M2 stop_box depth	210	PHOTO_ESTIMATE	video + paint-line measurement (qnx_reg_20261118/REGISTRY_NOTES.md; owner instruction 2026-11-18: label it a photo estimate); replaces 145 (depth of the open lot)
+b4m4:m2_alley_slope	site	PENDING	-	%	-	-	-	M2 alley slope (seg 14 + stop_box / left_band; main and every arm except slope56)	0	ASSUMED	READINGS:21: the 5.6 % is the junction; alley slope not measured; B4M3 b4m3:m2_alley_slope
+b4m4:m1_recess_dep	site	PENDING	-	cm	-	-	-	M1 recess depth	250	ASSUMED	cell:2 recess depth 2.5 m not measured; B4M3 b4m3:m1_recess_dep
+b4m4:m1_recess_len	site	PENDING	-	cm	-	-	-	M1 recess length x1 - x0	500	ASSUMED	cell:2 recess length 5 m not measured
+b4m4:m3_pocket_len	site	PENDING	-	cm	-	-	-	M3 pocket length x1 - x0	550	ASSUMED	cell:8 pocket 5.5 x 2.1 m not measured
+b4m4:m3_pocket_dep	site	PENDING	-	cm	-	-	-	M3 pocket depth	210	ASSUMED	cell:8 pocket 5.5 x 2.1 m not measured

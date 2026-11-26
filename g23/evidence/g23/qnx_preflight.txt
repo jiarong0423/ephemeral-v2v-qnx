@@ -1,0 +1,9 @@
+PASS L1 base sha256 748dc894aa7d89fc (want 748dc894aa7d89fc, the G17F combined policy)
+PASS L2 base: /dev/v2v_ttl attached by ['host_srv_t']; edge_unit_t -> host_srv_t class rules 0, channel_connect abilities 0 (want host_srv_t, 0, 0)
+PASS L3 addendum types ['g23_car_t']; foreign statements []
+PASS L4 addendum connections ['g23_car_t->host_srv_t', 'g23_car_t->g23_car_t']; refused []
+PASS L5 addendum ability blocks ['g23_car_t', 'g23_car_t', 'edge_unit_t']; refused []
+PASS L6 forbidden abilities in the addendum: none
+PASS L7 124 statements, 33 types; duplicates none; unparsed or undeclared none
+LINT ALL PASS
+MERGED <local-scratch>/qnx_x_g23s_806_20261125/evidence/g23/qnx_secpol.policy.txt (28284 bytes, sha256 cd69b34cb5fe77a0)

@@ -1,0 +1,34 @@
+# g23_addendum.txt - job G23: what the G23 programs need ON TOP OF the existing security policy. scripts/g23_secpol_tool.py appends it to
+# qnx_target/secpol/g23_base_g17f_combined.txt (verbatim copy of the QNX-verified G17F combined policy, qnx_api_g17f/evidence/g17/
+# qnx_secpol.policy_combined.txt, sha256 fe79f993bf9c9c40...; nopol and secpol boots ALL PASS on 2026-11-15, probes P1 / P6: edge_unit_t and
+# radio_feed_t opening /dev/v2v_ttl refused with errno 1) and writes evidence/g23/qnx_secpol.policy.txt, which the secpol boot compiles.
+# The isolation rule G23 measures is NOT in this file: the vision-like load runs as edge_unit_t, and the base policy gives edge_unit_t no
+# connection to host_srv_t (the resource manager that owns /dev/v2v_ttl). scripts/g23_secpol_tool.py --lint refuses this file if it
+#   - declares a type other than g23_* or touches allow_attach / default_spawn_type,
+#   - lets any type except g23_car_t connect to host_srv_t, or lets g23_car_t connect to anything but host_srv_t and itself,
+#   - grants edge_unit_t anything but "priority:<range>" (root only), or names host_srv_t in an ability block,
+#   - grants spawn, fork, pathspace, public_channel, io, mem_phys, settypeid or channel_connect abilities.
+# NOT compiled on this host (secpolcompile is a Linux x86_64 program of the SDP; scripts/g23_qnx_all.sh runs it in the container).
+#
+# g23_car_t: the probe (tests/g23_probe.c, two member threads). It starts as root under this type (on -T g23_car_t), sets SCHED_FIFO 40,
+# opens /dev/v2v_ttl twice (the device is 0660 root), then drops to uid 1000 (the car uid of the G10 server); afterwards it only sends devctl
+# and ionotify to the server and receives its pulses on a private channel of its own.
+type g23_car_t;
+allow g23_car_t host_srv_t:channel connect;
+allow g23_car_t g23_car_t:channel connect;
+allow g23_car_t self:ability {
+    nonroot
+    prot_exec
+    map_fixed
+};
+allow g23_car_t self:ability {
+    setuid:1000
+    setgid:1000
+    priority:1-63
+};
+# edge_unit_t (the base type of the load, unchanged otherwise): root-only priority 1-63, so that the load can take the priority of the
+# experiment (20 below the probe, 40 equal to it) before it drops to uid 1200. G17F granted edge_unit_t no priority ability (it never needed
+# one). Scheduling only: no connection, attach, spawn or uid ability of edge_unit_t is added here.
+allow edge_unit_t self:ability {
+    priority:1-63
+};

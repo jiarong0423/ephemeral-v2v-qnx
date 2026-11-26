@@ -1,0 +1,46 @@
+23:19:56 start: registry 708d3cbe7ae62e10 strata b77ac8776bbc593e shards 40 trials 200 workers 4
+ok shard 3
+ok shard 1
+ok shard 0
+ok shard 4
+ok shard 2
+ok shard 5
+ok shard 6
+ok shard 8
+ok shard 7
+ok shard 9
+ok shard 10
+ok shard 11
+ok shard 12
+ok shard 14
+ok shard 13
+ok shard 15
+ok shard 17
+ok shard 16
+ok shard 19
+ok shard 20
+ok shard 18
+ok shard 21
+ok shard 22
+ok shard 23
+ok shard 24
+ok shard 27
+ok shard 26
+ok shard 25
+ok shard 28
+ok shard 30
+ok shard 31
+ok shard 32
+ok shard 29
+ok shard 33
+ok shard 34
+ok shard 35
+ok shard 37
+ok shard 38
+ok shard 36
+ok shard 39
+23:22:04 finished shards ok=40 of 40, errors/stops=0
+merged spec2_b4m4abl.csv rows 8910
+merged spec2_b4m4abl_runs.csv rows 1782000
+23:22:04 MERGED
+RESOURCE_RELEASED 2026-11-18T23:22:56 task=b4m4_abl_full workers=0 processes=none

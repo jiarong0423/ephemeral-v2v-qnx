@@ -1,0 +1,36 @@
+PASS secpol compile: no compiler warning or error line
+CHECK secpol compile ALL PASS
+PASS CHK-MARK start True end True done True; carriage returns none
+PASS CHK-MODE mode secure (want secure), compiled policy file present
+PASS CHK-TRANS probe transports {'base': 'qnx', 'low': 'qnx', 'same': 'qnx'} (want qnx)
+PASS CHK-SRV server {'present': '1', 'waited_s': '1', 'job': '475154'}
+PASS CHK-RC section rc {'g23_info': 0, 'g23_srv': 0, 'g23_base': 0, 'g23_low': 0, 'g23_same': 0}
+PASS CHK-COUNT base samples 20000 raw 20000 invalid 0 miss 0 capped 0; low samples 20000 raw 20000 invalid 0 miss 0 capped 0; same samples 20000 raw 20000 invalid 0 miss 0 capped 0 (N 20000)
+PASS CHK-STAT on-target figures equal the recomputed ones for 6 condition-metric pairs
+PASS CHK-PRIO probe FIFO/40 above low RR/20, equal to same RR/40; loads {'low': 3, 'same': 3}
+PASS CHK-FAULT kill 1 rc 0 gone 1; crash trigger rc 0, crash line 1, gone 1; ended normally {'2': True}; window 33528922992..50116804000 kill 43247258000 crash 45932124000 (ms after start 9718.3 / 12403.2)
+PASS CHK-GAP low: largest gap in the fault window 15.120 ms (7413 gaps); normal max 43.465 ms (32585 gaps: base 19999, low outside the window 12586); ratio 0.35 (limit 2.0); samples after the crash 9998
+PASS CHK-DENY secure: 6 loads; attempts as started 6 (refused EPERM 6, allowed 0), after the uid drop 4218 (refused EPERM 4218)
+PASS CHK-SEP release->pulse p99.9 same 30648.0 us vs low 20412.0 us
+CHECK secpol ALL PASS
+INFO secpol [lock] taken after 0 s boot_seconds=142 
+TABLE G23 summary secpol (QEMU emulator times: relative comparisons between conditions only, no hardware real-time claim)
+TABLE | cond | metric | samples | p50 us | p99 us | p99.9 us | max us | invalid | capped | dur ms |
+TABLE |---|---|---|---|---|---|---|---|---|---|
+TABLE | base | rel_to_pulse | 20000 | 93.0 | 187.0 | 286.0 | 1415.0 | 0 | 0 | 8340 |
+TABLE | base | devctl_rt | 20000 | 74.0 | 146.0 | 222.0 | 849.0 | 0 | 0 | 8340 |
+TABLE | low | rel_to_pulse | 20000 | 105.0 | 1554.0 | 20412.0 | 39563.0 | 0 | 0 | 16587 |
+TABLE | low | devctl_rt | 20000 | 69.0 | 828.0 | 16773.0 | 37178.0 | 0 | 0 | 16587 |
+TABLE | same | rel_to_pulse | 20000 | 99.0 | 13802.0 | 30648.0 | 31137.0 | 0 | 0 | 29521 |
+TABLE | same | devctl_rt | 20000 | 65.0 | 10633.0 | 30487.0 | 31575.0 | 0 | 0 | 29521 |
+TABLE event kill          t_ns=43247258000 ms_after_low_start=9718.3 pid=761878 rc=0
+TABLE event crash-trigger t_ns=45928646000 ms_after_low_start=12399.7 pid=761881 rc=0
+TABLE event crash         t_ns=45932124000 ms_after_low_start=12403.2 pid=761881 rc=-
+TABLE load low/0 frames=321 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=321/0/321/0 no END line
+TABLE load low/1 frames=393 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=393/0/393/0 no END line
+TABLE load low/2 frames=714 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=714/0/714/0 ended
+TABLE load same/0 frames=930 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=930/0/930/0 ended
+TABLE load same/1 frames=930 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=930/0/930/0 ended
+TABLE load same/2 frames=930 overruns=0 pre try/ok/EPERM/EACCES=1/0/1/0 post try/ok/EPERM/EACCES=930/0/930/0 ended
+TABLE denials errno 1 (EPERM) total=4224; errno 13 (EACCES) total=0
+TABLE CSV <local-scratch>/qnx_x_g23s_806_20261125/evidence/g23/csv/g23_secpol_{stats,runs,events,denials}.csv

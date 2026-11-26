@@ -1,0 +1,87 @@
+# j24b_cmds.txt - QNX 8.0 boot commands for J24B (Candidate C BOOT-ORDER + Candidate D SLM supervision).
+# Candidate C boot-stage gate + act were already started from IFS (/proc/boot/v2v-j23b) in ifs_start.custom
+# BEFORE io-sock / networking / planner, logging "[J24B-BOOT] gate READY" and "[J24B-BOOT] act READY safe_state=hold".
+# Here we record planner start deferral, cleanly stop the boot-stage processes, and run Candidate D (slm).
+B=/system/bin
+echo "[J24B-BOOT] planner START deferred_to_slm"
+echo "[J24] image OPT_USB=$(sed -n -E "s/^OPT_USB=['\"]?([a-z]+)['\"]?$/\1/p" /proc/boot/build/options 2>/dev/null | head -1)"
+# Stop boot-stage gate/act cleanly so /dev/name/local/j23b_gate is free for SLM
+if [ -f /dev/shmem/j24b_act.pid ]; then
+  APID=$(cat /dev/shmem/j24b_act.pid)
+  kill -9 "$APID" 2>/dev/null || /proc/boot/on -T j23b_test_t /proc/boot/ksh -c "kill -9 $APID" 2>/dev/null || true
+fi
+if [ -f /dev/shmem/j24b_gate.pid ]; then
+  GPID=$(cat /dev/shmem/j24b_gate.pid)
+  kill -9 "$GPID" 2>/dev/null || /proc/boot/on -T j23b_test_t /proc/boot/ksh -c "kill -9 $GPID" 2>/dev/null || true
+fi
+i=0
+while [ -e /dev/name/local/j23b_gate ] && [ $i -lt 10 ]; do sleep 1; i=$((i+1)); done
+
+J24B_SECPOL=no
+if [ -f /proc/boot/secpol.bin ] || [ -f /proc/boot/build/secpol.bin ]; then J24B_SECPOL=secure; fi
+echo "[J24B] secpol=${J24B_SECPOL} slm=$(command -v slm || echo /proc/boot/slm)"
+SLM_BIN=$(command -v slm || echo /proc/boot/slm)
+
+make_keys() {
+  d=$1
+  mkdir -p "$d"
+  chmod 0777 "$d"
+  dd if=/dev/urandom of="$d/permit_gate.key" bs=32 count=1 2>/dev/null
+  cp "$d/permit_gate.key" "$d/permit_act.key"
+  dd if=/dev/urandom of="$d/fleet_gate.key" bs=32 count=1 2>/dev/null
+  chmod 0400 "$d/permit_gate.key" "$d/permit_act.key" "$d/fleet_gate.key"
+  chown 1310:1310 "$d/permit_gate.key" "$d/fleet_gate.key" 2>/dev/null || true
+  chown 1311:1311 "$d/permit_act.key" 2>/dev/null || true
+}
+
+now_ms() {
+  echo $(( $(date +%s) * 1000 ))
+}
+
+run_slm_case() {
+  tag=$1
+  xml=$2
+  rd=$3
+  echo "=== [J24B-SLM] ${tag} BEGIN ==="
+  rm -rf "$rd"; make_keys "$rd"
+  if [ "$J24B_SECPOL" = secure ]; then
+    on -T slm_t "$SLM_BIN" -Vvv "$xml" > "$rd/slm.log" 2>&1 &
+  else
+    "$SLM_BIN" -V "$xml" > "$rd/slm.log" 2>&1 &
+  fi
+  SLMP=$!
+  # Wait up to 8s for planner START and gate ISSUE (check both role logs and slm.log)
+  i=0
+  while [ $i -lt 16 ]; do
+    if grep -q " ISSUE " "$rd/gate.log" "$rd/slm.log" 2>/dev/null && grep -q "\[planner\].*START" "$rd/planner.log" "$rd/slm.log" 2>/dev/null; then break; fi
+    sleep 1; i=$((i+1))
+  done
+  sleep 1
+  PPID1=$(grep -h "\[planner\].*START pid=" "$rd/planner.log" "$rd/slm.log" 2>/dev/null | head -1 | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p')
+  TK=$(grep -h -E "\[gate\] t=.* (ISSUE|RENEW) " "$rd/gate.log" "$rd/slm.log" 2>/dev/null | tail -1 | sed -n 's/.*t=\([0-9][0-9]*\).*/\1/p')
+  [ -z "$TK" ] && TK=$(grep -h "t=" "$rd/gate.log" "$rd/act.log" "$rd/slm.log" 2>/dev/null | tail -1 | sed -n 's/.*t=\([0-9][0-9]*\).*/\1/p')
+  [ -z "$TK" ] && TK=$(now_ms)
+  if [ -n "$PPID1" ]; then
+    echo "[J24B-SLM] kill_planner pid=${PPID1} t=${TK}"
+    kill -9 "$PPID1" 2>/dev/null || true
+  else
+    echo "[J24B-SLM] ERROR planner_pid_missing"
+  fi
+  # Wait 6s for revoke -> park -> slm restart -> new issue -> resume
+  sleep 6
+  kill "$SLMP" 2>/dev/null || true
+  for p in $(grep -h "START pid=" "$rd/planner.log" "$rd/act.log" "$rd/gate.log" "$rd/slm.log" 2>/dev/null | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p'); do
+    kill -9 "$p" 2>/dev/null || true
+  done
+  sleep 1
+  for lf in gate.log act.log planner.log slm.log; do
+    if [ -f "$rd/$lf" ]; then
+      echo "--- $lf ---"
+      cat "$rd/$lf"
+    fi
+  done
+  echo "=== [J24B-SLM] ${tag} END ==="
+}
+
+run_slm_case POS /proc/boot/j24b_slm_pos.xml /tmp/j24b_pos
+run_slm_case NEG /proc/boot/j24b_slm_neg.xml /tmp/j24b_neg

@@ -1,0 +1,163 @@
+# g23_cmds.txt - job G23 QNX boot commands for build_qnx_image.sh (V2V_BOOT_CMDS=scripts/g23_cmds.txt; appended after the run() helper,
+# between "=== V2V MINI START ===" and "=== V2V MINI END ==="). The SAME file runs in both boots of scripts/g23_qnx_all.sh:
+#   no      mkqnximage --secpol=no: control boot, every process without a type ("ont" runs it plain)
+#   secure  mkqnximage --secpol=secure --policy=evidence/g23/qnx_secpol.policy.txt (G17F combined policy + qnx_target/secpol/g23_addendum.txt):
+#           server host_srv_t, probe g23_car_t, load edge_unit_t (the existing edge-unit type)
+# What runs (scripts/g23_qnx_check.sh grades it; times are QEMU TCG emulator times: relative comparisons only):
+#   server  /system/bin/v2v-g10-resmgr (-DV2V_G10) --server --drop-uid 1000 --allow-unsigned --quiet at /dev/v2v_ttl (root, attach, uid 1000)
+#   (c) base  g23-probe alone: N hand-overs on segment 0 (SCHED_FIFO 40)
+#   (a) low   K g23-load processes at SCHED_RR 20 (below the probe) + the probe on segment 1 (--marks 25,50); load 0 is killed with
+#             SIGKILL when the probe starts iteration N/4 and load 1 is made to fault (SIGUSR1 -> null write -> SIGSEGV) when it starts
+#             iteration N/2: two g23-load helpers poll the probe's log every 5 ms for its "G23-PROGRESS ... pct=25 / 50" lines and stamp
+#             the time right before kill(2)
+#   (b) same  the same load at SCHED_RR 40 (the probe's priority: negative control of the priority separation); capped at G23_SAME_MAX_MS
+# Every load tries open(/dev/v2v_ttl) once as root before dropping to uid 1200 and once per frame after it, counting the outcomes by errno.
+# Output for the checker / scripts/g23_summary.py: the probe logs (G23-PROBE / G23-MEMBER / G23-RUN / G23-STAT / G23CSV / raw G23S lines),
+# load logs (G23-LOAD / G23-LOAD-CNT / G23-LOAD-END / G23CSV,load), events (G23-EVENT), pids and ends (G23-LOADPID / G23-GONE),
+# each condition printed right after it ran (nothing is printed while a probe measures).
+# Rehearsal-only switches (unset in the image): G23_HOST=1 (no server: the host probe uses its in-process transport), G23_FORCE_MODE,
+# G23_DEV (a stand-in file), G23_N / G23_K / G23_SAME_MAX_MS / G23_PROBE_EXTRA / G23_SETTLE_S / G23_LOW_PRIO (scripts/g23_qnx_rehearsal.sh
+# sets them; G23_LOW_PRIO=32 there because on macOS SCHED_RR 20 is below the default user priority 31).
+# NOTE: no helper below may assign the variables n or rc (the run() helper of build_qnx_image.sh keeps the section name in n).
+G=/tmp/g23
+rm -rf $G; mkdir -p $G
+G23_N=${G23_N:-20000}
+G23_K=${G23_K:-3}
+G23_HOST=${G23_HOST:-0}
+G23_DEV=${G23_DEV:-/dev/v2v_ttl}
+G23_SAME_MAX_MS=${G23_SAME_MAX_MS:-240000}
+G23_LOAD_RUN_MS=${G23_LOAD_RUN_MS:-900000}
+G23_RAW=${G23_RAW:-1}
+G23_SETTLE_S=${G23_SETTLE_S:-10}
+G23_LOW_PRIO=${G23_LOW_PRIO:-20}
+G23_LOADARGS="--policy rr --period-ms 50 --frame-mb 8 --work-ms 30 --duty-max 80 --run-ms $G23_LOAD_RUN_MS --uid 1200 --dev $G23_DEV"
+G23_SECPOL=unknown; G23_OPTSRC=none
+if [ -n "${G23_FORCE_MODE:-}" ]; then G23_SECPOL=$G23_FORCE_MODE; G23_OPTSRC=forced; fi
+if [ "$G23_SECPOL" = unknown ]; then
+  for f in /proc/boot/build/options /ifs/build/options; do
+    if [ -f "$f" ]; then v=$(sed -n -E "s/^OPT_SECPOL=['\"]?([a-z]+)['\"]?$/\1/p" "$f" | head -1); if [ -n "$v" ]; then G23_SECPOL=$v; G23_OPTSRC=$f; break; fi; fi
+  done
+fi
+if [ "$G23_SECPOL" = unknown ]; then
+  if [ -e /dev/secpolgenerate ]; then G23_SECPOL=develop; elif [ -e /proc/boot/secpol.bin ]; then G23_SECPOL=secure; else G23_SECPOL=no; fi
+  G23_OPTSRC=probe
+fi
+echo "[G23] mode secpol=$G23_SECPOL (from $G23_OPTSRC) host=$G23_HOST"
+echo "G23-CONF n=$G23_N k=$G23_K probe=FIFO/40 low=RR/$G23_LOW_PRIO same=RR/40 same_max_ms=$G23_SAME_MAX_MS raw=$G23_RAW load=$G23_LOADARGS"
+echo "[G23] programs in the image: $(ls /system/bin | grep -c -E '^(v2v-g10-resmgr|g23-probe|g23-load)$')"
+if [ -e /proc/boot/secpol.bin ]; then echo "G23-SECPOL-FILE present (the image's compiled policy)"; else echo "G23-SECPOL-FILE absent (no compiled policy in the image)"; fi
+# ont TYPE CMD...: under the type when a policy is in use, plain otherwise (as in scripts/g17_cmds.txt)
+ont() { t=$1; shift; if [ "$G23_SECPOL" = no ]; then "$@"; else on -T "$t" "$@"; fi; }
+wait_line() { i=0; while [ $i -lt $3 ]; do grep -q "$2" "$1" 2>/dev/null && return 0; sleep 1; i=$((i + 1)); done; return 1; }
+g23_srv() {
+  if [ "$G23_HOST" = 1 ]; then echo "G23-SRV host rehearsal: no server (the host probe uses its in-process transport; $G23_DEV is a stand-in file)"; return 0; fi
+  ont host_srv_t /system/bin/v2v-g10-resmgr --server --drop-uid 1000 --allow-unsigned --quiet > $G/srv.log 2>&1 &
+  SRVJOB=$!
+  i=0; while [ $i -lt 30 ] && [ ! -e $G23_DEV ]; do sleep 1; i=$((i + 1)); done
+  sleep 1
+  echo "G23-SRV present=$([ -e $G23_DEV ] && echo 1 || echo 0) waited_s=$i job=$SRVJOB"
+  grep -E 'G10 reservation|resmgr_attach|uid|ERROR|refusing' $G/srv.log | head -8 | sed 's/^/G23-SRV| /'
+  [ -e $G23_DEV ]
+}
+g23_probe() {   # $1 cond, $2 segment, $3 progress marks ("0,0" = none), $4 max-ms: the probe, its log in $G/probe_$1.log; returns the
+                # rc of its own G23-END line (also if "on" should return before its child ends: the line is awaited, up to 1800 s)
+  if [ "$3" = "0,0" ]; then mk=""; else mk="--marks $3"; fi
+  ont g23_car_t /system/bin/g23-probe --cond $1 --n $G23_N --seg $2 --prio 40 --policy fifo --uid 1000 --dev $G23_DEV $mk --max-ms $4 --raw $G23_RAW ${G23_PROBE_EXTRA:-} > $G/probe_$1.log 2>&1
+  wait_line $G/probe_$1.log '^G23-END ' 1800
+  e=$(sed -n 's/^G23-END cond=[a-z0-9_]* rc=\([0-9]*\)$/\1/p' $G/probe_$1.log | head -1)
+  return ${e:-9}
+}
+g23_show() {    # $1 file, $2 label: print a log for the checker
+  echo "=== G23-LOG $2 ==="
+  cat $1 2>/dev/null
+  echo "=== G23-LOG END $2 ==="
+}
+g23_loads_start() {   # $1 tag, $2 priority: K loads in the background; "id loadpid jobpid" in $G/pids_$1
+  : > $G/pids_$1; : > $G/jobs_$1
+  k=0
+  while [ $k -lt $G23_K ]; do
+    ont edge_unit_t /system/bin/g23-load --id $k --tag $1 --prio $2 $G23_LOADARGS > $G/load_$1_$k.log 2>&1 &
+    echo "$k $!" >> $G/jobs_$1
+    k=$((k + 1))
+  done
+  k=0
+  while [ $k -lt $G23_K ]; do
+    wait_line $G/load_$1_$k.log '^G23-LOAD ' 30
+    p=$(sed -n 's/^G23-LOAD .* pid=\([0-9]*\) .*/\1/p' $G/load_$1_$k.log | head -1)
+    j=$(sed -n "s/^$k \([0-9]*\)$/\1/p" $G/jobs_$1 | head -1)
+    echo "$k ${p:-0} ${j:-0}" >> $G/pids_$1
+    echo "G23-LOADPID tag=$1 id=$k pid=${p:-none} job=${j:-none}"
+    k=$((k + 1))
+  done
+  sleep 2   # the loads run before the probe starts
+}
+pid_load() { sed -n "s/^$2 \([0-9]*\) .*/\1/p" $G/pids_$1 | head -1; }
+job_load() { sed -n "s/^$2 [0-9]* \([0-9]*\)$/\1/p" $G/pids_$1 | head -1; }
+g23_settle() {   # $1 tag, then load ids: wait for those load jobs (reaps them); a load still alive G23_SETTLE_S seconds later is killed by a
+                 # watchdog and listed; prints "G23-GONE ... gone=1" for a load that ended by itself (or by the event), gone=0 otherwise
+  t=$1; shift
+  qs=""; for k in "$@"; do qs="$qs $(pid_load $t $k)"; done
+  ( sleep $G23_SETTLE_S; for q in $qs; do if [ "$q" -gt 0 ] 2>/dev/null && kill -0 $q 2>/dev/null; then echo "$q"; kill -9 $q 2>/dev/null; fi; done ) > $G/wd_$t.txt 2>&1 &
+  W=$!
+  : > $G/exit_$t.txt
+  for k in "$@"; do j=$(job_load $t $k); if [ "$j" -gt 0 ] 2>/dev/null; then wait $j; e=$?; else e=none; fi; echo "$k $e" >> $G/exit_$t.txt; done
+  wait $W
+  for k in "$@"; do
+    q=$(pid_load $t $k); if [ -n "$q" ] && grep -qx "$q" $G/wd_$t.txt; then g=0; else g=1; fi
+    echo "G23-GONE tag=$t id=$k pid=${q:-none} gone=$g job_exit=$(sed -n "s/^$k //p" $G/exit_$t.txt | tail -1)"
+  done
+}
+g23_loads_stop() {   # $1 tag, $2 first id: SIGTERM to loads $2..K-1, then they are settled (each must end with its G23-LOAD-END line)
+  k=$2; ids=""
+  while [ $k -lt $G23_K ]; do
+    q=$(pid_load $1 $k); if [ "$q" -gt 0 ] 2>/dev/null && kill -0 $q 2>/dev/null; then kill -TERM $q 2>/dev/null; fi
+    ids="$ids $k"; k=$((k + 1))
+  done
+  [ -n "$ids" ] && g23_settle $1 $ids
+}
+g23_base() {
+  g23_probe base 0 0,0 0
+  x=$?
+  echo "G23-PROBE-EXIT cond=base exit=$x"
+  g23_show $G/probe_base.log probe_base
+  return $x
+}
+g23_low() {
+  echo "G23-FAULTPLAN kill_load=0 at_pct=25 crash_load=1 at_pct=50 (helpers wait for the probe's G23-PROGRESS lines)"
+  g23_loads_start low $G23_LOW_PRIO
+  p0=$(pid_load low 0); p1=$(pid_load low 1)
+  /system/bin/g23-load --stamp probe-launch
+  g23_probe low 1 25,50 0 &
+  PJ=$!
+  /system/bin/g23-load --after-line $G/probe_low.log --after-pct 25 --signal-after-ms 0 --pid ${p0:-0} --sig kill > $G/ev_kill.log 2>&1 &
+  KJ=$!
+  /system/bin/g23-load --after-line $G/probe_low.log --after-pct 50 --signal-after-ms 0 --pid ${p1:-0} --sig usr1 > $G/ev_crash.log 2>&1 &
+  CJ=$!
+  wait $PJ; x=$?
+  wait $KJ; wait $CJ
+  echo "G23-PROBE-EXIT cond=low exit=$x"
+  g23_settle low 0 1
+  g23_loads_stop low 2
+  cat $G/ev_kill.log $G/ev_crash.log
+  slog2info 2>/dev/null | grep -i 'g23-load' | tail -4 | sed 's/^/G23-SLOG| /'
+  g23_show $G/probe_low.log probe_low
+  k=0; while [ $k -lt $G23_K ]; do g23_show $G/load_low_$k.log load_low_$k; k=$((k + 1)); done
+  return $x
+}
+g23_same() {
+  g23_loads_start same 40
+  g23_probe same 3 0,0 $G23_SAME_MAX_MS
+  x=$?
+  echo "G23-PROBE-EXIT cond=same exit=$x"
+  g23_loads_stop same 0
+  g23_show $G/probe_same.log probe_same
+  k=0; while [ $k -lt $G23_K ]; do g23_show $G/load_same_$k.log load_same_$k; k=$((k + 1)); done
+  return $x
+}
+run g23_info /system/bin/g23-load --info
+run g23_srv g23_srv
+run g23_base g23_base
+run g23_low g23_low
+run g23_same g23_same
+[ -n "${SRVJOB:-}" ] && kill $SRVJOB 2>/dev/null
+echo "[G23] commands done mode=$G23_SECPOL"

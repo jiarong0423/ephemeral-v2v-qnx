@@ -1,0 +1,72 @@
+# j24_cmds.txt - J24 (QNX feature batch 1: A priority guarantee, B fallback on gate death, F policy coverage) boot commands = scripts/b4m2_cmds.txt
+# (accepted B4M2 boot, text below unchanged except: J23B_TRIALS default 5 (red team R1: >= 5 trials per fault row), and the J24 section at the
+# end). The programs are the J24 build (-DV2V_J24, scripts/j24_compile.sh): test_j23b_proc runs 27 rows (25 J23D rows + load_none + gate_kill_expiry)
+# with A on (gate SCHED_FIFO 66 + timer pulse 66, actuation 65) and B on (row gate_kill_expiry: B off = the permit-expiry path), timing
+# conditions base / low / same (A off, J23D) / j24same (A on, same load). J24 section: the F9 rows again with A OFF (J24_A=0: gate /
+# actuation at the old 40) for the false-block comparison, the image's OPT_USB (candidate F: image built without USB, so no
+# "on -T io_usb_t" line), the J24 programs count. Judged by scripts/j24_qnx_check.py. Emulator times: relative only. Simulation values
+# only; design on a certifiable platform; nothing certified, no guarantee.
+# b4m2_cmds.txt - B4M2: the J23B / J23D boot commands (scripts/j23b_cmds.txt, unchanged lines) + the B4M2 section at the end. J23B text:
+# j23b_cmds.txt - J23B (gate over QNX native message passing) QNX boot commands for build_qnx_image.sh (V2V_BOOT_CMDS=scripts/j23b_cmds.txt;
+# appended after the run() helper, between "=== V2V MINI START ===" and "=== V2V MINI END ==="). The SAME file runs in both boots of
+# scripts/j23b_qnx_all.sh:
+#   no       mkqnximage --secpol=no: the harness runs as root; every role keeps connection / priority / public_channel (procmgr_ability, nonroot,
+#            inherited) and drops to its own uid (gate 1310, act 1311, planner 1312, comm 1313, radio 1314, load 1315, perc 1316). Control
+#            round: shows what uid separation + the gate's own sender check protect, and what they do not (load / radio may connect to the gate;
+#            root may signal it)
+#   secure   mkqnximage --secpol=secure + the combined J23B policy: the harness runs under j23b_test_t and starts every role as
+#            "on -T <type> -u <uid>:<gid>" (J23B_ON=1); probes as ROOT under j23b_planner_t must be refused (the policy, not the uid)
+#   develop  learning boot (optional round): as no, then the generated policy is printed between "=== G17-POLICY-DUMP START/END ==="
+# Host rehearsal (scripts/j23b_host_check.sh step 7): J23B_BIN=<host build dir>, J23B_DIR=<work dir>, J23B_TIMING smaller, mode "host".
+# Times are emulator times (QEMU TCG): relative only. Judged by scripts/j23b_qnx_check.py. Simulation values only; nothing certified.
+J=${J23B_DIR:-/tmp/j23b}
+B=${J23B_BIN:-/system/bin}
+JT=${J23B_TRIALS:-5}
+JN=${J23B_TIMING:-2000}
+rm -rf $J; mkdir -p $J
+J23B_SECPOL=unknown; J23B_OPTSRC=none
+for f in /proc/boot/build/options /ifs/build/options; do
+  if [ -f "$f" ]; then v=$(sed -n -E "s/^OPT_SECPOL=['\"]?([a-z]+)['\"]?$/\1/p" "$f" | head -1); if [ -n "$v" ]; then J23B_SECPOL=$v; J23B_OPTSRC=$f; break; fi; fi
+done
+if [ "$J23B_SECPOL" = unknown ]; then
+  if [ -e /dev/secpolgenerate ]; then J23B_SECPOL=develop; elif [ -e /proc/boot/secpol.bin ]; then J23B_SECPOL=secure; else J23B_SECPOL=no; fi
+  J23B_OPTSRC=probe
+fi
+[ -n "${J23B_FORCE_MODE:-}" ] && J23B_SECPOL=$J23B_FORCE_MODE
+echo "[J23B] mode secpol=$J23B_SECPOL (from $J23B_OPTSRC) bin=$B trials=$JT timing=$JN"
+echo "[J23B] programs: $(ls $B 2>/dev/null | grep -c -E '^(v2v-j23b|v2v-j23b-nopi|test_j23b|test_j23b_neg_occ|j23b_sim|test_j23b_proc)$')"
+if [ -e /proc/boot/secpol.bin ]; then echo "J23B-SECPOL-FILE present"; else echo "J23B-SECPOL-FILE absent"; fi
+# ont TYPE CMD...: under the type when a policy is in use or being learned, plain otherwise
+ont() { t=$1; shift; if [ "$J23B_SECPOL" = no ] || [ "$J23B_SECPOL" = host ]; then "$@"; else on -T "$t" "$@"; fi; }
+
+# the line the first trimmed version (EV3b, invalid: mode host) had dropped: it exports J23B_MODE / J23B_ON for the test harness
+case "$J23B_SECPOL" in no) export J23B_MODE=nopol; unset J23B_ON ;; host) export J23B_MODE=host; unset J23B_ON ;; *) export J23B_MODE=secpol; export J23B_ON=1 ;; esac
+# ---- EV3C (2026-11-24, rerun of the trimmed EV3b with the mode line): the trimmed security-class evidence boot. NO J24 matrix here (the criteria lines of this boot are expected to fail and mean nothing).
+# It answers what EV3 did not print: the verdict tally of the Security class events, every non-ALLOW line, the ability tally, PATH_ATTACH lines and the role pids.
+echo "=== EV3B BEGIN ==="
+echo "[EV3B] free memory before: $(pidin info 2>/dev/null | head -2 | tr '\n' ' ')"
+tracelogger -a -s 12 -w -f /dev/shmem/ev3b.kev > /dev/null 2>&1 &
+sleep 1
+run ev3b_probe_pi_traced ont j23b_test_t $B/test_j23b_proc $B $J/ev3bt --tag ev3bt --no-faults --probe --pi
+sleep 12
+echo "[EV3B] kev file: $(ls -l /dev/shmem/ev3b.kev 2>&1 | head -1)"
+traceprinter -f /dev/shmem/ev3b.kev > /dev/shmem/ev3b_trace.txt 2>&1
+echo "[EV3B] trace lines: $(wc -l < /dev/shmem/ev3b_trace.txt); SEC lines: $(grep -c ' SEC ' /dev/shmem/ev3b_trace.txt)"
+echo "[EV3B] free memory after: $(pidin info 2>/dev/null | head -2 | tr '\n' ' ')"
+echo "=== EV3B VERDICT TALLY BEGIN (last three words of every ABLE line) ==="
+grep ' SEC ' /dev/shmem/ev3b_trace.txt | grep ':ABLE' | awk '{print $(NF-2), $(NF-1), $NF}' | sort | uniq -c | sort -rn | head -12
+echo "=== EV3B VERDICT TALLY END ==="
+echo "=== EV3B NON-ALLOW BEGIN (SEC lines without ALLOW, first 50) ==="
+grep ' SEC ' /dev/shmem/ev3b_trace.txt | grep -v 'ALLOW' | head -n 50 | cut -c1-210
+echo "=== EV3B NON-ALLOW END ==="
+echo "=== EV3B ABILITY TALLY BEGIN ==="
+grep ' SEC ' /dev/shmem/ev3b_trace.txt | grep -o 'able:[0-9]* ([A-Z_]*)' | sort | uniq -c | sort -rn | head -20
+echo "=== EV3B ABILITY TALLY END ==="
+echo "=== EV3B OTHER SEC EVENTS BEGIN (PATH_ATTACH, PERM_TEST, PERM_LOOKUP, UNREG_EVENT; first 30) ==="
+grep ' SEC ' /dev/shmem/ev3b_trace.txt | grep -E 'PATH_ATTACH|PERM_TEST|PERM_LOOKUP|UNREG_EVENT' | head -n 30 | cut -c1-210
+echo "=== EV3B OTHER SEC EVENTS END ==="
+echo "=== EV3B ROLE PIDS BEGIN (START lines of the role logs, wherever they are) ==="
+grep -r -H -m1 ' START ' $J/ev3bt 2>&1 | cut -c1-170 | head -n 14
+ls -R $J/ev3bt 2>&1 | head -n 24
+echo "=== EV3B ROLE PIDS END ==="
+echo "=== EV3B END ==="

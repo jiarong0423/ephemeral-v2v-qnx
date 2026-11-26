@@ -1,0 +1,355 @@
+FOUND GICv3 ITS
+** CPU 0 PE is not awake
+** CPU 1 PE is not awake
+---> Starting slogger2
+---> Starting PCI Services
+---> Starting fsevmgr
+# ---> Starting devb
+---> Mounting file systems
+Path=0 - 
+ target=0 lun=0     Direct-Access(0) - VIRTIO  Rev: 
+---> Mounting file systems
+---> Starting Networking
+---> Starting sshd
+---> Starting misc
+[rev] source revision j24-3c4a38716f865340 (content hash of qnx_target/src, tests, include, Makefile)
+[variant] c
+=== V2V MINI START ===
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+[J23B] mode secpol=no (from /proc/boot/build/options) bin=/system/bin trials=5 timing=2000
+[J23B] programs: 6
+J23B-SECPOL-FILE absent
+=== RC1 BEGIN ===
+[RC1] free memory before: CPU:AARCH64 Release:8.0.0  FreeMem:869MB/1024MB BootTime:Nov 24 22:56:46 UTC 2026 Processes: 20, Threads: 97 
+[RC1] ClockPeriod / tick info: CPU:AARCH64 Release:8.0.0  FreeMem:869MB/1024MB BootTime:Nov 24 22:56:46 UTC 2026
+[RC1] t0=1795561012 rc_w2trace_c_nopin
+[trace] op 5500 hash 2E27E8EAC861254C
+[trace] op 6000 hash 6D3B1D1EA40C1BA4
+[trace] FINAL ops=6000 hash=6D3B1D1EA40C1BA4
+[QNXRUN] rc_w2trace_c_nopin rc=0
+[RC1] t1=1795561021 rc_w2trace_c_nopin
+[RC1] t0=1795561021 rc_w2trace_c_pin
+[trace] op 5500 hash 2E27E8EAC861254C
+[trace] op 6000 hash 6D3B1D1EA40C1BA4
+[trace] FINAL ops=6000 hash=6D3B1D1EA40C1BA4
+[QNXRUN] rc_w2trace_c_pin rc=0
+[RC1] t1=1795561030 rc_w2trace_c_pin
+[RC1] t0=1795561030 rc_w2trace_rs_nopin
+[trace] op 5500 hash 2E27E8EAC861254C
+[trace] op 6000 hash 6D3B1D1EA40C1BA4
+[trace] FINAL ops=6000 hash=6D3B1D1EA40C1BA4
+[QNXRUN] rc_w2trace_rs_nopin rc=0
+[RC1] t1=1795561036 rc_w2trace_rs_nopin
+[RC1] t0=1795561036 rc_w2trace_rs_pin
+[trace] op 5500 hash 2E27E8EAC861254C
+[trace] op 6000 hash 6D3B1D1EA40C1BA4
+[trace] FINAL ops=6000 hash=6D3B1D1EA40C1BA4
+[QNXRUN] rc_w2trace_rs_pin rc=0
+[RC1] t1=1795561043 rc_w2trace_rs_pin
+=== [QNXRUN] rc_bench_c_1 ===
+[BENCH] start impl=c calls=100000 seed=1 blocks=1 cps=62500000
+[BENCH] impl=c func=crc16 n=100000 unit=cycles min=0 median=63 p95=63 p99=125 max=2687 over10x=25 cps=62500000
+[BENCH] impl=c func=input_digest8 n=100000 unit=cycles min=437 median=438 p95=500 p99=625 max=770625 over10x=8 cps=62500000
+[BENCH] impl=c func=member_digest16 n=100000 unit=cycles min=312 median=375 p95=375 p99=438 max=14063 over10x=12 cps=62500000
+[BENCH] impl=c func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=63 p99=125 max=11625 over10x=12 cps=62500000
+[BENCH] end impl=c sink=3284608305
+[QNXRUN] rc_bench_c_1 rc=0
+=== [QNXRUN] rc_bench_rs_1 ===
+[BENCH] start impl=rust calls=100000 seed=1 blocks=1 cps=62500000
+[BENCH] impl=rust func=crc16 n=100000 unit=cycles min=0 median=62 p95=63 p99=63 max=6250 over10x=4 cps=62500000
+[BENCH] impl=rust func=input_digest8 n=100000 unit=cycles min=312 median=375 p95=375 p99=438 max=40625 over10x=11 cps=62500000
+[BENCH] impl=rust func=member_digest16 n=100000 unit=cycles min=62 median=125 p95=125 p99=125 max=7188 over10x=12 cps=62500000
+[BENCH] impl=rust func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=125 p99=125 max=15875 over10x=56 cps=62500000
+[BENCH] end impl=rust sink=3284608305
+[QNXRUN] rc_bench_rs_1 rc=0
+=== [QNXRUN] rc_bench_c_2 ===
+[BENCH] start impl=c calls=100000 seed=2 blocks=1 cps=62500000
+[BENCH] impl=c func=crc16 n=100000 unit=cycles min=0 median=63 p95=63 p99=125 max=2812 over10x=12 cps=62500000
+[BENCH] impl=c func=input_digest8 n=100000 unit=cycles min=437 median=438 p95=500 p99=625 max=835375 over10x=13 cps=62500000
+[BENCH] impl=c func=member_digest16 n=100000 unit=cycles min=312 median=375 p95=375 p99=438 max=12313 over10x=7 cps=62500000
+[BENCH] impl=c func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=63 p99=125 max=10062 over10x=26 cps=62500000
+[BENCH] end impl=c sink=3301587767
+[QNXRUN] rc_bench_c_2 rc=0
+=== [QNXRUN] rc_bench_rs_2 ===
+[BENCH] start impl=rust calls=100000 seed=2 blocks=1 cps=62500000
+[BENCH] impl=rust func=crc16 n=100000 unit=cycles min=0 median=62 p95=63 p99=63 max=10875 over10x=75 cps=62500000
+[BENCH] impl=rust func=input_digest8 n=100000 unit=cycles min=312 median=375 p95=437 p99=500 max=45000 over10x=6 cps=62500000
+[BENCH] impl=rust func=member_digest16 n=100000 unit=cycles min=62 median=125 p95=125 p99=125 max=8312 over10x=8 cps=62500000
+[BENCH] impl=rust func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=63 p99=125 max=16750 over10x=8 cps=62500000
+[BENCH] end impl=rust sink=3301587767
+[QNXRUN] rc_bench_rs_2 rc=0
+=== [QNXRUN] rc_bench_c_3 ===
+[BENCH] start impl=c calls=100000 seed=3 blocks=1 cps=62500000
+[BENCH] impl=c func=crc16 n=100000 unit=cycles min=0 median=63 p95=63 p99=125 max=2500 over10x=8 cps=62500000
+[BENCH] impl=c func=input_digest8 n=100000 unit=cycles min=437 median=438 p95=500 p99=563 max=776938 over10x=8 cps=62500000
+[BENCH] impl=c func=member_digest16 n=100000 unit=cycles min=312 median=375 p95=375 p99=438 max=10312 over10x=12 cps=62500000
+[BENCH] impl=c func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=63 p99=125 max=11625 over10x=5 cps=62500000
+[BENCH] end impl=c sink=3303915738
+[QNXRUN] rc_bench_c_3 rc=0
+=== [QNXRUN] rc_bench_rs_3 ===
+[BENCH] start impl=rust calls=100000 seed=3 blocks=1 cps=62500000
+[BENCH] impl=rust func=crc16 n=100000 unit=cycles min=0 median=62 p95=63 p99=63 max=6562 over10x=3 cps=62500000
+[BENCH] impl=rust func=input_digest8 n=100000 unit=cycles min=312 median=375 p95=438 p99=563 max=41000 over10x=7 cps=62500000
+[BENCH] impl=rust func=member_digest16 n=100000 unit=cycles min=62 median=125 p95=125 p99=125 max=7562 over10x=8 cps=62500000
+[BENCH] impl=rust func=agree_decide16 n=100000 unit=cycles min=0 median=62 p95=125 p99=125 max=17000 over10x=11 cps=62500000
+[BENCH] end impl=rust sink=3303915738
+[QNXRUN] rc_bench_rs_3 rc=0
+[RC1] t0=1795561051 diff_stage1
+=== [QNXRUN] rc_diff_stage1 ===
+[diff] crc16: 100000 cases | frame check: 100000 cases (ok 6323, invalid 87777, bad crc 5900) | agree_decide: 100000 cases (commit 5071, wait 51776, mismatch 43153)
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rc_diff_stage1 rc=0
+[RC1] t1=1795561052 diff_stage1
+[RC1] t0=1795561052 diff_state
+[diff] state: 5000 cases (operations), 0 differences
+[diff] ALL AGREE (0 differences)
+[RC1] t1=1795561056 diff_state
+[RC1] t0=1795561056 diff_gateway
+[diff] gateway: 5000 cases (operations), 117431 messages through gw_admit, 0 differences
+[diff] ALL AGREE (0 differences)
+[RC1] t1=1795561060 diff_gateway
+[RC1] t0=1795561060 diff_votes
+[diff] votes: 5000 cases (operations), 0 differences
+[diff] ALL AGREE (0 differences)
+[RC1] t1=1795561061 diff_votes
+[RC1] t0=1795561061 diff_silent
+[diff] silent: 5000 cases (operations), 0 differences
+[diff] ALL AGREE (0 differences)
+[RC1] t1=1795561074 diff_silent
+[RC1] t0=1795561074 r1b_abuse
+[R1B] G write of 65535 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 65536 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 65537 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 1048576 bytes -> returned -1 errno 240 (Message too long)
+    [PASS] liveness probe after the write sizes
+[R1B] G lseek END=0(e0) -1=-1(e22) 2^40=1099511627776(e0) 12345=12345(e0)
+[R1B] G pwrite off 0 -> -1 e89 (Function not implemented); pwrite off 1000000 -> -1 e89 (Function not implemented); pread off 0 -> -1 e89; pread off 7 -> -1 e89 (Function not implemented)
+[R1B] G write of a valid frame after lseek(12345) -> 0 (OK)
+[R1B] G read 0 bytes -> -1 errno 22 (Invalid argument)
+[R1B] G read 1 byte -> -1 errno 22 (Invalid argument)
+[R1B] G read sizeof-1 -> -1 errno 22 (Invalid argument)
+[R1B] G read sizeof -> 1192 errno 0 (OK)
+[R1B] G read sizeof again on the same descriptor -> 0 errno 0 (OK)
+[R1B] G read 4000 -> 0 errno 0 (OK)
+[R1B] G read with a 1 MiB buffer -> 1192 errno 0 (OK)
+[R1B] G read on a write-only descriptor -> -1 errno 9 (Bad file descriptor)
+[R1B] G write on a read-only descriptor -> -1 errno 9 (Bad file descriptor)
+[R1B] hist devctl total=39: 0(OK)=26 9(Bad file descriptor)=1 25(Inappropriate I/O control operation)=12
+[R1B] hist raw messages total=28: 0(OK)=8 22(Invalid argument)=8 25(Inappropriate I/O control operation)=1 77(Bad message)=10 89(Function not implemented)=1
+[R1B] hist write sizes (all) total=914: 22(Invalid argument)=15 240(Message too long)=899
+[R1B] hist offsets total=9: 0(OK)=4 22(Invalid argument)=1 89(Function not implemented)=4
+[R1B] hist reads total=9: 0(OK)=4 9(Bad file descriptor)=2 22(Invalid argument)=3
+[R1B] G pid list before=3 after=3 same=1
+    [PASS] the server and gateway pids are unchanged (no crash, no restart)
+    [PASS] liveness probe at the end of the abuse cases
+[R1B] G server stats after the abuse cases: writes_ok=17 writes_refused=0 ecdsa_verifies=18
+[R1B] G direct write to the gated device from uid 0 -> 1 (Operation not permitted)
+    [PASS] a write straight to the gated device (not from the gateway uid) is refused with EPERM
+[R1B] phase abuse done, failures=0
+[QNXRUN] rc_r1b_c_abuse rc=0
+[R1B] G write of 65535 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 65536 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 65537 bytes -> returned -1 errno 240 (Message too long)
+[R1B] G write of 1048576 bytes -> returned -1 errno 240 (Message too long)
+    [PASS] liveness probe after the write sizes
+[R1B] G lseek END=0(e0) -1=-1(e22) 2^40=1099511627776(e0) 12345=12345(e0)
+[R1B] G pwrite off 0 -> -1 e89 (Function not implemented); pwrite off 1000000 -> -1 e89 (Function not implemented); pread off 0 -> -1 e89; pread off 7 -> -1 e89 (Function not implemented)
+[R1B] G write of a valid frame after lseek(12345) -> 0 (OK)
+[R1B] G read 0 bytes -> -1 errno 22 (Invalid argument)
+[R1B] G read 1 byte -> -1 errno 22 (Invalid argument)
+[R1B] G read sizeof-1 -> -1 errno 22 (Invalid argument)
+[R1B] G read sizeof -> 1192 errno 0 (OK)
+[R1B] G read sizeof again on the same descriptor -> 0 errno 0 (OK)
+[R1B] G read 4000 -> 0 errno 0 (OK)
+[R1B] G read with a 1 MiB buffer -> 1192 errno 0 (OK)
+[R1B] G read on a write-only descriptor -> -1 errno 9 (Bad file descriptor)
+[R1B] G write on a read-only descriptor -> -1 errno 9 (Bad file descriptor)
+[R1B] hist devctl total=39: 0(OK)=26 9(Bad file descriptor)=1 25(Inappropriate I/O control operation)=12
+[R1B] hist raw messages total=28: 0(OK)=8 22(Invalid argument)=8 25(Inappropriate I/O control operation)=1 77(Bad message)=10 89(Function not implemented)=1
+[R1B] hist write sizes (all) total=914: 22(Invalid argument)=15 240(Message too long)=899
+[R1B] hist offsets total=9: 0(OK)=4 22(Invalid argument)=1 89(Function not implemented)=4
+[R1B] hist reads total=9: 0(OK)=4 9(Bad file descriptor)=2 22(Invalid argument)=3
+[R1B] G pid list before=3 after=3 same=1
+    [PASS] the server and gateway pids are unchanged (no crash, no restart)
+    [PASS] liveness probe at the end of the abuse cases
+[R1B] G server stats after the abuse cases: writes_ok=17 writes_refused=0 ecdsa_verifies=18
+[R1B] G direct write to the gated device from uid 0 -> 1 (Operation not permitted)
+    [PASS] a write straight to the gated device (not from the gateway uid) is refused with EPERM
+[R1B] phase abuse done, failures=0
+[QNXRUN] rc_r1b_rs_abuse rc=0
+[RC1] t1=1795561077 r1b_abuse
+[RC1] t0=1795561077 r1b_sig
+[R1B] G sig target=join(cert issuer sig) pattern=r=n,s=n -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=n+1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s=n+1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=2^256-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s=2^256-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=all 0xFF -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=1,s=1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=n-1,s=n-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s'=n-s (malleable twin of a VALID signature) -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r,s swapped -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=one bit flipped -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=unchanged (control) -> 0 (OK)
+[R1B] G sig target=join(cert issuer sig) total length -64 (signature 0 bytes) -> 240 (Message too long)
+[R1B] G sig target=join(cert issuer sig) total length -1 (signature 63 bytes) -> 240 (Message too long)
+[R1B] G sig target=join(cert issuer sig) total length +1 (signature 65 bytes) -> 240 (Message too long)
+[R1B] G sig target=certificate alone pattern=all-zero (empty) -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=r=0 -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=s=0 -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=unchanged (control) -> 0 (OK)
+[R1B] hist G refused-signature cases target=signed_frame total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=vote total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=join(frame sig) total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=join(cert issuer sig) total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=certificate alone total=3: 35(No message of desired type)=3
+[R1B] hist controls (valid, and malleable twin) total=9: 0(OK)=8 1(Operation not permitted)=1
+    [PASS] no signature with r=0, s=0, r>=n, s>=n, empty, or of the wrong length was accepted
+    [PASS] liveness probe after the signature cases
+    [PASS] pids unchanged after the signature cases
+[R1B] phase sig done, failures=0
+[QNXRUN] rc_r1b_c_sig rc=0
+[R1B] G sig target=join(cert issuer sig) pattern=r=n,s=n -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=n+1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s=n+1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=2^256-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s=2^256-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=all 0xFF -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=1,s=1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r=n-1,s=n-1 -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=s'=n-s (malleable twin of a VALID signature) -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=r,s swapped -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=one bit flipped -> 1 (Operation not permitted)
+[R1B] G sig target=join(cert issuer sig) pattern=unchanged (control) -> 0 (OK)
+[R1B] G sig target=join(cert issuer sig) total length -64 (signature 0 bytes) -> 240 (Message too long)
+[R1B] G sig target=join(cert issuer sig) total length -1 (signature 63 bytes) -> 240 (Message too long)
+[R1B] G sig target=join(cert issuer sig) total length +1 (signature 65 bytes) -> 240 (Message too long)
+[R1B] G sig target=certificate alone pattern=all-zero (empty) -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=r=0 -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=s=0 -> 35 (No message of desired type)
+[R1B] G sig target=certificate alone pattern=unchanged (control) -> 0 (OK)
+[R1B] hist G refused-signature cases target=signed_frame total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=vote total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=join(frame sig) total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=join(cert issuer sig) total=18: 1(Operation not permitted)=15 240(Message too long)=3
+[R1B] hist G refused-signature cases target=certificate alone total=3: 35(No message of desired type)=3
+[R1B] hist controls (valid, and malleable twin) total=9: 0(OK)=8 1(Operation not permitted)=1
+    [PASS] no signature with r=0, s=0, r>=n, s>=n, empty, or of the wrong length was accepted
+    [PASS] liveness probe after the signature cases
+    [PASS] pids unchanged after the signature cases
+[R1B] phase sig done, failures=0
+[QNXRUN] rc_r1b_rs_sig rc=0
+[RC1] t1=1795561144 r1b_sig
+[RC1] t0=1795561144 r1b_attacks
+[R1B] ATTACK G13c join with a valid certificate but the first frame signed by ANOTHER key -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK G13d join whose frame names another pseudo-ID than the certificate -> 22 (Invalid argument) | front test or device: header / plausibility
+[R1B] ATTACK G14a certificate alone that the device does not hold -> 35 (No message of desired type) | device: certificate not held
+[R1B] ATTACK G14b certificate alone that the device already holds (A) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15a honest vote of A (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15b REPLAY of the exact vote bytes -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK G15c vote of B signed correctly but carrying a WRONG plan hash (0xBAD0BAD0) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15d valid vote for a round 10 s in the past -> 34 (Result too large) | device: round out of range
+[R1B] ATTACK G15e valid vote for a round 10 s in the future -> 34 (Result too large) | device: round out of range
+[R1B] ATTACK G15f vote of a car that never joined (no certificate held) -> 50 (Invalid exchange) | gateway: chain-value check
+[R1B] ATTACK G15g valid vote of B 400 ms after its last frame (not taking part any more) -> 3 (No such process) | device: not taking part (no live frame)
+    [PASS] cars A and B joined on the direct stack
+[R1B] ATTACK D01a valid frame of A, device alone (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK D01b REPLAY of the exact frame bytes, device alone -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D02a frame generated 400 ms ago, device alone -> 62 (Timer expired) | device: frame age check
+[R1B] ATTACK D02b frame stamped 5 s in the future, device alone -> 62 (Timer expired) | device: frame age check
+[R1B] ATTACK D03 FORGED signature straight into the device -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D03b frame moved by 2 m AFTER signing (CRC repaired), device alone -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D04a honest vote of A, device alone (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK D04b REPLAY of the exact vote, device alone -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D04c second, DIFFERENT validly signed vote of A in the same round (equivocation on one device) -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D04d validly signed vote of an OLDER round after a newer one -> 122 (Potentially recoverable i/o error) | device: older round
+[R1B] ATTACK D05 FORGED vote signature, device alone -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D06 valid vote of B whose last frame is 400 ms old -> 3 (No such process) | device: not taking part (no live frame)
+[R1B] ATTACK D07 bare 56-byte frame, device alone -> 13 (Permission denied) | device: certificate / unsigned refused
+    [PASS] (info) gateway stack alive
+[R1B] attacks pid list before=3 after=3 same=1
+    [PASS] server and gateway pids unchanged after the attack table
+[R1B] phase attacks done, failures=0
+[QNXRUN] rc_r1b_c_attacks rc=0
+[R1B] ATTACK G13c join with a valid certificate but the first frame signed by ANOTHER key -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK G13d join whose frame names another pseudo-ID than the certificate -> 22 (Invalid argument) | front test or device: header / plausibility
+[R1B] ATTACK G14a certificate alone that the device does not hold -> 35 (No message of desired type) | device: certificate not held
+[R1B] ATTACK G14b certificate alone that the device already holds (A) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15a honest vote of A (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15b REPLAY of the exact vote bytes -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK G15c vote of B signed correctly but carrying a WRONG plan hash (0xBAD0BAD0) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK G15d valid vote for a round 10 s in the past -> 34 (Result too large) | device: round out of range
+[R1B] ATTACK G15e valid vote for a round 10 s in the future -> 34 (Result too large) | device: round out of range
+[R1B] ATTACK G15f vote of a car that never joined (no certificate held) -> 50 (Invalid exchange) | gateway: chain-value check
+[R1B] ATTACK G15g valid vote of B 400 ms after its last frame (not taking part any more) -> 3 (No such process) | device: not taking part (no live frame)
+    [PASS] cars A and B joined on the direct stack
+[R1B] ATTACK D01a valid frame of A, device alone (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK D01b REPLAY of the exact frame bytes, device alone -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D02a frame generated 400 ms ago, device alone -> 62 (Timer expired) | device: frame age check
+[R1B] ATTACK D02b frame stamped 5 s in the future, device alone -> 62 (Timer expired) | device: frame age check
+[R1B] ATTACK D03 FORGED signature straight into the device -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D03b frame moved by 2 m AFTER signing (CRC repaired), device alone -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D04a honest vote of A, device alone (control) -> 0 (OK) | NOTHING stopped it: accepted
+[R1B] ATTACK D04b REPLAY of the exact vote, device alone -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D04c second, DIFFERENT validly signed vote of A in the same round (equivocation on one device) -> 237 (Operation already in progress) | gateway duplicate check or device replay check
+[R1B] ATTACK D04d validly signed vote of an OLDER round after a newer one -> 122 (Potentially recoverable i/o error) | device: older round
+[R1B] ATTACK D05 FORGED vote signature, device alone -> 1 (Operation not permitted) | device: signature / binding check (ECDSA)
+[R1B] ATTACK D06 valid vote of B whose last frame is 400 ms old -> 3 (No such process) | device: not taking part (no live frame)
+[R1B] ATTACK D07 bare 56-byte frame, device alone -> 13 (Permission denied) | device: certificate / unsigned refused
+    [PASS] (info) gateway stack alive
+[R1B] attacks pid list before=3 after=3 same=1
+    [PASS] server and gateway pids unchanged after the attack table
+[R1B] phase attacks done, failures=0
+[QNXRUN] rc_r1b_rs_attacks rc=0
+[RC1] t1=1795561176 r1b_attacks
+[RC1] t0=1795561176 j4
+=== [QNXRUN] rc_j4_c ===
+[*] test_qnx_j4 server=/system/bin/v2v-ttl-resmgr phase=all rounds=20 relay=0; this program: build=C fix_equiv=0 low_s=0
+[J4] server j4v1 log: ================================================================================
+[J4] server j4v1 log:  V2V Hand-shake Arbiter  [mode: server: /dev/v2v_ttl resource manager]
+[J4] server j4v1 log:  Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+[J4] server j4v1 log:  Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+[J4] server j4v1 log: ================================================================================
+[J4] server j4v1 log: [slog2] buffer set v2vttl, buffer server registered (read with: slog2info -b v2vttl)
+[J4] votes: build fix_equiv=0 low_s=0, protocol relay=0, 20 rounds per mode
+[J4] VOTES mode="honest control" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes a WRONG plan hash to both devices" relay=0 rounds=20: A commit/mismatch/wait=0/20/0  B=0/20/0  C=0/20/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C equivocates: hash h to device 1, hash h' to device 2 (batch B)" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=0/20/0  C=20/0/0 | split(A vs B) rounds=20, any split=20, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C sends h then h' to device 1, h to device 2" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes only to device 1" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=0/0/20  C=20/0/0 | split(A vs B) rounds=20, any split=20, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes h to both; after the relay, h' to device 2 only (late injection)" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VERDICT batch B split (A commits, B holds, C commits in every equivocation round): REPRODUCED (split rounds 20 of 20)
+[J4] SIG QNX direct device (low_s=0): join of the test car 0 | signed frame: valid 0, twin 0 | vote: twin 0, valid 0 | join: twin of the frame signature 0, twin of the CA signature 0, valid join 0
+[J4] VERDICT QNX direct device batch B malleability (twin accepted for frame, vote, join): REPRODUCED
+[J4] QNX done server=/system/bin/v2v-ttl-resmgr, failures=0
+[QNXRUN] rc_j4_c rc=0
+=== [QNXRUN] rc_j4_rs ===
+[*] test_qnx_j4 server=/system/bin/v2v-ttl-resmgr-rs phase=all rounds=20 relay=0; this program: build=C fix_equiv=0 low_s=0
+[J4] server j4v1 log: [rust] backend active (v2v-ttl-resmgr): crc16 frame_check agree_decide input_digest member_digest plan_fewest_steps
+[J4] server j4v1 log: [rust] W2 block state (v2v-ttl-resmgr): Rust-owned cache[16] + certificates[16] + unknown-car table + CA-signature cache + eviction counters (Device 4600 bytes, layout checked); OpenSSL stays C
+[J4] server j4v1 log: [rust] W2 block gateway (v2v-ttl-resmgr): Rust-owned pair/link/chain tables + window counters (Gateway 4888 bytes, layout checked; the secure page holds the whole value); mmap/mlock/typed memory stay C
+[J4] server j4v1 log: [rust] W2 block votes (v2v-ttl-resmgr): Rust-owned vote slots[16] + newest round (Votes 1860 bytes, layout checked); vote signature = OpenSSL callback in C
+[J4] server j4v1 log: [rust] W2 block silent (v2v-ttl-resmgr): Rust-owned obstacle set (ObstacleSet 204 bytes, layout checked); the planner grids g_obs/g_static stay C (a scratch copy goes through Rust)
+[J4] server j4v1 log: ================================================================================
+[J4] votes: build fix_equiv=0 low_s=0, protocol relay=0, 20 rounds per mode
+[J4] VOTES mode="honest control" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes a WRONG plan hash to both devices" relay=0 rounds=20: A commit/mismatch/wait=0/20/0  B=0/20/0  C=0/20/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C equivocates: hash h to device 1, hash h' to device 2 (batch B)" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=0/20/0  C=20/0/0 | split(A vs B) rounds=20, any split=20, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C sends h then h' to device 1, h to device 2" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes only to device 1" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=0/0/20  C=20/0/0 | split(A vs B) rounds=20, any split=20, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VOTES mode="C votes h to both; after the relay, h' to device 2 only (late injection)" relay=0 rounds=20: A commit/mismatch/wait=20/0/0  B=20/0/0  C=20/0/0 | split(A vs B) rounds=0, any split=0, conflict flagged D1=0 D2=0, relay writes ok=0 already=0 other=0 (last errno 0)
+[J4] VERDICT batch B split (A commits, B holds, C commits in every equivocation round): REPRODUCED (split rounds 20 of 20)
+[J4] SIG QNX direct device (low_s=0): join of the test car 0 | signed frame: valid 0, twin 0 | vote: twin 0, valid 0 | join: twin of the frame signature 0, twin of the CA signature 0, valid join 0
+[J4] VERDICT QNX direct device batch B malleability (twin accepted for frame, vote, join): REPRODUCED
+[J4] QNX done server=/system/bin/v2v-ttl-resmgr-rs, failures=0
+[QNXRUN] rc_j4_rs rc=0
+[RC1] t1=1795561246 j4
+[RC1] free memory after: CPU:AARCH64 Release:8.0.0  FreeMem:865MB/1024MB BootTime:Nov 24 22:56:46 UTC 2026 Processes: 20, Threads: 97 
+=== RC1 END ===
+=== V2V MINI END ===
+
+To exit QEMU, type <ctrl>a x
+
+Process count:20
+Startup complete
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le

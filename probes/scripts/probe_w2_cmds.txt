@@ -1,0 +1,13 @@
+# probe_w2_cmds.txt - boot commands of the w2trace first-difference probe (2026-11-25). Appended by build_qnx_image.sh after its run() helper.
+# Runs the C-only w2trace program of the RC1 tree with TRACE_ALL=1 (one line per mixed value) so that the first differing operation against the host can be found.
+# Emulator times are not used. Simulation values only; nothing certified, no guarantee.
+B=/system/bin
+echo "=== W2ALL BEGIN ==="
+echo "[W2] uname: $(uname -a 2>&1)"
+echo "[W2] begin"
+export TRACE_ALL=1
+run w2all $B/w2all 6000 1 > /dev/shmem/w2all.txt 2>&1
+echo "[W2] lines=$(wc -l < /dev/shmem/w2all.txt)"
+grep -v '^\[rust\]' /dev/shmem/w2all.txt
+echo "[W2] end"
+echo "=== W2ALL END ==="

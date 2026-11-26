@@ -1,0 +1,936 @@
+FOUND GICv3 ITS
+** CPU 0 PE is not awake
+** CPU 1 PE is not awake
+---> Starting slogger2
+---> Starting PCI Services
+---> Starting fsevmgr
+# ---> Starting devb
+---> Mounting file systems
+Path=0 - 
+ target=0 lun=0     Direct-Access(0) - VIRTIO  Rev: 
+---> Mounting file systems
+---> Starting Networking
+---> Starting sshd
+---> Starting misc
+[rev] source revision src-8dda219ac916a209 (content hash of qnx_target/src, tests, include, Makefile)
+[variant] c
+=== V2V DEMO START ===
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+[provision] OpenSSL 3.0.22 25 Aug 2026; default provider available; RAND_status=1
+[provision] demo fleet CA created: /dev/shmem/v2v_ca.key (0600) and /dev/shmem/v2v_ca.pub
+================================================================================
+ V2V Hand-shake Arbiter  [mode: server: /dev/v2v_ttl resource manager]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[slog2] buffer set v2vttl, buffer server registered (read with: slog2info -b v2vttl)
+[v2v_ttl] state lock: PTHREAD_PRIO_INHERIT set explicitly (rc=0)
+[v2v_ttl] core dumps disabled (setrlimit RLIMIT_CORE 0)
+[v2v_ttl] channel 1: priority inheritance on (default)
+[v2v_ttl] resmgr_attach OK: /dev/v2v_ttl registered (pid 368658); read, write, devctl (GET_STATS, GET_REPORT), ionotify
+[v2v_ttl] CLOCK_MONOTONIC timer armed: SIGEV_PULSE every 20 ms (TTL sweep)
+[v2v_ttl] system page: cycles_per_sec = 62500000 (ClockCycles() times the arbitration)
+[v2v_ttl] trust anchor loaded from /dev/shmem/v2v_ca.pub: frames must be signed under a valid short-lived certificate
+[v2v_ttl] procmgr_ability(deny + lock spawn/fork/mem_phys/io, non-root domain) rc=0 (applied), uid=1000
+[v2v_ttl] self-check: procmgr_ability(allow fork) returned 0; fork() afterwards Operation not permitted
+[v2v_ttl] ready, thread pool of 2-4 receiving threads
+================================================================================
+ V2V Hand-shake Arbiter  [mode: edge gateway: /dev/v2v_radio -> checks -> /dev/v2v_ttl]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[slog2] buffer set v2vttl, buffer gateway registered (read with: slog2info -b v2vttl)
+[gateway] secure state: chain table in a 4096-byte page from /sysram (typed memory: yes), mlock yes, core dumps off (RLIMIT_CORE 0)
+[v2v_ttl] procmgr_ability(deny + lock spawn/fork/mem_phys/io, non-root domain) rc=0 (applied), uid=1100
+[v2v_ttl] self-check: procmgr_ability(allow fork) returned 0; fork() afterwards Operation not permitted
+[gateway] /dev/v2v_radio registered (pid 565267, uid 1100): sizes, magic, version, CRC, pseudo-ID; signed frames need the next value of the car's hash chain (one SHA-256, up to 8 lost frames; wrong value -> errno 50, shared budget); at most 50 messages per ID per second; 200/s reserved for members, 200/s for the rest; 4 bad signatures in a second stop that car's frames (chain-valid) or that sender's other messages for 1 s; forwards to /dev/v2v_ttl
+crw-rw-rw-  1 root root 0,   1 2026-11-25 03:41 /dev/v2v_radio
+crw-rw----  1 root root 0,   1 2026-11-25 03:41 /dev/v2v_ttl
+================================================================================
+ V2V Hand-shake Arbiter  [mode: client: simulated sensing -> /dev/v2v_ttl]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[wire] Car B frame (56 bytes): 58 51 05 02 00 B2 00 00 2C 01 88 2A 07 04 0A 00 B8 00 8C BF 2F 13 A8 FD 46 00 13 FF 46 00 3D 02 6A 01 81 00 6A 01 0A FB 21 00 AE FC 21 00 B5 FF 5E 01 D5 FD 5E 01 C3 DE
+[sensing] Car A frame carries lines of: Car B Human car White SUV Blue car | learns from the others: Car C Person
+[sensing] Car B frame carries lines of: Car A Car C Human car White SUV | learns from the others: Blue car Person
+[sensing] Car C frame carries lines of: Car B Human car White SUV Person | learns from the others: Car A Blue car
+[v2v_ttl] join (certificate + first signed frame) 0xA100 (Car A) accepted from pid 565267 uid 1100
+[v2v_ttl] join (certificate + first signed frame) 0xB200 (Car B) accepted from pid 565267 uid 1100
+[v2v_ttl] join (certificate + first signed frame) 0xC300 (Car C) accepted from pid 565267 uid 1100
+[client] hand-shake done: 3 joins of 283 bytes (certificate 145 + first signed frame carrying the anchor of a 1024-value hash chain); frames are now 138 bytes (56 + 8 digest + 2 seq + 8 chain value + 64 signature)
+[client] MEASURED one SHA-256 chain step (8 bytes in, 8 kept) in this process: 5.1 us (mean of 1000); the gateway runs one per frame, up to 9 after lost frames
+[client] MEASURED one ECDSA P-256 signature check in this process: 330 us (mean of 20)
+[v2v_ttl] signed frame 0xA100 (Car A) accepted from pid 565267 uid 1100
+[v2v_ttl] signed frame 0xB200 (Car B) accepted from pid 565267 uid 1100
+[v2v_ttl] signed frame 0xC300 (Car C) accepted from pid 565267 uid 1100
+[client] MEASURED round trip (3 writes + 1 read via QNX message passing): 37324 us
+[client] MEASURED server-side fuse+decide compute: 20604 us
+[decision] vehicles in deadlock: 2 | of them able to give way: 0 | lines fused: 12
+[fused picture] 40 cm per character, s -15 m .. +15 m, d +2.2 m (top) .. -5.0 m; A/B/C vehicles, # lines, ~ free bay
+  ...................................#.....CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#.....CCCCCCCCCCC.......................
+  ........#############..#############....#CCCCCCCCCCC.......................
+  .......................................#BBB................................
+  ...................................#BBBBBBBB...............................
+  ...............................##BBBBBBBBBBB...............................
+  ...............................BBBBBBBBBBBBB...............................
+  ...............................#BBBBBBBBBBBB...............................
+  ................................BBBBBBBBBB.................................
+  ......................AAAAAAAAAABBBBBB.........[decision]   order 1: Car C gives way: backs off (930 cm free)
+............................
+  .....#############....AAAAAAAAAABBB........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#.........................................................
+  ...........................................................................
+  ...........................................................................
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  =========================================================[decision]   order 2: Car B gives way: backs off (610 cm free)
+==================
+  ===========================================================================
+[decision]   order 3: Car A passes
+  -> DEADLOCK among 2 vehicles; 0 of them can give way [Hash 0x4F390A9A]. PLAN in 5 steps (fewest of all sequences): 1.C backs off (700 cm, 930 cm free), 2.B backs off (450 cm, 610 cm free), 3.A passes, 4.B passes, 5.C waits clear.  [1] Car C backs off (free behind 930 cm, free bay 0 cm) -> [2] Car B backs off (free behind 0 cm, free bay 0 cm) -> [3] Car A passes (free behind 190 cm, free bay 0 cm)
+[client] corrupted-CRC frame (validly signed): REFUSED as expected (write=-1 errno=77 Bad message)
+[v2v_ttl] signed frame 0xB200 refused: Operation not permitted
+[client] frame changed after signing (carrying car B's next chain value, as a sender that saw B's frame first could): REFUSED as expected (write=-1 errno=1 Operation not permitted)
+[client] replayed frame (its chain value is the last one accepted): REFUSED as expected (write=-1 errno=237 Operation already in progress)
+[client] frame carrying an old value of car B's chain (its anchor): REFUSED as expected (write=-1 errno=50 Invalid exchange)
+[v2v_ttl] signed frame 0xB200 refused: Timer expired
+[client] frame generated 45 s ago (stale): REFUSED as expected (write=-1 errno=62 Timer expired)
+[v2v_ttl] unsigned frame 0xB200 refused: Permission denied
+[client] bare 56-byte frame without signature: REFUSED as expected (write=-1 errno=13 Permission denied)
+[v2v_ttl] join (certificate + first signed frame) 0xD002 refused: Operation not permitted
+[client] join with a certificate not issued by the fleet CA: REFUSED as expected (write=-1 errno=1 Operation not permitted)
+[v2v_ttl] join (certificate + first signed frame) 0xB200 refused: Permission denied
+[client] join with an expired certificate: REFUSED as expected (write=-1 errno=13 Permission denied)
+[v2v_ttl] certificate 0xD001 refused: No message of desired type
+[v2v_ttl] (further per-frame lines suppressed)
+[client] replayed certificate alone, without a signed frame: REFUSED as expected (write=-1 errno=35 No message of desired type)
+[client] replayed certificate with a frame not signed by its key: REFUSED as expected (write=-1 errno=1 Operation not permitted)
+[client] frame under a certificate that was never admitted (no chain value of car B): REFUSED as expected (write=-1 errno=50 Invalid exchange)
+[client] after the replayed certificates: unknown_certs=0 (nobody holds for them)
+[client] frame written straight to the device, bypassing the edge gateway: REFUSED as expected (write=-1 errno=1 Operation not permitted)
+[client] 60 frames forged under car B's ID from the attacker's process: 60 stopped at the gateway on the chain check (errno 50), 0 refused by the device, 0 other
+[client] attacker process 598037 (its own sender): every attack refused as expected
+[client] flood of 120 frames from car C in one burst: 49 passed the gateway, 9 stopped there (EAGAIN), 62 more on the chain check (errno 50: more than 8 of C's own frames dropped in a row)
+[client] car B's real frame right after the forgeries: refused on the chain check (errno 50; R9-B1 allows only a one-step check for B's ID for the rest of that second)
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 3096 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 2026 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 3454 us after expiry
+[client] car B's real frame after the window of the forgeries ended: accepted
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 15220 us after expiry
+[client] car C re-joins (its held certificate, a new chain anchor): accepted; its next frame: accepted
+[client] car A after 9 lost frames (its chain value is 10 steps on): REFUSED as expected (write=-1 errno=50 Invalid exchange)
+[client] car A after 8 lost frames: accepted; after 9: refused; after its re-join: accepted
+[client] car B's next value of its old chain, after the rollover: REFUSED as expected (write=-1 errno=50 Invalid exchange)
+[client] car B chain rollover (1016 values left; the rule rolls over at 64): new anchor accepted; next frame on the new chain accepted
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 19924 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 1474 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 12838 us after expiry
+[client] waiting 350 ms real time (TTL=300 ms) for the kernel-timer sweep ...
+[client] after 350 ms: active=0 total_evicted=7 worst eviction lateness=19924 us
+[uid 2000 process] open(/dev/v2v_ttl) REFUSED as expected (errno=13 Permission denied)
+[Car C process] pid 606229 wrote its own frame: ok
+[Car B process] pid 610325 wrote its own frame: ok
+[Car A process] pid 614421 wrote its own frame: ok
+[client] round 2 frames came from three separate processes: pids 606229, 610325, 614421 (all different)
+[consensus] arrival order A,B,C -> hash 0x4F390A9A ; arrival order C,B,A -> hash 0x4F390A9A : SAME ORDER
+[fused picture] 40 cm per character, s -15 m .. +15 m, d +2.2 m (top) .. -5.0 m; A/B/C vehicles, # lines, ~ free bay
+  ...................................#.....CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#.....CCCCCCCCCCC.......................
+  ........#############..#############....#CCCCCCCCCCC.......................
+  .......................................#BBB................................
+  ...................................#BBBBBBBB...............................
+  ...............................##BBBBBBBBBBB...............................
+  ...............................BBBBBBBBBBBBB...............................
+  ...............................#BBBBBBBBBBBB...............................
+  ................................BBBBBBBBBB.................................
+  ......................AAAAAAAAAABBBBBB.........[agree] each car process computes the plan itself, sends a signed 106-byte vote (plan hash + frame digest); the device only relays the votes
+............................
+  .....#############....AAAAAAAAAABBB........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#.........................................................
+  ...........................................................................
+  ...........................................................................
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+[fused picture] 40 cm per character, s -15 m .. +15 m, d +2.2 m (top) .. -5.0 m; A/B/C vehicles, # lines, ~ free bay
+  ...................................#.....CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#..#..CCCCCCCCCCC.......................
+  ...................................#.....CCCCCCCCCCC.......................
+  ........#############..#############....#CCCCCCCCCCC.......................
+  .......................................#BBB................................
+  ...................................#BBBBBBBB...............................
+  ...............................##BBBBBBBBBBB...............................
+  ...............................BBBBBBBBBBBBB...............................
+  ...............................#BBBBBBBBBBBB...............................
+  ................................BBBBBBBBBB.................................
+  ......................AAAAAAAAAABBBBBB.....................................
+  .....#############....AAAAAAAAAABBB........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#....AAAAAAAAAA...........................................
+  .................#.........................................................
+  ...........................................................................
+  ...........................................................................
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+  ===========================================================================
+[v2v_ttl] (further fused pictures suppressed)
+[Car A process] pid 618517: own plan hash 0x4F390A9A from 3 frame(s), frame digest 8D5AE694; 3 signed vote(s) checked: ALL MATCH -> MOVES (2 reads, ionotify armed 2 times (0 retries after EBUSY, event registered on try 1), woken 1 times, no polling)
+[Car B process] pid 618518: own plan hash 0x4F390A9A from 3 frame(s), frame digest 8D5AE694; 3 signed vote(s) checked: ALL MATCH -> MOVES (1 reads, ionotify armed 1 times (1 retries after EBUSY, event registered on try 1), woken 0 times, no polling)
+[Car C process] pid 618519: own plan hash 0x4F390A9A from 3 frame(s), frame digest 8D5AE694; 3 signed vote(s) checked: ALL MATCH -> MOVES (1 reads, ionotify armed 1 times (2 retries after EBUSY, event registered on try 1), woken 0 times, no polling)
+[agree] round 225: 3 move, 0 hold (all agree)
+[agree] next round: Car C did not receive Car A's frame
+[Car A process] pid 630805: own plan hash 0x4F390A9A from 3 frame(s), frame digest 8D5AE694; 2 signed vote(s) checked: MISMATCH -> HOLDS (1 reads, ionotify armed 1 times (0 retries after EBUSY, event registered on try 1), woken 0 times, no polling)
+[Car B process] pid 630806: own plan hash 0x4F390A9A from 3 frame(s), frame digest 8D5AE694; 3 signed vote(s) checked: MISMATCH -> HOLDS (1 reads, ionotify armed 1 times (0 retries after EBUSY, event registered on try 1), woken 0 times, no polling)
+[Car C process] pid 630807: own plan hash 0xE88DD551 from 2 frame(s), frame digest 273C41D1; 3 signed vote(s) checked: MISMATCH -> HOLDS (1 reads, ionotify armed 1 times (1 retries after EBUSY, event registered on try 1), woken 0 times, no polling)
+[agree] round 226: 0 move, 3 hold (all hold, as required)
+[client] vote for an older round: REFUSED as expected (write=-1 errno=122 Potentially recoverable i/o error)
+[client] vote changed after signing: REFUSED as expected (write=-1 errno=1 Operation not permitted)
+[client] replayed vote (same car, same round): REFUSED as expected (write=-1 errno=237 Operation already in progress)
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 19254 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 19408 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 1594 us after expiry
+[client] vote from a car that is not taking part (no live frame): REFUSED as expected (write=-1 errno=3 No such process)
+[client] devctl GET_STATS: ok; 0 frames held, 3 certificates, 481 sweeps, 80 writes accepted, 11 refused, 88 signature checks, pool up to 4 threads; decisions computed 5, answered from the cache 6
+[client] devctl GET_REPORT: plan hash 0x4F390A9A, read(): 0x4F390A9A (same); arbitration took 1810750 cycles = 28972.0 us (cycles_per_sec 62500000 from the system page)
+[client] devctl with an unknown command: refused (ENOTTY)
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 10304 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 7164 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 5126 us after expiry
+[client] ionotify(TRANARM, INPUT): event registered yes; no event while nothing is written: yes; after car C's frame: pulse received (2750 us from write to pulse)
+[client] QNX interfaces (devctl, ionotify, ClockCycles): PASS
+[client] car A now holds a 2 s certificate; waiting 3 s ...
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 2818 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 8816 us after expiry
+[v2v_ttl SWEEP] released certificate of 0xA100 (Car A): validity ended
+[client] frame after the certificate was released: REFUSED as expected (write=-1 errno=13 Permission denied)
+[client] frame under the fresh certificate: accepted
+[client] RESULT: PASS (Car C backs off, Car B backs off, Car A passes straight, then Car B; same order for both tested arrival orders; one process per car in round 2; uid 2000 refused; signed frames: tampering, replay, rogue and expired certificates refused; agreement: three processes computed the plan themselves, all moved when the hashes matched and all held when one car missed a frame; old, changed and replayed votes refused; certificate released and renewed; TTL eviction)
+client rc=0
+[QNXRUN] client rc=0
+=== AGREEMENT UNDER LOSS (in-process: three decision copies, simulated radio with 30% loss) ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: agreement step under frame and vote loss (simulated radio, in-process)]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[agree-sim] 200 trials per loss rate, seed 0x5EED2026, 3 copies of every message, up to 5 rounds;
+[agree-sim] faults on top of loss: 10% duplicated, 10% bit-flipped after signing, 10% replayed from the
+[agree-sim] previous round, random order. 'wrong plan' = not the plan computed from all three frames.
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 9936 us after expiry
+[agree-sim] loss 30% | round 1: all agree  73.0%, all hold  15.0%, some hold 12.0% | within 5 rounds: all agree  86.5% | moved on different plans: 0 | moved on a partial-information plan: 0 | no vote step, round 1: a car on another plan  15.0% | dropped: 132 replayed, 324 tampered, 1942 duplicates
+[agree-sim] 'partial-information plan': the cars that heard each other moved without a car whose certificate and
+[agree-sim] frames they never received (invisible on the radio); that car heard nobody, or voted another digest, and held.
+[agree-sim] RESULT: PASS (no two cars ever moved on different plans; all agree at 0% loss)
+agree-sim rc=0
+[QNXRUN] agree_sim rc=0
+=== WATCHDOG BOARD + 4G (simulated): heartbeat, fault, report, recovery, rejoin ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: watchdog board + 4G modem per car (simulated), heartbeat mode, fault, report, recovery, rejoin]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[wd] poll every 100 ms over a local wire; stack or radio heartbeat lost 3 polls; the board sees only the noisy localiser
+[wd] and odometry: jump if |localiser - own estimate| > 100 cm on 2 polls, drift if the CUSUM of that residual (minus 30 cm) > 300 cm
+[wd] scripted run: car B's driving stack hangs at 2 s; car C's localiser jumps at 8 s; no 4G coverage 12-17 s; car A's stack hangs at 13 s;
+[wd]               car C's localiser starts to drift at 20 s
+[wd] Car A: 1.2 m/s, localiser noise 20 cm, odometry scale error -0.3 %
+[wd] Car B: 1.7 m/s, localiser noise 10 cm, odometry scale error -0.8 %
+[wd] Car C: 2.1 m/s, localiser noise 15 cm, odometry scale error +0.6 %
+[wd   2.0 s] FAULT INJECTED  Car B: driving stack hung
+[wd   2.2 s] Car B board: driving stack hung detected (0.2 s after the fault, localiser then 0 cm off) -> V2V transmit OFF, car held with hazards
+[wd   2.2 s] Car B board: 4G report acknowledged (try 1, 368 ms) -> fleet orders remote restart of the driving stack, then relocalisation
+[wd   4.9 s] Car B board: recovered, fresh certificate hand-shake, frames resume (rejoining)
+[wd   5.2 s] Car B board: back in heartbeat mode (3.0 s from detection)
+[wd   8.0 s] FAULT INJECTED  Car C: localisation jump
+[wd   8.1 s] Car C board: localisation jump detected (0.1 s after the fault, localiser then 1384 cm off) -> V2V transmit OFF, car held with hazards
+[wd   8.1 s] Car C board: 4G report acknowledged (try 1, 275 ms) -> fleet orders relocalisation
+[wd   9.2 s] Car C board: recovered, fresh certificate hand-shake, frames resume (rejoining)
+[wd   9.5 s] Car C board: back in heartbeat mode (1.4 s from detection)
+[wd  13.0 s] FAULT INJECTED  Car A: driving stack hung
+[wd  13.2 s] Car A board: driving stack hung detected (0.2 s after the fault, localiser then 0 cm off) -> V2V transmit OFF, car held with hazards
+[wd  13.2 s] Car A board: 4G report not acknowledged (no 4G coverage), retry in 1 s
+[wd  14.2 s] Car A board: 4G report not acknowledged (no 4G coverage), retry in 2 s
+[wd  16.2 s] Car A board: 4G report not acknowledged (no 4G coverage), retry in 4 s
+[wd  20.0 s] FAULT INJECTED  Car C: localisation drift (30 cm/s)
+[wd  20.2 s] Car A board: 4G report acknowledged (try 4, 395 ms) -> fleet orders remote restart of the driving stack, then relocalisation
+[wd  22.9 s] Car A board: recovered, fresh certificate hand-shake, frames resume (rejoining)
+[wd  23.1 s] Car C board: localisation drift detected (3.1 s after the fault, localiser then 97 cm off) -> V2V transmit OFF, car held with hazards
+[wd  23.1 s] Car C board: 4G report acknowledged (try 1, 282 ms) -> fleet orders relocalisation
+[wd  23.2 s] Car A board: back in heartbeat mode (10.0 s from detection)
+[wd  24.2 s] Car C board: recovered, fresh certificate hand-shake, frames resume (rejoining)
+[wd  24.5 s] Car C board: back in heartbeat mode (1.4 s from detection)
+[wd] scripted run: 4 faults, 4 detected, 0 false alarms, 0 escalated, 4 rejoined, ticks in which the cars could have agreed on a wrong picture: 0
+[v2v_ttl SWEEP] released certificate of 0xB200 (Car B): validity ended
+[v2v_ttl SWEEP] released certificate of 0xC300 (Car C): validity ended
+[v2v_ttl SWEEP] released certificate of 0xA100 (Car A): validity ended
+[wd] batch: 200 runs of 40 s, 1-2 random faults each (stack, jump, drift 5-40 cm/s, radio), 4G outage of 2-10 s in 30 % of runs,
+[wd]        10 % radio loss, 10 % 4G loss, cars at 0-2.5 m/s, localiser noise 5-25 cm + 1 % outliers, odometry error up to 1 %, seed 0x4C7E2026
+[wd] batch: 269 faults, 268 detected (99.6 %), 0 false alarms
+[wd] batch:   driving stack hung     65 of   65 detected, mean 200 ms after the fault
+[wd] batch:   localisation jump      62 of   62 detected, mean 100 ms after the fault
+[wd] batch:   V2V radio dead         68 of   68 detected, mean 200 ms after the fault
+[wd] batch:   localisation drift     73 of   74 detected, mean 4156 ms after the fault
+[wd] batch:   drift caught by rate: 5-10 cm/s 12 of 13, 10-20 cm/s 18 of 18, 20-40 cm/s 43 of 43; localiser error when caught: mean 73 cm, worst 120 cm
+[wd] batch: 265 rejoined (mean 2.3 s from detection), 3 escalated to a remote operator, 349 4G messages (81 retries)
+[wd] batch: ticks in which the cars could have agreed on a picture with a car more than 100 cm off: 8 with the board, 781 without it (control: same faults)
+[wd] fault-free: 200 runs of 40 s (6.7 car-hours): 0 false alarms (stack 0, jump 0, drift 0, radio 0)
+[wd] false alarms: 0 in 13.3 car-hours = 0.000 per car-hour, 95 % upper bound 0.225 per car-hour (gate: at most 0.10;
+[wd]   the bound is used from 300 car-hours on, below that the observed rate)
+[wd] RESULT: PASS (every hang and jump detected, at least 95 % of drifts, at most 1 false alarm per 10 car-hours, wrong-picture ticks cut at least 20-fold against the control run)
+watchdog-sim rc=0
+[QNXRUN] watchdog_sim rc=0
+=== LOCKED SESSION (in-process: two exchanges, route number, pause lock, emergency pull-over, link loss) ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: near-field hand-shake session: lock, exchange views, route number, ruling, go in order (simulated)]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[session] 2000 trials per row, seed 0x5E551026; rounds of 300 ms, windows of 5 rounds; 3 copies of every message;
+[session] steps of 3 s in plan order, each after the previous step's "step done"; no ruling in the first window:
+[session] back away where the rear is clear and send a request for help, the session goes on (up to 24 s)
+[session] no loss                | street clear: 100.0% (ruling in window 1: 100.0%, window 2:   0.0%) mean 9.9 s, worst 9.9 s | help requested:   0.0% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session] 30% independent        | street clear: 100.0% (ruling in window 1: 100.0%, window 2:   0.0%) mean 10.0 s, worst 10.8 s | help requested:   0.0% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session] 50% independent        | street clear: 100.0% (ruling in window 1:  99.9%, window 2:   0.1%) mean 10.2 s, worst 11.7 s | help requested:   0.1% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session]   fallback back-away steps (no ruling in window 1): car A 0, car B 0, car C 2
+[session] 30%, bursts of 0.3 s   | street clear: 100.0% (ruling in window 1: 100.0%, window 2:   0.0%) mean 10.3 s, worst 11.1 s | help requested:   0.0% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session] 30%, bursts of 0.9 s   | street clear: 100.0% (ruling in window 1:  93.2%, window 2:   6.6%) mean 10.7 s, worst 14.4 s | help requested:   6.8% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session]   fallback back-away steps (no ruling in window 1): car A 0, car B 0, car C 137
+[session] 30%, bursts of 3 s     | street clear: 100.0% (ruling in window 1:  77.5%, window 2:  19.7%) mean 11.1 s, worst 17.1 s | help requested:  22.6% | not clear in 24 s:  0.0% | silent stalls: 0 | different plans: 0
+[session]   fallback back-away steps (no ruling in window 1): car A 0, car B 0, car C 451
+[session] fallback rule (never toward a silent or moving vehicle within 2 m): car A does not back away (free behind 190 cm, up to a line of a vehicle or object that sends nothing),
+[session]   car B does not back away (free behind 0 cm, up to a car that sends frames), car C may back away (free behind 930 cm, up to the end of the ground)
+[session] person walks through during the moves (3-6 s; each car sees it with p = 0.8; every round each car sends CLEAR or
+[session]   PAUSE, a car moves only with CLEAR from every other member), 30% loss: street clear 100.0% (same plan kept),
+[session]   mean 15.0 s (without the person 10.0 s), paused 4.5 s on average; moves while a person seen by any car was in the
+[session]   area: 0; trials in which no car saw the person (a sensing limit, not the protocol): 14; moves while a person
+[session]   was in the area but seen by no car: 193 rounds of motion (300 ms each) in 14 of those 14 trials
+[session] emergency vehicle (fire engine, police, ambulance) arrives at a random moment, 30% loss: all cars pull over,
+[session]   corridor open 2.1 s after its arrival on average; after it has passed the same plan resumes; street clear 100.0%,
+[session]   mean 12.4 s (without it 10.0 s)
+[session] link loss: one car's V2V radio cut for 2-10 s; it holds and asks the control centre over 4G (answers 70 %,
+[session]   refuses 15 %, no answer 15 %; retry after 1, 2, 4, 8 s), 30% loss: 2784 requests, 435 refused, 401 unanswered,
+[session]   relay running 0.7 s after the cut on average; street clear 100.0%, mean 11.2 s (without the cut 10.0 s);
+[session]   moves while a car's status was missing: 0
+[session] mutation check (each run switches one rule off): no pause lock -> moves while a person was seen: 26843;
+[session]   act on own route without the vote -> cars on different plans: 2901; no escalation at 100% loss -> silent stalls: 9600
+[session] the 9 s of scripted driving (three moves of 3 s in plan order: car C, car A, car B) are included in every time above
+[session] RESULT: PASS (no silent stall, never two cars on different plans, always clear without loss)
+session-sim rc=0
+[QNXRUN] session_sim rc=0
+     pid tid name                         prio STATE          Blocked                     
+  368658   1 system/bin/v2v-ttl-resmgr     10r RECEIVE        1                           
+  368658   2 system/bin/v2v-ttl-resmgr     10r RECEIVE        1                           
+  368658   3 system/bin/v2v-ttl-resmgr     10r RECEIVE        1                           
+  368658   4 system/bin/v2v-ttl-resmgr     10r RECEIVE        1                           
+  565267   1 system/bin/v2v-ttl-resmgr     10r RECEIVE        1                           
+=== TRACE START (instrumented kernel; a second, traced client run; its timings are not used) ===
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 13708 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 13098 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 12218 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 2508 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 15574 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 17414 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 6370 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 21444 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 21026 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 1708 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 14786 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xB200 (Car B) TTL 300 ms, purged 11774 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 9804 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xC300 (Car C) TTL 300 ms, purged 11414 us after expiry
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 9952 us after expiry
+[v2v_ttl SWEEP] released certificate of 0xA100 (Car A): validity ended
+traced client rc=0
+[client] replayed frame (its chain value is the last one accepted): REFUSED as expected (write=-1 errno=237 Operation already in progress)
+[client] 60 frames forged under car B's ID from the attacker's process: 60 stopped at the gateway on the chain check (errno 50), 0 refused by the device, 0 other
+[client] attacker process 696342 (its own sender): every attack refused as expected
+[client] car B's real frame right after the forgeries: refused on the chain check (errno 50; R9-B1 allows only a one-step check for B's ID for the rest of that second)
+[client] car B's real frame after the window of the forgeries ended: accepted
+[client] car C re-joins (its held certificate, a new chain anchor): accepted; its next frame: accepted
+[client] car A after 8 lost frames: accepted; after 9: refused; after its re-join: accepted
+[client] car B chain rollover (1016 values left; the rule rolls over at 64): new anchor accepted; next frame on the new chain accepted
+[client] devctl GET_STATS: ok; 0 frames held, 3 certificates, 8106 sweeps, 167 writes accepted, 23 refused, 185 signature checks, pool up to 4 threads; decisions computed 11, answered from the cache 13
+[client] devctl with an unknown command: refused (ENOTTY)
+[client] frame under the fresh certificate: accepted
+[client] RESULT: PASS (Car C backs off, Car B backs off, Car A passes straight, then Car B; same order for both tested arrival orders; one process per car in round 2; uid 2000 refused; signed frames: tampering, replay, rogue and expired certificates refused; agreement: three processes computed the plan themselves, all moved when the hashes matched and all held when one car missed a frame; old, changed and replayed votes refused; certificate released and renewed; TTL eviction)
+[v2v_ttl SWEEP] Evicted expired node 0xA100 (Car A) TTL 300 ms, purged 11984 us after expiry
+[trace] lines: 76392
+[trace] PULSE: 973
+[trace] SND_PULSE: 290
+[trace] REC_PULSE: 293
+[trace] SND_MESSAGE: 576
+[trace] REC_MESSAGE: 576
+[trace] REPLY_MESSAGE: 394
+[trace] TIMER: 368
+[trace] first pulse lines:
+t:0x25d2ab716 CPU:01 KER_CALL        :MSG_RECEIVEPULSEV/24
+t:0x25d3599b5 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00010001 pid:368658
+t:0x25d35a761 CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:368658
+t:0x25d3b8749 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00000000 pid:143372
+t:0x25d3b8d64 CPU:00 COMM            :REC_PULSE          scoid:0x00000000 pid:143372
+t:0x25d3ba9f4 CPU:00 KER_CALL        :MSG_RECEIVEPULSEV/24
+t:0x25d3cbd1a CPU:01 KER_CALL        :MSG_SEND_PULSE/20 
+t:0x25d3cc334 CPU:01 COMM            :SND_PULSE          scoid:0x00010001 pid:679956
+t:0x25d3cc5a5 CPU:01 KER_EXIT        :MSG_SEND_PULSE/20  status:0 empty:0x00000000
+t:0x25d3cc71c CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:679956
+t:0x25d3cc910 CPU:00 KER_EXIT        :MSG_RECEIVEPULSEV/24
+t:0x25d3cd19c CPU:00 KER_CALL        :MSG_RECEIVEPULSEV/24
+t:0x25d489da1 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00010001 pid:368658
+t:0x25d48a7e2 CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:368658
+t:0x25d5e4072 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00010001 pid:368658
+t:0x25d5e48bf CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:368658
+t:0x25d69a4b5 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00000000 pid:143372
+t:0x25d69ad02 CPU:00 COMM            :REC_PULSE          scoid:0x00000000 pid:143372
+t:0x25d69ae3a CPU:00 KER_EXIT        :MSG_RECEIVEPULSEV/24
+t:0x25d69e047 CPU:00 KER_CALL        :MSG_RECEIVEPULSEV/24
+t:0x25d6c9238 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00010001 pid:368658
+t:0x25d6c9db1 CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:368658
+t:0x25d866be5 CPU:00 COMM            :SND_PULSE_EXE      scoid:0x00010001 pid:368658
+t:0x25d867626 CPU:00 COMM            :REC_PULSE          scoid:0x00010001 pid:368658
+[trace] server pid: 368658
+[trace] message events naming the server: 148
+[trace] first message lines naming the server:
+t:0x26136f086 CPU:00 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x26136f46e CPU:00 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x2613e2c55 CPU:01 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x2613e2ffe CPU:01 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x2614528a9 CPU:01 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x261452c14 CPU:01 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x26153929a CPU:00 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x261539605 CPU:00 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x26154293d CPU:01 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x261542ce6 CPU:01 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x26154bdeb CPU:00 COMM            :SND_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x26154c156 CPU:00 COMM            :REC_MESSAGE        rcvid:0x00000002 pid:368658
+t:0x2615550a6 CPU:01 COMM            :SND_MESSAGE        rcvid:0x00000003 pid:368658
+t:0x2615553d2 CPU:01 COMM            :REC_MESSAGE        rcvid:0x00000003 pid:368658
+t:0x26155694e CPU:01 COMM            :SND_MESSAGE        rcvid:0x00000003 pid:368658
+t:0x261556cf8 CPU:01 COMM            :REC_MESSAGE        rcvid:0x00000003 pid:368658
+=== TRACE END ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: server: /dev/v2v_ttl resource manager]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+================================================================================
+ V2V Hand-shake Arbiter  [mode: server: /dev/v2v_ttl resource manager]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[slog2] buffer set v2vttl, buffer server registered (read with: slog2info -b v2vttl)
+[v2v_ttl] state lock: PTHREAD_PRIO_INHERIT set explicitly (rc=0)
+[v2v_ttl] core dumps disabled (setrlimit RLIMIT_CORE 0)
+[v2v_ttl] channel 1: priority inheritance on (default)
+[v2v_ttl] resmgr_attach OK: /dev/v2v_ttl_bench registered (pid 929812); read, write, devctl (GET_STATS, GET_REPORT), ionotify
+[slog2] buffer set v2vttl, buffer server registered (read with: slog2info -b v2vttl)
+[v2v_ttl] CLOCK_MONOTONIC timer armed: SIGEV_PULSE every 20 ms (TTL sweep)
+[v2v_ttl] state lock: PTHREAD_PRIO_INHERIT set explicitly (rc=0)
+[v2v_ttl] system page: cycles_per_sec = 62500000 (ClockCycles() times the arbitration)
+[v2v_ttl] core dumps disabled (setrlimit RLIMIT_CORE 0)
+[v2v_ttl] channel 1: priority inheritance OFF (_NTO_CHF_FIXED_PRIORITY)
+[v2v_ttl] resmgr_attach OK: /dev/v2v_ttl_fixed registered (pid 929813); read, write, devctl (GET_STATS, GET_REPORT), ionotify
+[v2v_ttl] CLOCK_MONOTONIC timer armed: SIGEV_PULSE every 20 ms (TTL sweep)
+[v2v_ttl] system page: cycles_per_sec = 62500000 (ClockCycles() times the arbitration)
+[v2v_ttl] trust anchor loaded from /dev/shmem/v2v_ca.pub: frames must be signed under a valid short-lived certificate
+[v2v_ttl] trust anchor loaded from /dev/shmem/v2v_ca.pub: frames must be signed under a valid short-lived certificate
+[v2v_ttl] procmgr_ability(deny + lock spawn/fork/mem_phys/io, non-root domain) rc=0 (applied), uid=1000
+[v2v_ttl] procmgr_ability(deny + lock spawn/fork/mem_phys/io, non-root domain) rc=0 (applied), uid=1000
+[v2v_ttl] self-check: procmgr_ability(allow fork) returned 0; fork() afterwards Operation not permitted
+[v2v_ttl] self-check: procmgr_ability(allow fork) returned 0; fork() afterwards Operation not permitted
+[v2v_ttl] ready, thread pool of 2-4 receiving threads
+[v2v_ttl] ready, thread pool of 2-4 receiving threads
+[hog] 2 busy threads at priority 10 for 60 s
+=== BENCH A: server with priority inheritance (default channel; both bench servers are written directly, without the gateway) ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: priority bench: round trips with CPU hogs running at priority 10]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[bench] device /dev/v2v_ttl_bench; rounds alternate between client priority 10 and 30
+[bench] client priority 10 (same as the hogs): N=60 min 36732 us, median 52092 us, p95 71940 us, max 96114 us
+[bench] client priority 30: N=60 min 18772 us, median 19312 us, p95 21102 us, max 21854 us
+[bench] median gain from priority 10 to 30: 62.9 % (server with priority inheritance, at least 25 % required); rounds repeated because their frames had expired: 0
+[bench] RESULT: median round trip lower at priority 30
+bench A rc=0
+[QNXRUN] bench_a rc=0
+=== BENCH B: control, server channel with _NTO_CHF_FIXED_PRIORITY ===
+================================================================================
+ V2V Hand-shake Arbiter  [mode: priority bench: round trips with CPU hogs running at priority 10]
+ Scenario: Car A x Car B head-on, Car C beside/behind B; sensing is SIMULATED
+ Frame: 56 bytes = map-matched pose + size + up to 4 extracted lines (no pixels)
+================================================================================
+[bench] device /dev/v2v_ttl_fixed; rounds alternate between client priority 10 and 30
+[bench] client priority 10 (same as the hogs): N=60 min 41068 us, median 53242 us, p95 67354 us, max 79036 us
+[bench] client priority 30: N=60 min 32230 us, median 46218 us, p95 60590 us, max 67688 us
+[bench] median gain from priority 10 to 30: 13.2 % (control server on a fixed-priority channel); rounds repeated because their frames had expired: 0
+[bench] RESULT: median round trip lower at priority 30
+bench B rc=0
+[QNXRUN] bench_b rc=0
+=== V2V DEMO END ===
+=== V2V QNX TESTS START ===
+=== [QNXRUN] test_qnx_probe ===
+[*] QNX image probe: slog2, HAM, APS, typed memory, mutex protocol
+[P1] slog2 (slogger2)
+    [PASS] slog2f wrote a log line into the slogger2 buffer
+    [INFO] /system/bin/slog2info -b v2vprobe returned 109 bytes
+    [PASS] the line written with slog2f is read back with slog2info
+[P2] High Availability Manager (HAM) and Adaptive Partitioning (APS)
+    [INFO] HAM (ham binary or libham) in this image: NO
+    [INFO] APS (aps binary) in this image: NO
+    [SKIP] HAM is not in this image: supervision uses a plain respawn (v2v-supervisor), no HAM claim is made
+    [SKIP] aps is not in this image: no adaptive partitioning is used or claimed
+[P3] POSIX typed memory
+    [INFO] posix_typed_mem_open("/sysram", ALLOCATE) -> fd 3; allocatable 882876416 bytes
+    [PASS] a page can be allocated from this typed memory object
+    [INFO] posix_typed_mem_open("sysram", ALLOCATE) -> fd 3; allocatable 882876416 bytes
+    [PASS] a page can be allocated from this typed memory object
+    [INFO] posix_typed_mem_open("/ram/dma", ALLOCATE) -> -1, errno 2 (No such file or directory)
+    [INFO] posix_typed_mem_open("/dma", ALLOCATE) -> -1, errno 2 (No such file or directory)
+    [PASS] at least one typed memory object (the one the secure page uses) opens
+[P4] image listing
+    [INFO] /proc/boot: 62 entries, 6 match ham|aps|slog|trace|mem: libslog2.so libslog2.so.1 libslog2parse.so.1 libslog2shim.so.1 slog2info slogger2 
+    [INFO] /system/bin: 186 entries, 7 match ham|aps|slog|trace|mem: tracelogger slog2info traceroute traceroute6 traceprinter test_qnx_secmem test_w2_trace_c 
+    [INFO] /usr/bin: 1 entries, 0 match ham|aps|slog|trace|mem: (none)
+    [INFO] /usr/sbin: cannot open (No such file or directory)
+    [INFO] /system/lib: 29 entries, 1 match ham|aps|slog|trace|mem: libtracelog.so.1 
+    [INFO] /usr/lib: cannot open (No such file or directory)
+[P5] mutex protocol (priority inheritance of the server's state lock)
+    [PASS] the default protocol of a mutex attribute can be read
+    [INFO] default protocol: 0 (PTHREAD_PRIO_NONE 1, PTHREAD_PRIO_INHERIT 0, PTHREAD_PRIO_PROTECT 2)
+    [PASS] PTHREAD_PRIO_INHERIT can be set and is read back
+    [PASS] a mutex created with that attribute locks, unlocks and is destroyed
+[*] checks failed: 0, skipped: 2
+[+] QNX image probe finished.
+[QNXRUN] test_qnx_probe rc=0
+=== [QNXRUN] test_qnx_secmem ===
+[*] QNX secure-memory test: gateway chain table in typed memory, mlock, RLIMIT_CORE 0, wipe
+[P1] the table in typed memory (in this process)
+    [PASS] v2v_secmem_open: a page was obtained
+    [INFO] page 4096 bytes from "/sysram", typed memory 1, mlock 1, core limit set 1
+    [PASS] the page was allocated from POSIX typed memory (posix_typed_mem_open /sysram)
+    [PASS] mlock() locked the page
+    [INFO] getrlimit(RLIMIT_CORE) -> 0, soft 0 hard 0
+    [PASS] RLIMIT_CORE reads back 0/0 (no core dump can contain the table)
+    [PASS] setrlimit(RLIMIT_CORE, 0) reported success
+    [INFO] physical address of the page 0x7ef8b000, 4096 contiguous bytes
+    [PASS] a fresh page reads back all zero
+    [PASS] release of the empty page leaves 0 non-zero bytes
+    [PASS] gw_secure_state_enable: the chain table moved into the secure page
+    [PASS] the gateway table (g_gwc, or the whole Rust-owned gateway state in the Rust variant) points into the secure page
+    [INFO] table 1792 bytes in a 4096-byte page from "/sysram"
+    [INFO] non-zero bytes in the page while 6 chains are held: 83
+    [PASS] the page holds the chain entries (non-zero while the table is live)
+    [PASS] each chain anchor can be found by its bytes inside the mapped page (the entries really live there)
+    [PASS] a frame carrying the next chain value is admitted against the table in the page
+    [INFO] non-zero bytes read back after the wipe: 0
+    [PASS] the wipe zeroised the whole page and the read-back found 0 non-zero bytes
+    [PASS] the table pointer is back on static storage and the page is released
+[P2] the gateway process (typed memory, mlock, core limit, wipe on SIGTERM)
+    [PASS] provisioning of a test fleet CA
+    [PASS] the server registered the test device
+    [PASS] the gateway registered the test radio device
+    [INFO] [gateway] secure state: chain table in a 4096-byte page from /sysram (typed memory: yes), mlock yes, core dumps off (RLIMIT_CORE 0)
+    [PASS] gateway output: the chain table is in typed memory
+    [PASS] gateway output: the page is mlock()ed
+    [PASS] gateway output: core dumps are off (RLIMIT_CORE 0)
+    [PASS] car A joined through the gateway (its chain anchor is stored in the secure page)
+    [INFO] first frame after the join: write returned 138, errno 0 (ok)
+    [PASS] car A's next frame was accepted (chain value checked against the table)
+    [PASS] the same frame again is refused with EALREADY (the table advanced)
+    [INFO] gateway ended 50 ms after SIGTERM, exit status 0
+    [PASS] SIGTERM: the gateway exits with status 0
+    [INFO] [gateway] stopping (exit 0): chain table wiped in place (4096-byte page, typed memory yes, mlock yes); read back after the wipe: 0 non-zero bytes
+    [PASS] gateway output: the table was wiped in place in typed memory
+    [PASS] gateway output: read-back after the wipe found 0 non-zero bytes
+    [PASS] the radio device is gone after the stop
+    [INFO] gateway with --drop-uid 0: exited 1, status 1
+    [PASS] a gateway that is still root after the uid drop refuses to serve
+[*] checks failed: 0, skipped: 0
+[+] QNX secure-memory test passed.
+[QNXRUN] test_qnx_secmem rc=0
+=== [QNXRUN] test_qnx_supervisor ===
+[v2v_ttl SWEEP] released certificate of 0xB200 (Car B): validity ended
+[v2v_ttl SWEEP] released certificate of 0xC300 (Car C): validity ended
+[*] QNX supervised-restart test: SIGKILL the V2V server while a car keeps sending
+    [INFO] HAM in this image: /proc/boot/ham absent, /system/bin/ham absent, /usr/sbin/ham absent
+    [INFO] supervision here is a plain parent respawn (posix_spawn + waitpid), not HAM
+    [PASS] provisioning of a test fleet CA
+    [PASS] supervised server: /dev/v2v_ttl_sv registered
+    [PASS] supervised gateway: /dev/v2v_radio_sv registered
+    [PASS] the supervisors published the pids of the server and the gateway
+    [INFO] server pid 1044505, gateway pid 1048603, supervisors 1044504 and 1048602, test client 1036311
+    [PASS] a bystander process is running (counts 10 ms ticks)
+    [PASS] three cars joined through the gateway
+    [PASS] before the kill the server holds 3 certificates
+    [INFO] before the kill: certs_held=3 writes_ok=3
+    * SIGKILL sent to the server (pid 1044505)
+[v2v_ttl SWEEP] released certificate of 0xA100 (Car A): validity ended
+[client] hand-shake (join) for Car A (re-join after the restart) refused: Input/output error
+    [PASS] the server was killed during the client loop
+    [PASS] car A's frames were accepted before the kill
+    [PASS] the client recovered: re-join accepted and 20 frames accepted after the restart
+    * first failure errno=3 (No such process); 73 failed attempts (44 of them could not open the radio path)
+    * MEASURED outage seen by the client: last good frame -> first good frame after the restart = 2914.4 ms
+    * MEASURED kill -> first failed write 36.4 ms; kill -> new server and radio path usable 1753.8 ms; kill -> first good frame (after the re-join) 2810.4 ms
+    [PASS] a write through the dead server's gateway fails (errno reported above)
+    [PASS] outage bounded: service back within 60 s (QEMU software emulation)
+    [INFO] new server before the re-join: certs_held=0 writes_ok=0; old chain value sent to the restarted gateway: errno 50 (GW_ECHAIN is 50)
+    [PASS] the restarted server started empty: 0 certificates, 0 writes (the state did not survive the crash)
+    [PASS] the restarted gateway refused a frame with the old chain value (the chain table also started empty)
+    [PASS] after the re-join the server holds the certificate again and accepted the frames
+    [INFO] after the re-join: certs_held=1 writes_ok=21
+    [PASS] the supervisor started a NEW server (different pid)
+    [PASS] the gateway fail-stopped and its supervisor started a NEW gateway (different pid)
+    [INFO] server pid 1044505 -> 1056793, gateway pid 1048603 -> 1064987
+    [INFO] bystander: 351 ticks in total, 255 after the kill, longest gap between two ticks 22.6 ms (10 ms nominal)
+    [PASS] the bystander process was not affected (still running)
+    [PASS] the bystander kept ticking through the kill and the restart (no stall above 2 s)
+    [PASS] both supervisors are still running
+    [INFO] /system/bin/slog2info -b v2vttl returned 10092 bytes
+    * slog2 lines (v2vttl):
+        Nov 25 03:41:49.770                  v2vttl.368658               server*     1  server: ready path /dev/v2v_ttl pid 368658 uid 1000 signed 1 gateway-uid 1100
+        Nov 25 03:41:52.789                  v2vttl.565267              gateway*     1  gateway: ready pid 565267 uid 1100 radio /dev/v2v_radio device /dev/v2v_ttl
+        Nov 25 03:41:54.880                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:54.888                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:54.896                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:54.966                  v2vttl.368658               server      1  server: signed frame 0xB200 refused: Operation not permitted
+        Nov 25 03:41:54.968                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.969                  v2vttl.368658               server      1  server: signed frame 0xB200 refused: Timer expired
+        Nov 25 03:41:54.970                  v2vttl.368658               server      1  server: unsigned frame 0xB200 refused: Permission denied
+        Nov 25 03:41:54.972                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD002 refused: Operation not permitted
+        Nov 25 03:41:54.974                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xB200 refused: Permission denied
+        Nov 25 03:41:54.975                  v2vttl.368658               server      1  server: certificate 0xD001 refused: No message of desired type
+        Nov 25 03:41:54.978                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD001 refused: Operation not permitted
+        Nov 25 03:41:54.979                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.982                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.982                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.983                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.983                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.984                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:54.984                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+        Nov 25 03:41:57.311                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:57.329                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:57.340                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:41:59.013                  v2vttl.368658               server      1  server: vote 0xB200 refused: Potentially recoverable i/o error
+        Nov 25 03:41:59.014                  v2vttl.368658               server      1  server: vote 0xB200 refused: Operation not permitted
+        Nov 25 03:41:59.377                  v2vttl.368658               server      1  server: vote 0xA100 refused: No such process
+        Nov 25 03:41:59.749                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:42:02.757                  v2vttl.368658               server      1  server: signed frame 0xA100 refused: Permission denied
+        Nov 25 03:42:02.777                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:27.447                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:27.455                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:27.462                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:27.506                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD002 refused: Operation not permitted
+        Nov 25 03:44:27.507                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xB200 refused: Permission denied
+        Nov 25 03:44:27.509                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD001 refused: Operation not permitted
+        Nov 25 03:44:29.837                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:29.854                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:29.865                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:32.241                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:35.260                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+        Nov 25 03:44:45.655                  v2vttl.929813               server*     1  server: ready path /dev/v2v_ttl_fixed pid 929813 uid 1000 signed 1 gateway-uid -1
+        Nov 25 03:44:45.655                  v2vttl.929812               server*     1  server: ready path /dev/v2v_ttl_bench pid 929812 uid 1000 signed 1 gateway-uid -1
+        Nov 25 03:44:49.487                  v2vttl.929812               server      1  server: join 0xA100 admitted (sender pid 966679 uid 0)
+        Nov 25 03:44:49.502                  v2vttl.929812               server      1  server: join 0xB200 admitted (sender pid 966679 uid 0)
+        Nov 25 03:44:49.512                  v2vttl.929812               server      1  server: join 0xC300 admitted (sender pid 966679 uid 0)
+        Nov 25 03:45:02.173                  v2vttl.929813               server      1  server: join 0xA100 admitted (sender pid 974871 uid 0)
+        Nov 25 03:45:02.193                  v2vttl.929813               server      1  server: join 0xB200 admitted (sender pid 974871 uid 0)
+        Nov 25 03:45:02.202                  v2vttl.929813               server      1  server: join 0xC300 admitted (sender pid 974871 uid 0)
+        Nov 25 03:45:23.851                 v2vttl.1011736               server*     1  server: ready path /dev/v2v_ttl_sm pid 1011736 uid 1000 signed 1 gateway-uid 1100
+        Nov 25 03:45:24.885                 v2vttl.1015833              gateway*     1  gateway: ready pid 1015833 uid 1100 radio /dev/v2v_radio_sm device /dev/v2v_ttl_sm
+        Nov 25 03:45:25.370                 v2vttl.1011736               server      1  server: join 0xA100 admitted (sender pid 1015833 uid 1100)
+        Nov 25 03:45:25.495                 v2vttl.1015833              gateway      1  gateway: stopping exit 0, chain table wiped (non-zero bytes after wipe: 0)
+        Nov 25 03:45:29.088                 v2vttl.1044504           supervisor*     2  supervisor: started /system/bin/v2v-ttl-resmgr pid 1044505 (restart 0)
+        Nov 25 03:45:30.006                 v2vttl.1044505               server*     1  server: ready path /dev/v2v_ttl_sv pid 1044505 uid 1000 signed 1 gateway-uid 1100
+        Nov 25 03:45:30.927                 v2vttl.1048602           supervisor*     2  supervisor: started /system/bin/v2v-ttl-resmgr pid 1048603 (restart 0)
+        Nov 25 03:45:32.059                 v2vttl.1048603              gateway*     1  gateway: ready pid 1048603 uid 1100 radio /dev/v2v_radio_sv device /dev/v2v_ttl_sv
+        Nov 25 03:45:32.680                 v2vttl.1044505               server      1  server: join 0xA100 admitted (sender pid 1048603 uid 1100)
+        Nov 25 03:45:32.700                 v2vttl.1044505               server      1  server: join 0xB200 admitted (sender pid 1048603 uid 1100)
+        Nov 25 03:45:32.721                 v2vttl.1044505               server      1  server: join 0xC300 admitted (sender pid 1048603 uid 1100)
+        Nov 25 03:45:33.812                 v2vttl.1044504           supervisor      2  supervisor: child 1044505 of /system/bin/v2v-ttl-resmgr ended (signal 9)
+        Nov 25 03:45:34.328                 v2vttl.1044504           supervisor      2  supervisor: restarted /system/bin/v2v-ttl-resmgr pid 1056793 (restart 1)
+        Nov 25 03:45:35.476                 v2vttl.1056793               server*     1  server: ready path /dev/v2v_ttl_sv pid 1056793 uid 1000 signed 1 gateway-uid 1100
+        Nov 25 03:45:35.513                 v2vttl.1048603              gateway      1  gateway: id 0xA100 from sender 1036311 refused: wrong chain value
+        Nov 25 03:45:35.528                 v2vttl.1048603              gateway      1  gateway: device /dev/v2v_ttl_sv lost (errno 9), gateway stops for restart
+        Nov 25 03:45:35.540                 v2vttl.1048603              gateway      1  gateway: stopping exit 3, chain table wiped (non-zero bytes after wipe: 0)
+        Nov 25 03:45:35.577                 v2vttl.1048602           supervisor      2  supervisor: child 1048603 of /system/bin/v2v-ttl-resmgr ended (exit 3)
+        Nov 25 03:45:35.898                 v2vttl.1048602           supervisor      2  supervisor: restarted /system/bin/v2v-ttl-resmgr pid 1064987 (restart 1)
+        Nov 25 03:45:36.452                 v2vttl.1064987              gateway*     1  gateway: ready pid 1064987 uid 1100 radio /dev/v2v_radio_sv device /dev/v2v_ttl_sv
+        Nov 25 03:45:36.472                 v2vttl.1056793               server      1  server: join 0xA100 admitted (sender pid 1064987 uid 1100)
+    [PASS] slog2: this test's server logged 'ready' twice (first start and restart)
+    [PASS] slog2: the first server logged the 3 joins, the restarted server the re-join (by pid)
+    [PASS] slog2: the gateway logged that the device was lost (once)
+    [PASS] slog2: the gateway logged 'ready' for the test radio path again after the restart
+    [PASS] slog2: the supervisors logged their restarts (server once, gateway once or twice: a retry may come before the server is back)
+    [PASS] SIGTERM to the gateway's supervisor ends supervisor and gateway with exit 0
+    [PASS] SIGTERM to the server's supervisor ends supervisor and server with exit 0
+    [PASS] both device paths are gone after the orderly stop
+    * server supervisor log:
+        [supervisor] started pid=1044505 t=224998.9 ms
+        [supervisor] child pid=1044505 ended (signal 9) t=229876.5 ms
+        [supervisor] restart #1 pid=1056793 t=230083.8 ms (spawned 207.3 ms after the death was seen)
+        [supervisor] stopping (signal 15), child status 15
+    * gateway supervisor log:
+        [supervisor] started pid=1048603 t=226612.5 ms
+        [gateway] device /dev/v2v_ttl_sv lost (errno 9: Bad file descriptor); stopping so that the supervisor can restart the gateway
+        [gateway] stopping (exit 3): chain table wiped in place (4096-byte page, typed memory yes, mlock yes); read back after the wipe: 0 non-zero bytes
+        [supervisor] child pid=1048603 ended (exit 3) t=231641.3 ms
+        [supervisor] restart #1 pid=1064987 t=231852.0 ms (spawned 210.7 ms after the death was seen)
+        [gateway] stopping (exit 0): chain table wiped in place (4096-byte page, typed memory yes, mlock yes); read back after the wipe: 0 non-zero bytes
+        [supervisor] stopping (signal 15), child status 0
+    [PASS] the gateway's supervisor log shows the fail-stop (exit 3) before the restart
+    [PASS] the restarted gateway wiped its chain table on SIGTERM (0 non-zero bytes read back)
+[*] checks failed: 0, skipped: 0
+[+] QNX supervised-restart test passed.
+[QNXRUN] test_qnx_supervisor rc=0
+=== [QNXRUN] RUST PORT INSIDE QNX (Rust staticlib built by the SDP 8.0.3 rustc, linked by the SDP 8.0.0 qcc; C original = the real v2v_ttl_resmgr.c compiled into the same program) ===
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+[QNXRUN] rust_stage1 start (CRC16, frame check, agree_decide; seed 1)
+[diff] crc16: 3000 cases | frame check: 3000 cases (ok 193, invalid 2645, bad crc 162) | agree_decide: 3000 cases (commit 159, wait 1590, mismatch 1251)
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rust_stage1 rc=0
+[QNXRUN] rust_state start (TTL cache, certificates, signed frames, joins with real OpenSSL ECDSA; seed 1)
+[diff] state: 400 cases (operations), 0 differences
+[diff]   cache_upsert                     65 calls; results: 0=57 2=1 3=7
+[diff]   cache_sweep                      53 calls; results: 0=20 1=10 2=10 3=5 4=4 5=2 6=1 8=1
+[diff]   cert_join (new cert)            117 calls; results: 0=63 1=9 2=3 3=7 4=19 5=1 7=5 9=10
+[diff]   cert_join (known cert)           22 calls; results: 0=11 3=1 4=6 7=2 9=2
+[diff]   signed_upsert                    55 calls; results: 0=11 2=1 4=20 7=17 9=6
+[diff]   join prepare/run/commit          28 calls; results: 1=1 3=1 4=9 7=3 100=14
+[diff]   frame prepare/run/commit         17 calls; results: 4=6 7=2 9=1 100=8
+[diff]   cert_admit                       11 calls; results: 0=3 7=1 8=7
+[diff]   cert_sweep                        8 calls; results:
+[diff]   cert_reset                        3 calls; results:
+[diff]   ca key on/off                     2 calls; results:
+[diff]   voted flag                        3 calls; results:
+[diff]   time step                        35 calls; results:
+[diff]   cert_digest                       2 calls; results:
+[diff]   commit of a join                 14 calls; results: 0=7 3=1 4=1 5=1 9=4
+[diff]   commit of a frame                 8 calls; results: 0=7 9=1
+[diff] invariants of the C state over 467 states: certificate slot in use but not proven 0, two slots with one pseudo-ID 0, unknown-car entry with ID 0 0
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rust_state rc=0
+[QNXRUN] rust_gateway start (gateway admission, chain, rate limits against the C original; seed 1)
+[diff] gateway: 2000 cases (operations), 23328 messages through gw_admit, 0 differences
+[diff]   stray result call                          60 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate):
+[diff]   burst of valid frames                      39 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=2740 1=990 2=1520 3=49
+[diff]   flood of wrong chain values                20 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=3891 1=284 2=7938 3=29
+[diff]   signature-failure burst on one link        27 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=113 1=106
+[diff]   gw_rate_ok / gw_rate_result                23 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=10 1=13
+[diff]   time step                                 414 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate):
+[diff]   device_lost                                 8 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=48 1=56
+[diff]   sender chain                                6 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate):
+[diff]   reset                                       2 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate):
+[diff]   several cars bursting together             12 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 0=1811 1=1119 2=1211 3=21
+[diff]   new link at a cut-off end                   7 ops; admit results (1 forward, 0 drop, 2 wrong chain, 3 duplicate): 1=87
+[diff] coverage (states observed after each message): link cut off 21578, a chain at the 1000-hash budget 6023, member budget full 3448, other budget full 12821, a pair at the 50/s rate 23353, a chain value checked twice 623, a chain 1 to 8 hashes below the budget 48, a chain with 4 or more wrong values 99721
+[diff] coverage: most id entries in use 64 of 64, links 32 of 32, chains 24 of 32; episodes starting at clock 0: 0; chain skips tried (k=1..10): 4976 228 239 216 201 192 225 212 517 503
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rust_gateway rc=0
+[QNXRUN] rust_votes start (vote relay, digests, dissenters, vote signatures with real OpenSSL ECDSA; seed 1)
+[diff] votes: 800 cases (operations), 0 differences
+[diff]   vote_post                 461 ops; results: 0=33 1=50 2=144 3=33 4=63 5=127 6=2 7=9
+[diff]   vote_reset                  6 ops; results:
+[diff]   state change               79 ops; results:
+[diff]   time step                  54 ops; results:
+[diff]   conflict flag              35 ops; results:
+[diff]   input_digest               44 ops; results:
+[diff]   member_digest              36 ops; results:
+[diff]   vote_sig_ok                56 ops; results: 0=33 1=23
+[diff]   agree_dissenters           29 ops; results: 0=23 1=5 2=1
+[diff] vote_post result codes: 0 ok, 1 invalid, 2 no proven certificate, 3 wrong ID / bad signature, 4 round out of range, 5 no live frame, 6 stale round, 7 replay / other vote in the round, 8 no slot
+[diff]   posts of kind "fresh vote": 0=30 1=50 2=109 3=33 4=50 5=127 6=2 7=1
+[diff]   posts of kind "exact replay of an accepted vote": 0=1 2=8 4=3 7=5
+[diff]   posts of kind "same round, other content": 2=17 4=8 7=3
+[diff]   posts of kind "same round, chain / seq changed": 0=2 2=3 4=1
+[diff]   posts of kind "accepted vote, damaged signature": 2=7 4=1
+[diff] refusals with code 2: no certificate with that digest 78, certificate ended 50, certificate not proven 16
+[diff] coverage: reports with 0..6+ votes (state after each operation): 0=182 1=280 2=217 3=121 4=0 5=0 6=0 7=0; conflict flag set 0, unknown cars 35, silent members 800, vote table full 0, rounds on the edge of the window 77, clock in the last 95 s of the 32-bit seconds 1, vote_sig_ok true 23, dissenters found 6
+[diff] invariants of the C state over 802 states: two vote slots with one pseudo-ID 0, vote table completely used 0
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rust_votes rc=0
+[QNXRUN] rust_silent start (silent-member obstacles against the C original; seed 1)
+[hog] done
+[diff] silent: 400 cases (operations), 0 differences
+[diff]   v2v_silent_obstacles (+ fold)         348 cases
+[diff]   fold of a random obstacle set          52 cases
+[diff] members drawn per call (0..19): 55 94 91 50 39 10 6 3 0 0 0 0 0 0 0 0 0 0 0 0
+[diff] coverage: calls with a frozen (voted) member 110, silent members skipped because their car is live 237, silent but unproven members skipped 129, calls where more members were drawn than ids fit 86, certificates put exactly on the 3 s edge 229 and on the 30 s edge 176, grid cells set in all (sum over calls) 190645, folds with all 16 members 22
+[diff] ALL AGREE (0 differences)
+[QNXRUN] rust_silent rc=0
+=== [QNXRUN] W2 TRACE: the same scripted operations through the C API of the resource manager code, C-only build and Rust-backed build ===
+[QNXRUN] w2_trace_c rc=0
+[trace] FINAL ops=3000 hash=E148D0F5934F0C78
+=== [QNXRUN] TIMING: time from frame offered to verdict per class of input (QEMU TCG: ratios and order matter, not absolute times; C path only) ===
+=== [QNXRUN] test_qnx_timing ===
+[QNXRUN] timing_start N=2000 reps=5 cycles_per_sec=62500000 tick_us=0.0160 build=C
+[QNXRUN] timing_note QEMU TCG is software emulation: absolute times are NOT real-time numbers; ratios and the order of the checks are the result. Events replay gw_io_write + io_write without message passing, console or reply; one thread.
+[QNXRUN] timing_overhead back_to_back_clock_reads N=2000 min_us=0.000 med_us=0.000 p99_us=1.008 max_us=6.000 (included in every event time below)
+[QNXRUN] timing id=C1 name=valid_signed_frame_accepted path=gateway+device N=2000 verdict=0(ok) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 min_us=304.00 med_us=314.00 p90_us=340.99 p99_us=434.00 max_us=564.00 ratio_med=1.0000 ratio_p99=1.3822
+[QNXRUN] timing id=C2 name=bad_header_magic path=gateway front test N=2000 verdict=22(Invalid argument) stage=gw_front ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.00 med_us=0.00 p90_us=0.99 p99_us=1.01 max_us=36.00 ratio_med=0.0000 ratio_p99=0.0032
+[QNXRUN] timing id=C3 name=bad_crc path=gateway front test N=2000 verdict=77(Bad message) stage=gw_front ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.99 med_us=1.01 p90_us=2.00 p99_us=2.00 max_us=30.00 ratio_med=0.0032 ratio_p99=0.0064
+[QNXRUN] timing id=C4 name=implausible_coordinates_signed_by_member path=gateway+device N=2000 verdict=22(Invalid argument) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 min_us=304.00 med_us=314.00 p90_us=340.00 p99_us=422.99 max_us=497.01 ratio_med=1.0000 ratio_p99=1.3471
+[QNXRUN] timing id=C5 name=wrong_chain_value_forged path=gateway admit N=2000 verdict=50(Invalid exchange) stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=9.00 min_us=46.00 med_us=46.99 p90_us=51.01 p99_us=64.00 max_us=216.99 ratio_med=0.1497 ratio_p99=0.2038
+[QNXRUN] timing id=C6a name=stale_frame_older_than_ttl path=gateway+device N=2000 verdict=62(Timer expired) stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 min_us=6.00 med_us=6.99 p90_us=7.01 p99_us=12.00 max_us=66.00 ratio_med=0.0223 ratio_p99=0.0382
+[QNXRUN] timing id=C6b name=replayed_frame_same_chain_value path=gateway admit N=2000 verdict=237(Operation already in progress) stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.99 med_us=1.01 p90_us=2.00 p99_us=2.00 max_us=73.01 ratio_med=0.0032 ratio_p99=0.0064
+[QNXRUN] timing id=C6c name=replayed_frame_device_only_old_generation path=device only (gateway bypassed) N=2000 verdict=237(Operation already in progress) stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.00 med_us=0.00 p90_us=1.01 p99_us=1.01 max_us=11.01 ratio_med=0.0000 ratio_p99=0.0032
+[QNXRUN] timing id=C7 name=forged_signature_valid_format path=gateway+device N=2000 verdict=1(Operation not permitted) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 min_us=303.01 med_us=312.00 p90_us=336.99 p99_us=419.01 max_us=549.01 ratio_med=0.9936 ratio_p99=1.3344
+[QNXRUN] timing id=C2d name=bad_magic_signed_device_only path=device only (gateway bypassed) N=2000 verdict=22(Invalid argument) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=0.00 min_us=294.00 med_us=302.00 p90_us=326.00 p99_us=428.00 max_us=576.99 ratio_med=0.9618 ratio_p99=1.3631
+[QNXRUN] timing id=C3d name=bad_crc_signed_device_only path=device only (gateway bypassed) N=2000 verdict=77(Bad message) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=0.00 min_us=294.99 med_us=304.00 p90_us=328.00 p99_us=417.01 max_us=584.00 ratio_med=0.9682 ratio_p99=1.3281
+[QNXRUN] timing id=C8 name=rate_flood_over_per_id_budget path=gateway admit N=2000 verdict=11(Resource temporarily unavailable) stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=1.00 min_us=6.00 med_us=6.00 p90_us=7.01 p99_us=14.00 max_us=92.99 ratio_med=0.0191 ratio_p99=0.0446
+[QNXRUN] timing id=C8s name=sustained_flood_1_per_ms_one_id path=gateway+device N=2000 verdicts=3 (mixed, split below) ecdsa_per_event=0.03 chain_sha_per_event=1.00
+[QNXRUN] timing id=C8s/v0 name=sustained_flood_1_per_ms_one_id path=gateway+device N=50 verdict=0 min_us=306.00 med_us=311.01 p90_us=337.01 p99_us=404.00 max_us=404.00 ratio_med=0.9905 ratio_p99=1.2866
+[QNXRUN] timing id=C8s/v11 name=sustained_flood_1_per_ms_one_id path=gateway+device N=109 verdict=11 min_us=0.99 med_us=1.01 p90_us=2.00 p99_us=42.00 max_us=46.00 ratio_med=0.0032 ratio_p99=0.1338
+[QNXRUN] timing id=C8s/v50 name=sustained_flood_1_per_ms_one_id path=gateway+device N=1841 verdict=50 min_us=6.00 med_us=6.00 p90_us=7.01 p99_us=15.01 max_us=106.00 ratio_med=0.0191 ratio_p99=0.0478
+[QNXRUN] timing id=C9a name=vote_wrong_chain_value path=gateway admit N=2000 verdict=50(Invalid exchange) stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=9.00 min_us=44.99 med_us=46.00 p90_us=50.00 p99_us=72.00 max_us=227.01 ratio_med=0.1465 ratio_p99=0.2293
+[QNXRUN] timing id=C9b name=vote_replayed_same_chain_value path=gateway admit N=2000 verdict=237(Operation already in progress) stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.00 med_us=0.00 p90_us=0.99 p99_us=1.01 max_us=34.00 ratio_med=0.0000 ratio_p99=0.0032
+[QNXRUN] timing id=C9c name=vote_replayed_device_only path=device only (gateway bypassed) N=2000 verdict=237(Operation already in progress) stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=0.00 min_us=0.00 med_us=0.00 p90_us=1.01 p99_us=1.01 max_us=4.99 ratio_med=0.0000 ratio_p99=0.0032
+[QNXRUN] timing id=C9d name=vote_round_far_from_clock path=gateway+device N=2000 verdict=34(Result too large) stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 min_us=4.99 med_us=6.00 p90_us=6.00 p99_us=10.00 max_us=52.00 ratio_med=0.0191 ratio_p99=0.0318
+[QNXRUN] timing id=C9e name=vote_older_round path=gateway+device N=2000 verdict=122(Potentially recoverable i/o error) stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 min_us=4.99 med_us=6.00 p90_us=6.00 p99_us=13.01 max_us=64.99 ratio_med=0.0191 ratio_p99=0.0414
+[QNXRUN] timing id=C9f name=vote_forged_signature path=gateway+device N=2000 verdict=1(Operation not permitted) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 min_us=302.00 med_us=310.00 p90_us=332.00 p99_us=431.01 max_us=510.00 ratio_med=0.9873 ratio_p99=1.3726
+[QNXRUN] timing id=C9g name=vote_valid_accepted path=gateway+device N=2000 verdict=0(ok) stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 min_us=302.00 med_us=310.99 p90_us=338.99 p99_us=430.00 max_us=490.00 ratio_med=0.9904 ratio_p99=1.3694
+[QNXRUN] micro id=U1 name=crc16_one_call per_call batch=100 N=300 min_us=0.800 med_us=0.800 p90_us=0.896 p99_us=1.232 max_us=1.536
+[QNXRUN] micro id=U2 name=cache_upsert_bad_magic_unsigned_path per_call batch=100 N=300 min_us=0.000 med_us=0.000 p90_us=0.000 p99_us=0.000 max_us=0.000
+[QNXRUN] micro id=U3 name=cache_upsert_bad_crc_unsigned_path per_call batch=100 N=300 min_us=0.928 med_us=0.928 p90_us=1.024 p99_us=1.376 max_us=1.552
+[QNXRUN] micro id=U4 name=cache_upsert_implausible_unsigned_path per_call batch=100 N=300 min_us=0.928 med_us=0.928 p90_us=1.024 p99_us=1.616 max_us=1.872
+[QNXRUN] micro id=U5 name=chain_step_one_sha256_of_8_bytes per_call batch=100 N=300 min_us=5.024 med_us=5.200 p90_us=5.536 p99_us=6.224 max_us=6.400
+[QNXRUN] micro id=U6 name=ecdsa_verify_valid_signature per_call batch=1 N=500 min_us=294.000 med_us=305.008 p90_us=329.008 p99_us=418.000 max_us=479.008
+[QNXRUN] micro id=U7 name=ecdsa_verify_forged_signature per_call batch=1 N=500 min_us=294.000 med_us=303.008 p90_us=328.000 p99_us=416.000 max_us=490.000
+[QNXRUN] flood attack=wrong_chain_value_same_id N=0 valid=same_id_next_frame reps=5 queue_med_us=0.00 valid_own_med_us=322.99 valid_total_med_us=322.99 valid_total_max_us=374.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=10 valid=same_id_next_frame reps=5 queue_med_us=234.99 valid_own_med_us=324.00 valid_total_med_us=563.01 valid_total_max_us=664.99 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=100 valid=same_id_next_frame reps=5 queue_med_us=830.00 valid_own_med_us=334.00 valid_total_med_us=1190.00 valid_total_max_us=1226.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=100 valid=other_car_frame reps=5 queue_med_us=788.00 valid_own_med_us=316.99 valid_total_med_us=1104.99 valid_total_max_us=1266.99 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=500 valid=same_id_next_frame reps=5 queue_med_us=3296.00 valid_own_med_us=340.00 valid_total_med_us=3670.00 valid_total_max_us=3742.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=1000 valid=same_id_next_frame reps=5 queue_med_us=6343.01 valid_own_med_us=2.00 valid_total_med_us=6345.01 valid_total_max_us=6418.99 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=1000 valid=other_car_frame reps=5 queue_med_us=6312.00 valid_own_med_us=375.01 valid_total_med_us=6646.00 valid_total_max_us=6797.01 valid_verdict=0(ok)
+[QNXRUN] flood attack=wrong_chain_value_same_id N=2000 valid=same_id_next_frame reps=5 queue_med_us=7460.00 valid_own_med_us=0.99 valid_total_med_us=7461.01 valid_total_max_us=7491.01 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=forged_sig_same_value_via_gateway N=10 valid=same_value_real_frame reps=5 queue_med_us=698.00 valid_own_med_us=6.00 valid_total_med_us=704.00 valid_total_max_us=757.01 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=forged_sig_same_value_via_gateway N=10 valid=next_value_frame reps=5 queue_med_us=701.01 valid_own_med_us=327.01 valid_total_med_us=1051.01 valid_total_max_us=1056.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=forged_sig_same_value_via_gateway N=100 valid=same_value_real_frame reps=5 queue_med_us=1270.00 valid_own_med_us=6.00 valid_total_med_us=1276.00 valid_total_max_us=1348.00 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=forged_sig_same_value_via_gateway N=100 valid=next_value_frame reps=5 queue_med_us=1281.01 valid_own_med_us=322.00 valid_total_med_us=1619.01 valid_total_max_us=1640.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=forged_sig_direct_to_device_no_gateway N=10 valid=real_frame reps=5 queue_med_us=3133.01 valid_own_med_us=304.00 valid_total_med_us=3432.00 valid_total_max_us=3475.01 valid_verdict=0(ok)
+[QNXRUN] flood attack=forged_sig_direct_to_device_no_gateway N=50 valid=real_frame reps=5 queue_med_us=15615.01 valid_own_med_us=304.99 valid_total_med_us=15920.00 valid_total_max_us=16186.99 valid_verdict=0(ok)
+[QNXRUN] flood attack=forged_sig_direct_to_device_no_gateway N=200 valid=real_frame reps=5 queue_med_us=61677.01 valid_own_med_us=318.00 valid_total_med_us=61996.00 valid_total_max_us=62306.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=10 valid=same_id_next_frame reps=5 queue_med_us=326.99 valid_own_med_us=6.00 valid_total_med_us=332.99 valid_total_max_us=346.99 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=10 valid=other_car_frame reps=5 queue_med_us=348.00 valid_own_med_us=322.00 valid_total_med_us=669.01 valid_total_max_us=826.99 valid_verdict=0(ok)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=100 valid=same_id_next_frame reps=5 queue_med_us=963.01 valid_own_med_us=6.00 valid_total_med_us=970.00 valid_total_max_us=1084.99 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=100 valid=other_car_frame reps=5 queue_med_us=982.00 valid_own_med_us=312.00 valid_total_med_us=1294.00 valid_total_max_us=1406.00 valid_verdict=0(ok)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=1000 valid=same_id_next_frame reps=5 queue_med_us=6136.99 valid_own_med_us=2.00 valid_total_med_us=6138.99 valid_total_max_us=6240.00 valid_verdict=11(Resource temporarily unavailable)
+[QNXRUN] flood attack=rate_flood_same_id_valid_chain N=1000 valid=other_car_frame reps=5 queue_med_us=6084.00 valid_own_med_us=351.01 valid_total_med_us=6422.00 valid_total_max_us=6507.01 valid_verdict=0(ok)
+[QNXRUN] order (classes sorted by median time; stage = where the verdict was reached; ecdsa = ECDSA verifications per event)
+[QNXRUN] order rank=1 id=C2 name=bad_header_magic stage=gw_front ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=0.00 ratio_med=0.0000
+[QNXRUN] order rank=2 id=C6c name=replayed_frame_device_only_old_generation stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=0.00 ratio_med=0.0000
+[QNXRUN] order rank=3 id=C9b name=vote_replayed_same_chain_value stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=0.00 ratio_med=0.0000
+[QNXRUN] order rank=4 id=C9c name=vote_replayed_device_only stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=0.00 ratio_med=0.0000
+[QNXRUN] order rank=5 id=C3 name=bad_crc stage=gw_front ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=1.01 ratio_med=0.0032
+[QNXRUN] order rank=6 id=C6b name=replayed_frame_same_chain_value stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=0.00 med_us=1.01 ratio_med=0.0032
+[QNXRUN] order rank=7 id=C8 name=rate_flood_over_per_id_budget stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=1.00 med_us=6.00 ratio_med=0.0191
+[QNXRUN] order rank=8 id=C8s name=sustained_flood_1_per_ms_one_id stage=dev_ecdsa ecdsa_per_event=0.03 chain_sha_per_event=1.00 med_us=6.00 ratio_med=0.0191
+[QNXRUN] order rank=9 id=C9d name=vote_round_far_from_clock stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 med_us=6.00 ratio_med=0.0191
+[QNXRUN] order rank=10 id=C9e name=vote_older_round stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 med_us=6.00 ratio_med=0.0191
+[QNXRUN] order rank=11 id=C6a name=stale_frame_older_than_ttl stage=dev_cheap ecdsa_per_event=0.00 chain_sha_per_event=1.00 med_us=6.99 ratio_med=0.0223
+[QNXRUN] order rank=12 id=C9a name=vote_wrong_chain_value stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=9.00 med_us=46.00 ratio_med=0.1465
+[QNXRUN] order rank=13 id=C5 name=wrong_chain_value_forged stage=gw_admit ecdsa_per_event=0.00 chain_sha_per_event=9.00 med_us=46.99 ratio_med=0.1497
+[QNXRUN] order rank=14 id=C2d name=bad_magic_signed_device_only stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=0.00 med_us=302.00 ratio_med=0.9618
+[QNXRUN] order rank=15 id=C3d name=bad_crc_signed_device_only stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=0.00 med_us=304.00 ratio_med=0.9682
+[QNXRUN] order rank=16 id=C9f name=vote_forged_signature stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 med_us=310.00 ratio_med=0.9873
+[QNXRUN] order rank=17 id=C9g name=vote_valid_accepted stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 med_us=310.99 ratio_med=0.9904
+[QNXRUN] order rank=18 id=C7 name=forged_signature_valid_format stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 med_us=312.00 ratio_med=0.9936
+[QNXRUN] order rank=19 id=C1 name=valid_signed_frame_accepted stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 med_us=314.00 ratio_med=1.0000
+[QNXRUN] order rank=20 id=C4 name=implausible_coordinates_signed_by_member stage=dev_ecdsa ecdsa_per_event=1.00 chain_sha_per_event=1.00 med_us=314.00 ratio_med=1.0000
+[QNXRUN] order_check classes that spent ECDSA although the frame fails a cheap check (header, CRC, plausibility) or is a replay: C4 C2d C3d
+[QNXRUN] timing_end classes=20 failures=0
+[QNXRUN] test_qnx_timing rc=0
+=== slog2info -b v2vttl (all processes, after the tests) ===
+Nov 25 03:41:54.974                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xB200 refused: Permission denied
+Nov 25 03:41:54.975                  v2vttl.368658               server      1  server: certificate 0xD001 refused: No message of desired type
+Nov 25 03:41:54.978                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD001 refused: Operation not permitted
+Nov 25 03:41:54.979                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.982                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.982                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.983                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.983                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.984                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:54.984                  v2vttl.565267              gateway      1  gateway: id 0xB200 from sender 598037 refused: wrong chain value
+Nov 25 03:41:57.311                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+Nov 25 03:41:57.329                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:41:57.340                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+Nov 25 03:41:59.013                  v2vttl.368658               server      1  server: vote 0xB200 refused: Potentially recoverable i/o error
+Nov 25 03:41:59.014                  v2vttl.368658               server      1  server: vote 0xB200 refused: Operation not permitted
+Nov 25 03:41:59.377                  v2vttl.368658               server      1  server: vote 0xA100 refused: No such process
+Nov 25 03:41:59.749                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:42:02.757                  v2vttl.368658               server      1  server: signed frame 0xA100 refused: Permission denied
+Nov 25 03:42:02.777                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:27.447                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:27.455                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:27.462                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:27.506                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD002 refused: Operation not permitted
+Nov 25 03:44:27.507                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xB200 refused: Permission denied
+Nov 25 03:44:27.509                  v2vttl.368658               server      1  server: join (certificate + first signed frame) 0xD001 refused: Operation not permitted
+Nov 25 03:44:29.837                  v2vttl.368658               server      1  server: join 0xC300 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:29.854                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:29.865                  v2vttl.368658               server      1  server: join 0xB200 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:32.241                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:35.260                  v2vttl.368658               server      1  server: join 0xA100 admitted (sender pid 565267 uid 1100)
+Nov 25 03:44:45.655                  v2vttl.929813               server*     1  server: ready path /dev/v2v_ttl_fixed pid 929813 uid 1000 signed 1 gateway-uid -1
+Nov 25 03:44:45.655                  v2vttl.929812               server*     1  server: ready path /dev/v2v_ttl_bench pid 929812 uid 1000 signed 1 gateway-uid -1
+Nov 25 03:44:49.487                  v2vttl.929812               server      1  server: join 0xA100 admitted (sender pid 966679 uid 0)
+Nov 25 03:44:49.502                  v2vttl.929812               server      1  server: join 0xB200 admitted (sender pid 966679 uid 0)
+Nov 25 03:44:49.512                  v2vttl.929812               server      1  server: join 0xC300 admitted (sender pid 966679 uid 0)
+Nov 25 03:45:02.173                  v2vttl.929813               server      1  server: join 0xA100 admitted (sender pid 974871 uid 0)
+Nov 25 03:45:02.193                  v2vttl.929813               server      1  server: join 0xB200 admitted (sender pid 974871 uid 0)
+Nov 25 03:45:02.202                  v2vttl.929813               server      1  server: join 0xC300 admitted (sender pid 974871 uid 0)
+Nov 25 03:45:23.851                 v2vttl.1011736               server*     1  server: ready path /dev/v2v_ttl_sm pid 1011736 uid 1000 signed 1 gateway-uid 1100
+Nov 25 03:45:24.885                 v2vttl.1015833              gateway*     1  gateway: ready pid 1015833 uid 1100 radio /dev/v2v_radio_sm device /dev/v2v_ttl_sm
+Nov 25 03:45:25.370                 v2vttl.1011736               server      1  server: join 0xA100 admitted (sender pid 1015833 uid 1100)
+Nov 25 03:45:25.495                 v2vttl.1015833              gateway      1  gateway: stopping exit 0, chain table wiped (non-zero bytes after wipe: 0)
+Nov 25 03:45:29.088                 v2vttl.1044504           supervisor*     2  supervisor: started /system/bin/v2v-ttl-resmgr pid 1044505 (restart 0)
+Nov 25 03:45:30.006                 v2vttl.1044505               server*     1  server: ready path /dev/v2v_ttl_sv pid 1044505 uid 1000 signed 1 gateway-uid 1100
+Nov 25 03:45:30.927                 v2vttl.1048602           supervisor*     2  supervisor: started /system/bin/v2v-ttl-resmgr pid 1048603 (restart 0)
+Nov 25 03:45:32.059                 v2vttl.1048603              gateway*     1  gateway: ready pid 1048603 uid 1100 radio /dev/v2v_radio_sv device /dev/v2v_ttl_sv
+Nov 25 03:45:32.680                 v2vttl.1044505               server      1  server: join 0xA100 admitted (sender pid 1048603 uid 1100)
+Nov 25 03:45:32.700                 v2vttl.1044505               server      1  server: join 0xB200 admitted (sender pid 1048603 uid 1100)
+Nov 25 03:45:32.721                 v2vttl.1044505               server      1  server: join 0xC300 admitted (sender pid 1048603 uid 1100)
+Nov 25 03:45:33.812                 v2vttl.1044504           supervisor      2  supervisor: child 1044505 of /system/bin/v2v-ttl-resmgr ended (signal 9)
+Nov 25 03:45:34.328                 v2vttl.1044504           supervisor      2  supervisor: restarted /system/bin/v2v-ttl-resmgr pid 1056793 (restart 1)
+Nov 25 03:45:35.476                 v2vttl.1056793               server*     1  server: ready path /dev/v2v_ttl_sv pid 1056793 uid 1000 signed 1 gateway-uid 1100
+Nov 25 03:45:35.513                 v2vttl.1048603              gateway      1  gateway: id 0xA100 from sender 1036311 refused: wrong chain value
+Nov 25 03:45:35.528                 v2vttl.1048603              gateway      1  gateway: device /dev/v2v_ttl_sv lost (errno 9), gateway stops for restart
+Nov 25 03:45:35.540                 v2vttl.1048603              gateway      1  gateway: stopping exit 3, chain table wiped (non-zero bytes after wipe: 0)
+Nov 25 03:45:35.577                 v2vttl.1048602           supervisor      2  supervisor: child 1048603 of /system/bin/v2v-ttl-resmgr ended (exit 3)
+Nov 25 03:45:35.898                 v2vttl.1048602           supervisor      2  supervisor: restarted /system/bin/v2v-ttl-resmgr pid 1064987 (restart 1)
+Nov 25 03:45:36.452                 v2vttl.1064987              gateway*     1  gateway: ready pid 1064987 uid 1100 radio /dev/v2v_radio_sv device /dev/v2v_ttl_sv
+Nov 25 03:45:36.472                 v2vttl.1056793               server      1  server: join 0xA100 admitted (sender pid 1064987 uid 1100)
+Nov 25 03:45:39.717                 v2vttl.1064987              gateway      1  gateway: stopping exit 0, chain table wiped (non-zero bytes after wipe: 0)
+=== V2V QNX TESTS END ===
+
+To exit QEMU, type <ctrl>a x
+
+Process count:25
+Startup complete
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le

@@ -1,0 +1,12 @@
+[perms=755] bin/v2v-ttl-resmgr=/workspace/qnx_target/build_j24/nopol/v2v-ttl-resmgr-aarch64
+[perms=755] bin/traceprinter=usr/bin/traceprinter
+[perms=755] bin/v2v-j23b=/workspace/qnx_target/build_j24/nopol/v2v-j23b-aarch64
+[perms=755] bin/v2v-j23b-nopi=/workspace/qnx_target/build_j24/nopol/v2v-j23b-nopi-aarch64
+[perms=755] bin/v2v-j23b-negb=/workspace/qnx_target/build_j24/nopol/v2v-j23b-negb-aarch64
+[perms=755] bin/test_j23b=/workspace/qnx_target/build_j24/nopol/test_j23b-aarch64
+[perms=755] bin/test_j23b_neg_occ=/workspace/qnx_target/build_j24/nopol/test_j23b_neg_occ-aarch64
+[perms=755] bin/j23b_sim=/workspace/qnx_target/build_j24/nopol/j23b_sim-aarch64
+[perms=755] bin/test_j23b_proc=/workspace/qnx_target/build_j24/nopol/test_j23b_proc-aarch64
+[perms=755] bin/v2v-g10-resmgr-b4=/workspace/qnx_target/build_j24/nopol/v2v-g10-resmgr-b4-aarch64
+[perms=755] bin/test_b4gate=/workspace/qnx_target/build_j24/nopol/test_b4gate-aarch64
+[perms=755] bin/test_b4gate_neg_noresv=/workspace/qnx_target/build_j24/nopol/test_b4gate_neg_noresv-aarch64

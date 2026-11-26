@@ -1,0 +1,19 @@
+{
+  "frame": "internal_frames/clip_t06s_ahead_of_a.webp",
+  "frame_sha256": "dd5aa75a00962b7c393af4a554029391d9f14c412dae4bb0717f0736f9914f16",
+  "frame_note": "Clip frame at 6 s, filmed from the near sidewalk ahead of car A (car A's face toward the camera). Third-party frame: internal only, never published.",
+  "units": "pixels of the 1466 x 840 frame; points picked by hand on a 2x zoom of the crop (0,250)-(640,650)",
+  "width_scale": {
+    "kerb_face": [[25.0, 335.0], [165.0, 645.0]],
+    "cars": {
+      "Car A": {"width_cm": 190.0, "left_wheel_outer": [262.5, 450.0], "right_wheel_outer": [567.5, 445.0]}
+    }
+  },
+  "sim_check": {
+    "kerb_expect": {
+      "note": "Car A straight; its kerb-side edge in SIM[] is d - 95 cm, the kerb at d = -230 cm.",
+      "Car A": 110.0,
+      "tolerance_cm": 15.0
+    }
+  }
+}

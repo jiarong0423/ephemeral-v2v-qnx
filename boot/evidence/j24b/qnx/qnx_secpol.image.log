@@ -1,0 +1,50 @@
+QNX_HOST=/workspace/qnx800/host/linux/x86_64
+QNX_TARGET=/workspace/qnx800/target/qnx
+MAKEFLAGS=-I/workspace/qnx800/target/qnx/usr/include
+Compiling policy
+Generating output/build/mount_fs.sh
+Generating output/build/expandfs.sh
+Generating output/build/post_startup.sh
+Generating output/build/start_net.sh
+Generating output/build/startup.sh
+Generating output/build/passwd
+Generating output/build/group
+Generating output/build/shadow
+Generating output/build/ifs.build
+Generating output/build/system.build
+Generating output/build/data.build
+Generating output/build/qemu_options
+Building disk
+Generating system partition . . .
+Generating data partition . . .
+Generating ifs . . .
+Building boot partition . . .
+Building disk . . .
+Target type: qemu
+Architecture: aarch64le
+Security: secure
+Repositories:
+    
+    /workspace/qnx800/target/qnx
+
+Options with non-default values:
+
+--aarch64-version='8.2'
+--policy='/workspace/evidence/j24b/qnx/qnx_secpol.policy_combined.txt'
+--secpol='secure'
+--usb='no'
+
+For full list of options, run "mkqnximage --options"
+== output
+total 175280
+drwxr-xr-x 21 root root       672 Nov 25 03:11 build
+-rw-r--r--  1 root root       269 Nov 25 03:11 di.params
+-rw-r--r--  1 root root 156713472 Nov 25 03:11 disk-qemu
+-rw-r--r--  1 root root       169 Nov 25 03:11 disk-qemu.vmdk
+-rw-r--r--  1 root root         0 Nov 25 03:11 diskimage.out
+-rw-r--r--  1 root root  10094620 Nov 25 03:11 ifs.bin
+drwxr-xr-x 22 root root       704 Nov 25 03:11 inc
+drwxr-xr-x 77 root root      2464 Nov 25 03:11 option_files
+-rw-r--r--  1 root root      2604 Nov 25 03:11 options
+-rwxr-xr-x  1 root root  12255672 Nov 25 03:11 procnto-smp-instr.sym
+[+] image done: <local-scratch>/qnx_x_b806_20261125/qemu_image/output

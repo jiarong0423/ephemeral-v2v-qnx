@@ -1,0 +1,52 @@
+FOUND GICv3 ITS
+** CPU 0 PE is not awake
+** CPU 1 PE is not awake
+---> Starting slogger2
+---> Starting PCI Services
+---> Starting fsevmgr
+# ---> Starting devb
+---> Mounting file systems
+Path=0 - 
+ target=0 lun=0     Direct-Access(0) - VIRTIO  Rev: 
+---> Mounting file systems
+---> Starting Networking
+---> Starting sshd
+---> Starting misc
+[rev] source revision probe-806 (content hash of qnx_target/src, tests, include, Makefile)
+[variant] c
+=== V2V MINI START ===
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+=== PROBE BEGIN ===
+[PROBE] uname: QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+[PROBE] programs in /system/bin: 2 of 2
+[PROBE] cpus online: CPU:AARCH64 Release:8.0.0  FreeMem:867MB/1024MB BootTime:Nov 25 08:28:51 UTC 2026 Processes: 20, Threads: 97 Processor1: 1095749809 Cortex-A76 0MHz FPU  
+=== [QNXRUN] probe_ext ===
+[PROBE] start sdk_nto_version=800 main_fifo50_rc=0 (errno=0) argc=1
+[PROBE] cpuevents flags=0x03000000 register_event_rc=0 handle=1 errno=0 result=REGISTERED
+[PROBE] kpipe ability_id=30 rc=0 result=ABILITY_REQUEST_ACCEPTED
+[PROBE] affinity cpus_online=2
+[PROBE] affinity iters=119024192 same_cpu_ms=498.3 split_cpu_ms=269.1 ratio=1.85 runmask_rc_same=0/0 runmask_rc_split=0/0
+[PROBE] affinity result=ratio_ge_1_5
+[PROBE] sporadic create_rc_sporadic=0 create_rc_fifo_control=0 run_rc=0/0 pinned_cpu0=1/1
+[PROBE] sporadic sporadic_case a=181119357 b=541450063 b_share=0.749 ; fifo_control a=730640422 b=0 b_share=0.000
+[PROBE] sporadic result=sporadic_limits_hog
+[PROBE] end
+[QNXRUN] probe_ext rc=0
+=== [QNXRUN] probe_ipc ===
+[IPCPROBE] start sdk_nto_version=800 main_fifo40_rc=0
+[U2] mode=event_blocking trials=20 ok=20 fail=0 median_ms=0.61 max_ms=3.03 min_ms=0.11
+[U2] mode=poll_10ms trials=20 ok=20 fail=0 median_ms=6.72 max_ms=13.90 min_ms=1.70
+[U3] owner mode=0 reached_end_after_sigterm=1 sem_value=-1
+[U3] mode=default_channel flood=500 sent_ok=500 eagain=0 other_err=0 first_fail_at=-1 owner=alive_after_flood
+[U3] mode=pool64_custom_event flood=1000 sent_ok=64 eagain=1 other_err=935 first_fail_at=64 owner=killed_by_signal signal=9
+[U3] mode=pool64_no_custom_event flood=1000 sent_ok=64 eagain=12 other_err=924 first_fail_at=64 owner=killed_by_signal signal=9
+[IPCPROBE] end
+[QNXRUN] probe_ipc rc=0
+=== PROBE END ===
+=== V2V MINI END ===
+
+To exit QEMU, type <ctrl>a x
+
+Process count:20
+Startup complete
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le

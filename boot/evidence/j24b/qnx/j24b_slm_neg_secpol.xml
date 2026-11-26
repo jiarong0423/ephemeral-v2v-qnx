@@ -1,0 +1,31 @@
+<SLM:system>
+  <!-- J24B Candidate D: QNX 8.0 SLM supervision (gate -> act -> planner).
+       Gate and actuation are intentionally NOT critical (repair=none) so a gate
+       death lets actuation park the car via J24 B (_PULSE_CODE_COIDDEATH). -->
+  <SLM:component name="gate">
+    <SLM:command>/system/bin/v2v-j23b</SLM:command>
+    <SLM:args>gate --key /tmp/j24b_neg/permit_gate.key --fkey /tmp/j24b_neg/fleet_gate.key --veh 1 --map 0 --log /tmp/j24b_neg/gate.log --ident uid --no-comm --j24-prio 66 --tick-prio 66</SLM:args>
+    <SLM:waitfor wait="pathname">/dev/name/local/j23b_gate</SLM:waitfor>
+    <SLM:type>j23b_gate_t</SLM:type>
+    <SLM:user>1310:1310</SLM:user>
+    <SLM:repair>none</SLM:repair>
+  </SLM:component>
+
+  <SLM:component name="act">
+    <SLM:depend>gate</SLM:depend>
+    <SLM:command>/system/bin/v2v-j23b</SLM:command>
+    <SLM:args>act --dir /tmp/j24b_neg --key /tmp/j24b_neg/permit_act.key --veh 1 --map 0 --x0 -600 --log /tmp/j24b_neg/act.log --j24-prio 65</SLM:args>
+    <SLM:type>j23b_act_t</SLM:type>
+    <SLM:user>1311:1311</SLM:user>
+    <SLM:repair>none</SLM:repair>
+  </SLM:component>
+
+  <SLM:component name="planner">
+    <SLM:depend>act</SLM:depend>
+    <SLM:command>/system/bin/v2v-j23b</SLM:command>
+    <SLM:args>planner --dir /tmp/j24b_neg --veh 1 --seg 7 --v 300 --log /tmp/j24b_neg/planner.log --prio 40 --rr</SLM:args>
+    <SLM:type>j23b_planner_t</SLM:type>
+    <SLM:user>1312:1312</SLM:user>
+    <SLM:repair>none</SLM:repair>
+  </SLM:component>
+</SLM:system>

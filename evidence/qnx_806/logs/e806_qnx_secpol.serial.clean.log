@@ -1,0 +1,168 @@
+FOUND GICv3 ITS
+** CPU 0 PE is not awake
+** CPU 1 PE is not awake
+---> Loading security policy
+---> Starting slogger2
+---> Starting PCI Services
+---> Starting fsevmgr
+# ---> Starting devb
+---> Mounting file systems
+Path=0 - 
+ target=0 lun=0     Direct-Access(0) - VIRTIO  Rev: 
+---> Mounting file systems
+---> Starting Networking
+---> Starting sshd
+---> Starting misc
+[rev] source revision j24-069b171921954c6e (content hash of qnx_target/src, tests, include, Makefile)
+[variant] c
+=== V2V MINI START ===
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
+[J23B] mode secpol=secure (from /proc/boot/build/options) bin=/system/bin trials=5 timing=2000
+[J23B] programs: 6
+J23B-SECPOL-FILE present
+=== EV3B BEGIN ===
+[EV3B] free memory before: CPU:AARCH64 Release:8.0.0  FreeMem:865MB/1024MB BootTime:Nov 25 04:13:55 UTC 2026 Processes: 20, Threads: 97 
+=== [QNXRUN] ev3b_probe_pi_traced ===
+# J24 A on (gate 66, act 65, timer pulse 66) J24_NEG 0x0
+# J23B process test bindir /system/bin logdir /tmp/j23b/ev3bt tag ev3bt mode secpol trials 2 timing 0 root 1 on 1 policy_model 0 neg 0x0
+J23B-PROBE-MODE secpol gate_pid=528404 gate_sid_own=1 start_pid=528404 start_sid=528404 launcher=528404
+J23B-PROBE planner connect_gate ALLOWED errno=0
+J23B-PROBE planner send_req ALLOWED errno=0
+J23B-PROBE planner send_poll REFUSED errno=1
+J23B-PROBE planner send_fwd REFUSED errno=1
+J23B-PROBE planner connect_comm REFUSED errno=1
+J23B-PROBE planner open_act_fifo REFUSED errno=2
+J23B-PROBE planner sig0_gate REFUSED errno=1
+J23B-PROBE planner sigcont_gate REFUSED errno=1
+J23B-PROBE planner sigterm_gate REFUSED errno=1
+J23B-PROBE planner read_permit_key REFUSED errno=13
+J23B-PROBE load connect_gate REFUSED errno=1
+J23B-PROBE load send_req REFUSED errno=257
+J23B-PROBE load connect_comm REFUSED errno=1
+J23B-PROBE load open_act_fifo REFUSED errno=2
+J23B-PROBE load sigterm_gate REFUSED errno=1
+J23B-PROBE load read_permit_key REFUSED errno=13
+J23B-PROBE act connect_gate ALLOWED errno=0
+J23B-PROBE act send_poll ALLOWED errno=0
+J23B-PROBE act connect_comm REFUSED errno=1
+J23B-PROBE radio connect_comm ALLOWED errno=0
+J23B-PROBE radio connect_gate REFUSED errno=1
+J23B-PROBE perc connect_gate ALLOWED errno=0
+J23B-PROBE perc connect_comm REFUSED errno=1
+J23B-PROBE rootplanner sig0_gate REFUSED errno=1
+J23B-PROBE rootplanner sigcont_gate REFUSED errno=1
+J23B-PROBE gate alive after the probes: 1
+J23B-PROBE gate STATS issued=1 renewed=2 revoked=0 lapsed=0 overruns=0 no_refuge_issues=0 peer_ok=0 peer_rej_dup=0 peer_rej_late=0 peer_rej_future=0 peer_rej_mac=0 occ_reports=0 occ_blocks=0 occ_revokes=0 perc_revokes=0 issued_while_occ=0 msgs=67 refused_load=0 refused_radio=0 refused_unknown=0 refused_planner=2 refused_act=0 refused_test=0 hb_planner=0 hb_act=7 hb_comm=7 pi_n=0 pi_served_eq=0 outbox_dropped=0 refused_connects=0
+CHECK J23B-ISO PASS channel isolation (secpol mode): 25 probe lines; each channel connection, request kind and the actuation FIFO path as expected
+CHECK J23B-SIGNAL PASS the planner cannot signal the gate (signal 0, SIGCONT, SIGTERM); root under the planner type refused (policy); gate alive after the probes
+CHECK J23D-SIGTARGET PASS signal probes sent to the gate's own pid 528404 (its START line; own session sid 528404; launcher 528404); harness kill() calls refused for a pid <= 0: 0
+J23B-PI base_planner_p5 n=100 fail=0 client_prio=5 served_prio=5..40 served_eq=59 p50_ns=830000 p99_ns=1596000 max_ns=2383008
+J23B-PI base_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=642992 p99_ns=1290000 max_ns=2534992
+J23B-PI load_act_p40 n=300 fail=0 client_prio=40 served_prio=40..40 served_eq=300 p50_ns=104000 p99_ns=202000 max_ns=1050824992
+J23B-PI load_planner_flood n=710 fail=0 client_prio=5 served_prio=5..40 served_eq=694 p50_ns=82992 p99_ns=143649008 max_ns=2634186000
+J23B-PI gate CHANNEL name=/dev/name/local/j23b_gate chid=1 flags=0x8 fixed_priority=0 base_prio=10
+J23B-PI model pi=1 base n=500 p99_us=60 max_us=60 served_eq_pct=100 | load n=500 p99_us=60 max_us=60 served_eq_pct=100
+CHECK J23B-PI PASS high-priority (40) requests served at 40, low-priority (5) requests never below 5: base_planner_p5 n=100 at_own_prio=59 (59%) min_served=5 p99=1596us; base_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=1290us; load_act_p40 n=300 at_own_prio=300 (100%) min_served=40 p99=202us; base p99 1290 us, load p99 202 us (delay: J23B-PI-COMPARE against the fixed-priority control)
+# J23B process test ALL PASS
+[QNXRUN] ev3b_probe_pi_traced rc=0
+[EV3B] kev file: -rw-r--r--  2 root root 13715826 2026-11-25 04:14 /dev/shmem/ev3b.kev
+[EV3B] trace lines: 908164; SEC lines: 2066
+[EV3B] free memory after: CPU:AARCH64 Release:8.0.0  FreeMem:806MB/1024MB BootTime:Nov 25 04:13:55 UTC 2026 Processes: 20, Threads: 97 
+=== EV3B VERDICT TALLY BEGIN (last three words of every ABLE line) ===
+   1342 ALLOW as non-root
+    701 ALLOW as root
+     12 DENY as non-root
+      7 DENY as root
+      1 :ABLE_LOOKUP name:iofunc/read able:77
+=== EV3B VERDICT TALLY END ===
+=== EV3B NON-ALLOW BEGIN (SEC lines without ALLOW, first 50) ===
+t:0x1332a819 CPU:01 SEC             :ABLE               pid:503827 able:76 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as root
+t:0x1333a11f CPU:01 SEC             :ABLE               pid:503827 able:76 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as root
+t:0x13348fa6 CPU:00 SEC             :ABLE               pid:503827 able:76 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as root
+t:0x134c55d4 CPU:01 SEC             :PATH_ATTACH        pid:528404 ptype:1 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_gate
+t:0x1375f6d0 CPU:00 SEC             :PATH_ATTACH        pid:536598 ptype:4 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_comm
+t:0x152ea92c CPU:00 SEC             :ABLE               pid:552983 able:58 (CHANNEL_CONNECT) start:0x0000000000000004 end:0x0000000000000004 DENY as non-root
+t:0x152ff6e9 CPU:00 SEC             :ABLE               pid:552983 able:36 (SIGNAL) start:0x0000000000000000 end:0x0000000000000000 DENY as non-root
+t:0x15303eef CPU:00 SEC             :ABLE               pid:552983 able:36 (SIGNAL) start:0x0000000000000019 end:0x0000000000000019 DENY as non-root
+t:0x15307178 CPU:00 SEC             :ABLE               pid:552983 able:36 (SIGNAL) start:0x000000000000000f end:0x000000000000000f DENY as non-root
+t:0x153107dc CPU:00 SEC             :ABLE_LOOKUP        name:iofunc/read able:77
+t:0x153118b5 CPU:00 SEC             :ABLE               pid:552983 able:77 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as non-root
+t:0x154fe097 CPU:01 SEC             :ABLE               pid:565271 able:58 (CHANNEL_CONNECT) start:0x0000000000000001 end:0x0000000000000001 DENY as non-root
+t:0x15509b9a CPU:01 SEC             :ABLE               pid:565271 able:58 (CHANNEL_CONNECT) start:0x0000000000000004 end:0x0000000000000004 DENY as non-root
+t:0x1551c14d CPU:01 SEC             :ABLE               pid:565271 able:36 (SIGNAL) start:0x000000000000000f end:0x000000000000000f DENY as non-root
+t:0x1552269f CPU:01 SEC             :ABLE               pid:565271 able:77 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as non-root
+t:0x156de008 CPU:01 SEC             :ABLE               pid:577559 able:58 (CHANNEL_CONNECT) start:0x0000000000000004 end:0x0000000000000004 DENY as non-root
+t:0x1582d583 CPU:01 SEC             :ABLE               pid:589847 able:58 (CHANNEL_CONNECT) start:0x0000000000000001 end:0x0000000000000001 DENY as non-root
+t:0x159745b0 CPU:00 SEC             :ABLE               pid:602135 able:58 (CHANNEL_CONNECT) start:0x0000000000000004 end:0x0000000000000004 DENY as non-root
+t:0x15aaa103 CPU:01 SEC             :ABLE               pid:614423 able:36 (SIGNAL) start:0x0000000000000000 end:0x0000000000000000 DENY as root
+t:0x15aaec35 CPU:01 SEC             :ABLE               pid:614423 able:36 (SIGNAL) start:0x0000000000000019 end:0x0000000000000019 DENY as root
+t:0x16472908 CPU:00 SEC             :ABLE               pid:503827 able:76 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as root
+t:0x1648103c CPU:01 SEC             :ABLE               pid:503827 able:76 (UNKNOWN) start:0x0000000000000000 end:0x000000007fffffff DENY as root
+t:0x165f6e2b CPU:01 SEC             :PATH_ATTACH        pid:638996 ptype:1 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_gate
+=== EV3B NON-ALLOW END ===
+=== EV3B ABILITY TALLY BEGIN ===
+   1176 able:39 (MAP_FIXED)
+    366 able:23 (PROT_EXEC)
+    167 able:58 (CHANNEL_CONNECT)
+     77 able:90 (UNKNOWN)
+     56 able:21 (SPAWN)
+     47 able:22 (FORK)
+     45 able:35 (SCHEDULE)
+     18 able:62 (XPROCESS_ABLE)
+     18 able:60 (SETTYPEID)
+     16 able:1 (SPAWN_SETGID)
+     16 able:0 (SPAWN_SETUID)
+     14 able:34 (CONNECTION)
+     10 able:36 (SIGNAL)
+      8 able:3 (SETGID)
+      5 able:76 (UNKNOWN)
+      5 able:4 (GETID)
+      5 able:2 (SETUID)
+      3 able:89 (UNKNOWN)
+      3 able:44 (PUBLIC_CHANNEL)
+      2 able:86 (UNKNOWN)
+=== EV3B ABILITY TALLY END ===
+=== EV3B OTHER SEC EVENTS BEGIN (PATH_ATTACH, PERM_TEST, PERM_LOOKUP, UNREG_EVENT; first 30) ===
+t:0x134c55d4 CPU:01 SEC             :PATH_ATTACH        pid:528404 ptype:1 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_gate
+t:0x1375f6d0 CPU:00 SEC             :PATH_ATTACH        pid:536598 ptype:4 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_comm
+t:0x165f6e2b CPU:01 SEC             :PATH_ATTACH        pid:638996 ptype:1 ctype:-1 chid:1 status:OK path:/dev/name/local/j23b_gate
+=== EV3B OTHER SEC EVENTS END ===
+=== EV3B ROLE PIDS BEGIN (START lines of the role logs, wherever they are) ===
+/tmp/j23b/ev3bt/probe/gate.log:[gate] t=5158 START pid=528404 sid=528404 epoch=5157 veh=1 map=0 need_comm=1 need_perc=0 timing=0 ident=uid test_hook=0 pi_only=0 CPS 62500
+/tmp/j23b/ev3bt/probe/act.log:[act] t=5199 START pid=536597 veh=1 map=0 x0=-600 channels_owned=0 CPS 62500000
+/tmp/j23b/ev3bt/probe/comm.log:[comm] t=5201 START pid=536598
+/tmp/j23b/ev3bt/pi/gate.log:[gate] t=5983 START pid=638996 sid=638996 epoch=5983 veh=1 map=0 need_comm=1 need_perc=0 timing=0 ident=uid test_hook=0 pi_only=1 CPS 62500000
+/tmp/j23b/ev3bt/pi/load.log:[load] t=11037 START pid=856085 mb=4 busy=40 period=50
+/tmp/j23b/ev3bt:
+pi
+probe
+probe_capture.txt
+
+/tmp/j23b/ev3bt/pi:
+gate.log
+load.log
+ns
+pi.out
+
+/tmp/j23b/ev3bt/pi/ns:
+
+/tmp/j23b/ev3bt/probe:
+act.log
+comm.log
+fleet_gate.key
+fleet_radio.key
+gate.log
+ns
+permit_act.key
+permit_gate.key
+probes.out
+
+=== EV3B ROLE PIDS END ===
+=== EV3B END ===
+=== V2V MINI END ===
+
+To exit QEMU, type <ctrl>a x
+
+Process count:20
+Startup complete
+QNX noname 8.0.0 2026/10/30-09:09:47EDT QEMU_virt aarch64le
