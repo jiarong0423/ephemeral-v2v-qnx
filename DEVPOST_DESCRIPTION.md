@@ -4,8 +4,8 @@
 
 > **TL;DR — Key Measured Results (Host & QNX 8.0.6 QEMU `aarch64le`):**
 > * **Take-over requests `32.05% → 0.061%`:** our give-way rule versus the waiting baseline at the preregistered `50 cm` clearance (`−31.99 pp`); rule + borrow-cell map `0.077%`. `594,000` simulated runs = three arms × `198,000` runs at `50 cm`. Against a first car that always or randomly yields, take-overs are `0.00%` with or without our rule, so there our contribution is one shared, QNX-enforced answer to who yields — a design goal, not a measured gain. Baseline: the car waits in place, never yields on its own, and requests a take-over after `45 s`.
-> * **`p99` 11.9–12.0 ms on QEMU TCG under load:** `SCHED_FIFO` `66/65` priority isolation cut our program's decision-to-actuation `p99` from **30.0–36.0 ms** to **11.9–12.0 ms** (`p99` only).
-> * **Policy-enforced isolation & fast watchdog:** **100% `EPERM` refusal** of unauthorized `/dev/v2v_ttl` opens (`6/6` as started + `4,218/4,218` after the privilege drop) and gate-death detection within **5–10 ms** via `_PULSE_CODE_COIDDEATH` (four control-matrix boots).
+> * **`p99` 11.9–12.0 ms on QEMU TCG under load:** `SCHED_FIFO` `66/65` priority isolation cut our program's decision-to-actuation `p99` from **30.0–36.0 ms** to **11.9–12.0 ms** (`p99` only; four boots: `2 nopol` + `2 secpol`).
+> * **Policy-enforced isolation & fast watchdog:** **100% `EPERM` refusal** of unauthorized `/dev/v2v_ttl` opens (`6/6` as root, the policy's own effect, + `4,218/4,218` after the privilege drop, which file permissions alone would also refuse with `EACCES`) and gate-death detection by `_PULSE_CODE_COIDDEATH` at max **5–10 ms** in four control-matrix boots (`12 ms` in the separate `EV3H` run).
 >
 > *Scope: crawl-speed simulation prototype (`<= 0.3 m/s`, up to 3 vehicles), not certified for road hardware or safety-critical deployment; all QNX timings of our program are QEMU TCG relative timings. Every number below has a file:line source in [`docs/CLAIMS_INDEX.md`](docs/CLAIMS_INDEX.md).*
 
@@ -66,14 +66,14 @@ When two automated vehicles meet head-on in a street only one car wide without a
 * **Fairer baselines (earlier host runs, `evidence/fair_baseline_20261117/NOTES.md`):** giving the waiting car our borrow-cell map alone does not change its take-over rate (`31.096%` with and without the map at `50 cm`). A car that always yields or yields at random also had `0.00%` take-overs in an earlier car-meets-car block, the same as our rule, so our headline compares against a car that never yields on its own.
 * **Potential impact at crawl speed:** at `0.3 m/s`, our gate-death path brakes within `10 ms` of the fault, about `3 mm` of travel, versus `477 ms` (about `14.3 cm`) on the permit-expiry path with the death watch off (`evidence/qnx_806/logs/as1_qnx_secpol.serial.clean.log:912`).
 * **100% `EPERM` refusals & `0.35×` fault-window gap (`G23S`, `evidence/qnx_806/logs/g23s_qnx_summary.txt:12-13`):**
-  * Under our QNX 8.0.6 `secpol` policy, competing `load` programs failed with `EPERM` on **`6/6`** attempts as started and **`4,218/4,218`** attempts after the privilege drop (`0` allowed).
+  * Under our QNX 8.0.6 `secpol` policy, competing `load` programs failed with `EPERM` on **`6/6`** attempts as started and **`4,218/4,218`** attempts after the privilege drop (`0` allowed). Without the policy (boot `G23`, `nopol`), root opened `6/6`, and after the drop file permissions refused `3,844/3,844` with `EACCES` (`g23_nopol_qnx_summary.txt:13,35`): the `6/6` as root is what the policy adds.
   * During injected faults, the largest hand-over gap stayed at **`0.35×`** normal max (`15.120 ms` vs. `43.465 ms`; limit `2×`, `n = 20,000` samples/condition).
-* **Priority isolation & kernel disconnect watchdog (four control-matrix boots `A1`, `A2`, `AS1`, `AS2`):**
+* **Priority isolation & kernel disconnect watchdog (four control-matrix boots: `A1`, `A2` without the policy, `AS1`, `AS2` with it):**
   * Running `gate` and `act` at `SCHED_FIFO` `66/65` cut decision-to-actuation `p99` under load from **`29,986–35,974 µs`** to **`11,882–12,010 µs`** (`p99` only).
-  * `_PULSE_CODE_COIDDEATH` detected gate termination within **`5–10 ms`** (onset-to-brake `6–10 ms`; onset-to-safe `304–306 ms`).
-  * Across four `secpol` control-matrix boots (`135` trials/boot), three met the `50 ms` actuation-loop limit (`EV3H` `45`, `AS1` `48`, `AS2` `44 ms`) and one, `EV3I`, missed at **`97 ms`** (`1` of `135` trials over the limit) while host load peaked at `4.58` (reported as measured).
+  * `_PULSE_CODE_COIDDEATH` detected gate termination at max **`5–10 ms`** in these four boots (onset-to-brake `6–10 ms`; onset-to-safe `304–306 ms`; `12 ms` in the separate `EV3H` run).
+  * Across a different set of four `secpol` control-matrix boots (`EV3H`, `AS1`, `AS2`, `EV3I`; `135` trials/boot), three met the `50 ms` actuation-loop limit (`EV3H` `45`, `AS1` `48`, `AS2` `44 ms`) and one, `EV3I`, missed at **`97 ms`** (`1` of `135` trials over the limit) while host load peaked at `4.58` (reported as measured).
 * **`12 ms` `p99` mode switchover & `slm` recovery (`J24C`, `J24B`):**
-  * Across `420` episodes per boot (`nopol` + `secpol`), `HS ↔ MAP` switchover `p99` stayed at **`12 ms`** (`max 14 / 20 ms`, budget `120 ms`, `0` moves without a permit).
+  * Across `420` episodes per boot (`nopol` + `secpol`), `HANDSHAKE → MAP` and `MAP → RETREAT` switchover `p99` stayed at **`12 ms`** (max `14 ms` and `20 ms` respectively, budget `120 ms`, `0` moves without a permit).
   * Killing `planner` under QNX `slm` revoked the permit, stopped `act`, started a new `planner`, and resumed traffic.
 * **`0` differences across `5` C-vs-Rust on-target harnesses (`RC1`, QNX 8.0.6, `evidence/qnx_806/logs/rc1_qnx_nopol.serial.clean.log:99-117`):**
   * Our Rust-backed trust core (`staticlib` linked via `qcc`) matched the C reference across `100,000` stage-1 cases and `5,000` cases each for state, gateway, votes, and silent-member paths.

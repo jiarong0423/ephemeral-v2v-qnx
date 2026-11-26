@@ -45,7 +45,7 @@
   <text x="840" y="137" fill="#134e4a" font-size="15" font-weight="700">Layer 3 · QNX gate &amp; fault containment</text>
   <text x="840" y="172" fill="#115e59" font-size="13" font-weight="600">Real-Time Priority &amp; Security Policy</text>
   <text x="840" y="196" fill="#334155" font-size="12">• gate: SCHED_FIFO 66, actuation: SCHED_FIFO 65</text>
-  <text x="840" y="218" fill="#334155" font-size="12">• _PULSE_CODE_COIDDEATH: gate death &lt;= 10 ms</text>
+  <text x="840" y="218" fill="#334155" font-size="12">• _PULSE_CODE_COIDDEATH on gate death</text>
   <text x="840" y="240" fill="#334155" font-size="12">• slm restarts a killed planner and traffic resumes</text>
   <text x="840" y="264" fill="#b91c1c" font-size="12" font-weight="600">• Security policy: unauthorised opens refused (EPERM);</text>
   <text x="850" y="284" fill="#b91c1c" font-size="12" font-weight="600">planner cannot signal the gate even as root</text>
@@ -85,7 +85,7 @@
   <rect x="816" y="428" width="336" height="96" rx="8" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
   <text x="984" y="454" text-anchor="middle" fill="#134e4a" font-size="14.5" font-weight="700">actuation &amp; Commitment Line</text>
   <text x="984" y="474" text-anchor="middle" fill="#115e59" font-size="12.5">SCHED_FIFO 65 · Private COIDDEATH channel</text>
-  <text x="984" y="494" text-anchor="middle" fill="#334155" font-size="11.5">Gate death seen &lt;= 10 ms -&gt; fallback brake</text>
+  <text x="984" y="494" text-anchor="middle" fill="#334155" font-size="11.5">Gate death -&gt; kernel pulse -&gt; fallback brake</text>
   <text x="984" y="512" text-anchor="middle" fill="#b91c1c" font-size="11.5" font-weight="700">No valid permit -&gt; REVOKE -&gt; safe state</text>
 
   <rect x="816" y="554" width="336" height="68" rx="8" fill="#f1f5f9" stroke="#64748b"/>
