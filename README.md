@@ -8,6 +8,22 @@
 
 ---
 
+**Two cars meet in a lane only one can use. Each computes the same give-way plan from the same frames (or all hold), and QNX refuses road entry without a short, unexpired permit.**
+
+**[▶ Demo video](https://youtu.be/A0JHDZikK7w)** · [Claims and log lines](docs/CLAIMS_INDEX.md) · [QNX evidence table](docs/QNX_EVIDENCE_TABLE.md) · [Known limitations](KNOWN_LIMITATIONS.md)
+
+> Crawl-speed simulation prototype (`<= 0.3 m/s`, up to 3 vehicles) on QNX 8.0.6 in QEMU. Not certified; QEMU timings are relative, not hardware real-time bounds.
+
+| To check | Where to look |
+|---|---|
+| QNX implementation | [Commitment boundary](#2-three-layer-architecture): resource manager `/dev/v2v_ttl`, `secpol`, `SCHED_FIFO 66/65`, `_PULSE_CODE_COIDDEATH`, `slm`; [QNX evidence table](docs/QNX_EVIDENCE_TABLE.md) |
+| Measured results | [Headline results](#3-headline-results) |
+| Try it | [30-second judge path](#4-quick-verification-30-second-judge-path): browser walkthroughs with no install |
+| The problem | [Narrow streets, interference with fire response, undisclosed remote assistance](#1-the-problem) |
+| Role of AI | A road-entry permit that expires, decided by deterministic C and Rust; [how AI agents built and audited it](#5-role-of-ai-scope--honest-disclosures) |
+
+---
+
 ## 1. The Problem
 
 When two automated vehicles meet head-on in a single-car street without a shared give-way rule or a fail-closed commitment gate, both stall until a human intervenes:

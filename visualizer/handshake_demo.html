@@ -67,7 +67,7 @@
 </div>
 
 <h3 style="margin:14px 0 4px;font-size:14px;">What QNX 8.0.6 does at each step</h3>
-<table id="qnx">
+<div style="overflow-x:auto"><table id="qnx">
   <thead><tr><th>Step</th><th>QNX feature</th><th>What it does here</th><th>Real or simulated</th><th>Where to see it in the QNX log</th></tr></thead>
   <tbody>
     <tr data-st="1"><td>1. Frames in</td><td>Resource manager (<code>resmgr_attach</code>, <code>io_write</code>) and message passing</td><td>The program appears as the file <code>/dev/v2v_ttl</code>; each frame written is a QNX message to it</td><td><span class="tag real">real</span> (round 2: one process per car)</td><td><code>ls -l /dev/v2v_ttl</code> shows <code>crw-rw----</code>; <code>pidin</code> shows the server in <code>RECEIVE</code></td></tr>
@@ -79,7 +79,7 @@
     <tr data-st="0 1 2 3 4 5"><td>All steps: safety</td><td>Process abilities (<code>procmgr_ability</code>) and uid drop</td><td>After setup the server drops to a normal user and may not spawn, fork or touch I/O or physical memory</td><td><span class="tag real">real</span></td><td><code>procmgr_ability(...) rc=0 (applied), uid=1000</code></td></tr>
     <tr data-st="0 1 2 3 4 5"><td>All steps: platform</td><td>QNX 8.0.6, <code>qcc</code>, <code>mkqnximage</code>, boot customisation, QEMU virt (aarch64)</td><td>Cross-built, packed into an image, started automatically at boot</td><td><span class="tag real">real</span> (software emulation, not car hardware)</td><td><code>boot image built with QNX SDP 8.0.6 (procnto 44f563a0)</code></td></tr>
   </tbody>
-</table>
+</table></div>
 <p class="tablenote" style="color:var(--muted);font-size:12px;max-width:1320px;">Honest note: only about a tenth of the program uses QNX-specific calls. The decision logic itself is ordinary C. What QNX adds here is the isolated server process, message passing, the periodic kernel pulse and privilege dropping.</p>
 
 <script>
