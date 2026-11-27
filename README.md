@@ -10,7 +10,7 @@
 
 **Two cars meet in a lane only one can use. Each computes the same give-way plan from the same frames (or all hold), and QNX refuses road entry without a short, unexpired permit.**
 
-**[▶ Demo video](https://youtu.be/A0JHDZikK7w)** · [Claims and log lines](docs/CLAIMS_INDEX.md) · [QNX evidence table](docs/QNX_EVIDENCE_TABLE.md) · [Known limitations](KNOWN_LIMITATIONS.md)
+**[▶ Demo video](https://youtu.be/A0JHDZikK7w)** · **[▶ Live walkthrough](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/before_after.html)** (simulation, in your browser) · [Claims and log lines](docs/CLAIMS_INDEX.md) · [QNX evidence table](docs/QNX_EVIDENCE_TABLE.md) · [Known limitations](KNOWN_LIMITATIONS.md)
 
 > Crawl-speed simulation prototype (`<= 0.3 m/s`, up to 3 vehicles) on QNX 8.0.6 in QEMU. Not certified; QEMU timings are relative, not hardware real-time bounds.
 
