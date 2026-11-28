@@ -65,7 +65,7 @@ QNX-Ephemeral-V2V treats physical road entry like a microkernel capability with 
 
 ## 4. Quick Verification (30-Second Judge Path)
 
-1. **Zero-install interactive walkthrough (browser):** Open [`visualizer/before_after.html`](visualizer/before_after.html), [`visualizer/handshake_demo.html`](visualizer/handshake_demo.html), or [`visualizer/portal.html`](visualizer/portal.html).
+1. **Zero-install interactive walkthrough (browser):** Open [Before & After](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/before_after.html), [Interactive Handshake Demo](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/handshake_demo.html), or [GIF Portal](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/portal.html) directly in your browser.
 2. **Host verification & recorded QNX 8.0.6 log check (no QNX licence needed):**
 
    ```bash

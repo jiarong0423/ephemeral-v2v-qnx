@@ -47,7 +47,7 @@ When two automated vehicles meet head-on in a single-car street without a shared
 
 ## 4. Quick Verification (30-Second Judge Path)
 
-* **Zero-install interactive walkthrough (browser):** Open `visualizer/before_after.html` (side-by-side deadlock vs. deterministic handshake) or `visualizer/handshake_demo.html` in the [GitHub repo](https://github.com/jiarong0423/ephemeral-v2v-qnx).
+* **Zero-install interactive walkthrough (browser):** Open the live simulation in your browser — [Before & After](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/before_after.html) (side-by-side deadlock vs. deterministic handshake), [Interactive Handshake Demo](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/handshake_demo.html), or [GIF Portal](https://jiarong0423.github.io/ephemeral-v2v-qnx/visualizer/portal.html) (source in the [GitHub repo](https://github.com/jiarong0423/ephemeral-v2v-qnx)).
 * **Host verification & recorded QNX 8.0.6 log check (no QNX licence needed):**
   * `make -C qnx_target test` → `ALL PASS (0 failed)` & `SECMEM ALL PASS (0 failed)`
   * `cd rust_port && cargo test` → `16 passed; 0 failed`
